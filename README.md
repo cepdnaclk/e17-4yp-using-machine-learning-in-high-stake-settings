@@ -1,5 +1,5 @@
 ___
-# DELETE THIS INSTRUCTIONS AND ADD A SHORT INTRODUCTION ABOUT YOUR PROJECT
+# Using Machine Learning in High-stakes settings: Ensuring Transparency and Equity
 ___
 
 ## Please refer the instructions in below URL:
