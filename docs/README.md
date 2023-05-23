@@ -3,7 +3,7 @@ layout: home
 permalink: index.html
 
 # Please update this with your repository name and title
-repository-name: eYY-4yp-project-template
+repository-name: e17-4yp-using-machine-learning-in-high-stake-settings
 title:
 ---
 
@@ -13,14 +13,15 @@ title:
 
 #### Team
 
-- eNumber, Name, [email](mailto:name@email.com)
-- eNumber, Name, [email](mailto:name@email.com)
-- eNumber, Name, [email](mailto:name@email.com)
+- E/17/342, Thanujan Tharmapalan, [email](mailto:e17342@eng.pdn.ac.lk)
+- E/17/296, Ravisha Rupasinghe, [email](mailto:e17296@eng.pdn.ac.lk)
+- E/17/194, Madhushan Ramalingam, [email](mailto:e17194@eng.pdn.ac.lk)
 
 #### Supervisors
 
-- Name, [email](mailto:name@eng.pdn.ac.lk)
-- Name, [email](mailto:name@eng.pdn.ac.lk)
+- Dr. Damayanthi Herath, [email](mailto:damayanthiherath@eng.pdn.ac.lk)
+- Dr. Upul Jayasinghe, [email](mailto:upuljm@eng.pdn.ac.lk)
+- Dr. Kasun Amarasinghe, [email](mailto:amarasinghek@cmu.edu)
 
 #### Table of content
 
