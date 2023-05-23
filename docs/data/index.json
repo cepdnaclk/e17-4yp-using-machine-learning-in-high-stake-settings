@@ -1,29 +1,33 @@
 {
     "team": [
         {
-            "name": "Team Member Name 1",
-            "email": "email@eng.pdn.ac.lk",
-            "eNumber": "E/yy/xxx"
+            "name": "Raviha Rupasinghe",
+            "email": "e17296@eng.pdn.ac.lk",
+            "eNumber": "E/17/296"
         },
         {
-            "name": "Team Member Name 2",
-            "email": "email@eng.pdn.ac.lk",
-            "eNumber": "E/yy/xxx"
+            "name": "Thanujan Tharmapalan",
+            "email": "e17342@eng.pdn.ac.lk",
+            "eNumber": "E/17/342"
         },
         {
-            "name": "Team Member Name 3",
-            "email": "email@eng.pdn.ac.lk",
-            "eNumber": "E/yy/xxx"
+            "name": "Madhushan Ramalingam",
+            "email": "e17194@eng.pdn.ac.lk",
+            "eNumber": "E/17/194"
         }
     ],
     "supervisors": [
         {
-            "name": "Dr. Supervisor 1",
-            "email": "email@eng.pdn.ac.lk"
+            "name": "Dr. Damayanthi Herath",
+            "email": "damayanthiherath@eng.pdn.ac.lk"
         },
         {
-            "name": "Dr. Supervisor 2",
-            "email": "email@eng.pdn.ac.lk"
+            "name": "Dr. Upul Jayasinghe",
+            "email": "upuljm@eng.pdn.ac.lk"
+        },
+        {
+            "name": "Dr. Kasun Amarasinghe",
+            "email": "amarasinghek@cmu.edu"
         }
     ],
     "media": [
@@ -33,5 +37,5 @@
             "url": "#"
         }
     ],
-    "tags": ["Final Year Projects"]
+    "tags": ["Final Year Projects", "Explainable Machine Learning", "Artificial Intelligence"]
 }
