@@ -17,7 +17,6 @@ import config
 import data_processor as dp
 
 lang_tool = language_tool_python.LanguageTool('en-US')
-nltk.download('stopwords')
 
 
 def standardize_data(x_train, x_test, cols_list):
@@ -57,45 +56,38 @@ def add_statement_grammertical_error_feature(data: DataFrame):
 def add_title_essay_relativity_score(data: DataFrame):
     # Create a new feature that has the relatedness of title and essay
     # using cosine similarity
-    stop_words = set(stopwords.words('english'))
-    # Preprocess topic and essay
-    data["_Title"] = ' '.join(
-        [str(word).lower() for word in data["Project Title"].str.split() if str(word).lower() not in stop_words])
-    data["_Essay"] = ' '.join(
-        [str(word).lower() for word in data["Project Essay"].str.split() if str(word).lower() not in stop_words])
-    print("Success preprocess columns! ------- 1")
+
+    # Create a TfidfVectorizer object
     vectorizer = TfidfVectorizer()
 
-    # Calculate TF-IDF vectors & cosine similarity
-    data["Title Essay Relativity"] = cosine_similarity(
-        vectorizer.fit_transform([data["_Title"], data["_Essay"]])[0],
-        vectorizer.fit_transform([data["_Title"], data["_Essay"]])[1]
-    )[0][0] if not (str(data["_Title"]) == "None" or str(data["_Essay"]) == "None") else 0
-    data.drop("_Essay")
-    data.drop("_Title")
+    # Fit and transform the 'text' column to obtain the TF-IDF matrix
+    tfidf_matrix = vectorizer.fit_transform(data['Project Essay'])
+
+    # Calculate the cosine similarity matrix between the 'topic' and 'text' columns
+    similarity_matrix = cosine_similarity(tfidf_matrix, vectorizer.transform(data['Project Title']))
+
+    # Create a new feature "Title Essay Relativity" in the DataFrame and assign the similarity scores
+    data["Title Essay Relativity"] = similarity_matrix.diagonal()
+
     return data
 
 
 def add_desc_essay_relativity_score(data: DataFrame):
     # Create a new feature that has the relatedness of description and essay
     # using cosine similarity
-    stop_words = set(stopwords.words('english'))
-    # Preprocess desc and essay
-    data["_Description"] = ' '.join(
-        [str(word).lower() for word in data["Project Short Description"].str.split() if str(word).lower() not in stop_words])
-    data["_Essay"] = ' '.join(
-        [str(word).lower() for word in data["Project Essay"].str.split() if str(word).lower() not in stop_words])
-    print("Success preprocess columns! ------- 2")
 
+    # Create a TfidfVectorizer object
     vectorizer = TfidfVectorizer()
 
-    # Calculate TF-IDF vectors & cosine similarity
-    data["Description Essay Relativity"] = cosine_similarity(
-        vectorizer.fit_transform([data["_Description"], data["_Essay"]])[0],
-        vectorizer.fit_transform([data["_Description"], data["_Essay"]])[1]
-    )[0][0] if not (str(data["_Description"]) == "None" or str(data["_Essay"]) == "None") else 0
-    data.drop("_Essay")
-    data.drop("_Description")
+    # Fit and transform the 'text' column to obtain the TF-IDF matrix
+    tfidf_matrix = vectorizer.fit_transform(data['Project Essay'])
+
+    # Calculate the cosine similarity matrix between the 'topic' and 'text' columns
+    similarity_matrix = cosine_similarity(tfidf_matrix, vectorizer.transform(data['Project Description']))
+
+    # Create a new feature "Title Essay Relativity" in the DataFrame and assign the similarity scores
+    data["Description Essay Relativity"] = similarity_matrix.diagonal()
+
     return data
 
 
