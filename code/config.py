@@ -24,4 +24,5 @@ TRAINING_FEATURES=["Project ID", "Project Type", "Project Subject Category Tree"
                   "Project Resource Category", "School Metro Type", "School Percentage Free Lunch", 
                   "School State", "School County", "Teacher Prefix", "Statement Error Ratio", 
                   "Title Essay Relativity", "Description Essay Relativity"]
-VARIABLES_TO_SCALE=["School Percentage Free Lunch", "Title Essay Relativity", "Description Essay Relativity"]
+VARIABLES_TO_SCALE=["School Percentage Free Lunch", "Statement Error Ratio", 
+                    "Title Essay Relativity", "Description Essay Relativity"]
