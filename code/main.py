@@ -22,9 +22,12 @@ def load_model(model_file_path):
 
 print("Start data pre processing")
 data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
+print("shape 1 = ", data.shape)
 data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
+print("shape 2 = ", data.shape)
 data = dp.impute_data(data)
 print("Complete imputing = ", data.shape)
+print("shape 3 = ", data.shape)
 
 # Define models and parameters
 classifier_1 = LogisticRegression()
@@ -39,6 +42,7 @@ parameters_1 = {"penalty":["l1","l2"]}
 # classifier_3 = svm.SVC(kernel='linear')
 
 data = fe.label_data(data, config.THRESHOLD_RATIO, config.TRAINING_FEATURES)
+print("shape 4 = ", data.shape)
 # export labelled data to csv
 time = datetime.datetime.now()
 file_path = config.DATA_DEST + f"labelled_data - {str(time.strftime('%Y-%m-%d %H:%M:%S'))[:10]}.csv"
