@@ -32,6 +32,10 @@ def impute_data(data: DataFrame):
     data["Teacher Prefix"] = data["Teacher Prefix"] \
         .fillna(data["Teacher Prefix"].mode()[0])
     
+    data["Project Title"] = data["Project Title"].fillna("None")
+    data["Project Essay"] = data["Project Essay"].fillna("None")
+    data["Project Short Description"] = data["Project Short Description"].fillna("None")
+    data["Project Need Statement"] = data["Project Need Statement"].fillna("None")
     
     return data
 
