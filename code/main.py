@@ -28,6 +28,9 @@ print("shape 2 = ", data.shape)
 data = dp.impute_data(data)
 print("Complete imputing = ", data.shape)
 print("shape 3 = ", data.shape)
+data = fe.create_features(data)
+print("shape 3 = ", data.shape)
+print("columns = ", data.columns)
 
 # Define models and parameters
 classifier_1 = LogisticRegression()
