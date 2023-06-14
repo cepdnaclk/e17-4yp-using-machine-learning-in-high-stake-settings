@@ -1,9 +1,9 @@
-DATA_SOURCE="./data/DsDnsPrScTch.csv"
-DATA_DEST="./processed_data/"
+DATA_SOURCE="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/data/DsDnsPrScTch.csv"
+DATA_DEST="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/processed_data/"
 MODEL_DEST="./trained_models/"
 IMAGE_DEST="./model_outputs/figures/"
 
-MAX_ROWS=100000
+MAX_ROWS=10000
 TOTAL_TIME_PERIOD_DAYS=120
 EVAL_PERIOD_DAYS=30
 TRAINING_WINDOW = EVAL_PERIOD_DAYS * 4
@@ -21,7 +21,7 @@ CATEGORICAL_COLS=["Project Type", "Project Subject Category Tree", "Project Subj
                     "School State", "School County", "Teacher Prefix"]
 TRAINING_FEATURES=["Project ID", "Project Type", "Project Subject Category Tree", 
                   "Project Subject Subcategory Tree", "Project Grade Level Category", 
-                  "Project Resource Category", "School Metro Type", 
-                  "School Percentage Free Lunch", "School State", "School County", 
-                  "Teacher Prefix"]
-VARIABLES_TO_SCALE=["School Percentage Free Lunch"]
+                  "Project Resource Category", "School Metro Type", "School Percentage Free Lunch", 
+                  "School State", "School County", "Teacher Prefix", "Statement Error Ratio", 
+                  "Title Essay Relativity", "Description Essay Relativity"]
+VARIABLES_TO_SCALE=["School Percentage Free Lunch", "Title Essay Relativity", "Description Essay Relativity"]
