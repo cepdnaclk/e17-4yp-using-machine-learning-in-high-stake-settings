@@ -33,4 +33,4 @@ ENV/
 env.bak/
 venv.bak/
 
-# code/config.py
+code/config.py
