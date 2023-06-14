@@ -1,7 +1,7 @@
 DATA_SOURCE="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/data/DsDnsPrScTch.csv"
 DATA_DEST="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/processed_data/"
-MODEL_DEST="./trained_models/"
-IMAGE_DEST="./model_outputs/figures/"
+MODEL_DEST="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/trained_models/"
+IMAGE_DEST="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/model_outputs/figures/"
 
 MAX_ROWS=10000
 TOTAL_TIME_PERIOD_DAYS=120
