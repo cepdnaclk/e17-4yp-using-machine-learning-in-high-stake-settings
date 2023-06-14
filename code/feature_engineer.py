@@ -83,7 +83,7 @@ def add_desc_essay_relativity_score(data: DataFrame):
     tfidf_matrix = vectorizer.fit_transform(data['Project Essay'])
 
     # Calculate the cosine similarity matrix between the 'topic' and 'text' columns
-    similarity_matrix = cosine_similarity(tfidf_matrix, vectorizer.transform(data['Project Description']))
+    similarity_matrix = cosine_similarity(tfidf_matrix, vectorizer.transform(data['Project Short Description']))
 
     # Create a new feature "Title Essay Relativity" in the DataFrame and assign the similarity scores
     data["Description Essay Relativity"] = similarity_matrix.diagonal()
