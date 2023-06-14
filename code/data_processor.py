@@ -32,6 +32,7 @@ def impute_data(data: DataFrame):
     data["Teacher Prefix"] = data["Teacher Prefix"] \
         .fillna(data["Teacher Prefix"].mode()[0])
     
+    
     return data
 
 def encode_data(data: DataFrame, categorical_cols: list):

@@ -7,9 +7,18 @@ from datetime import timedelta
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import classification_report
+import language_tool_python
+import nltk
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 import config
 import data_processor as dp
+
+lang_tool = language_tool_python.LanguageTool('en-US')
+nltk.download('stopwords')
+
 
 def standardize_data(x_train, x_test, cols_list):
     """Function for scaling after seperating into train/test."""
@@ -31,8 +40,62 @@ def standardize_data(x_train, x_test, cols_list):
 
     return x_train, x_test
 
+
 def create_features(data: DataFrame):
     pass
+
+
+def add_statement_grammertical_error_feature(data: DataFrame):
+    # Creates a new feature called text size to error ratio
+    data["Statement Error Ratio"] = len(lang_tool.check(
+        str(data["Project Need Statement"]))) / len(str(data["Project Need Statement"]).split())
+    return data
+
+
+
+def add_title_essay_relativity_score(data: DataFrame):
+    # Create a new feature that has the relatedness of title and essay
+    # using cosine similarity
+    stop_words = set(stopwords.words('english'))
+    # Preprocess topic and essay
+    data["_Title"] = ' '.join(
+        [word.lower() for word in str(data["Project Title"]).split() if word.lower() not in stop_words])
+    data["_Essay"] = ' '.join(
+        [word.lower() for word in str(data["Project Essay"]).split() if word.lower() not in stop_words])
+
+    vectorizer = TfidfVectorizer()
+
+    # Calculate TF-IDF vectors & cosine similarity
+    data["Title Essay Relativity"] = cosine_similarity(
+        vectorizer.fit_transform([data["_Title"], data["_Essay"]])[0],
+        vectorizer.fit_transform([data["_Title"], data["_Essay"]])[1]
+    )[0][0]
+    data.drop("_Essay")
+    data.drop("_Title")
+    return data
+
+
+def add_desc_essay_relativity_score(data: DataFrame):
+    # Create a new feature that has the relatedness of description and essay
+    # using cosine similarity
+    stop_words = set(stopwords.words('english'))
+    # Preprocess desc and essay
+    data["_Description"] = ' '.join(
+        [word.lower() for word in str(data["Project Short Description"]).split() if word.lower() not in stop_words])
+    data["_Essay"] = ' '.join(
+        [word.lower() for word in str(data["Project Essay"]).split() if word.lower() not in stop_words])
+
+    vectorizer = TfidfVectorizer()
+
+    # Calculate TF-IDF vectors & cosine similarity
+    data["Title Essay Relativity"] = cosine_similarity(
+        vectorizer.fit_transform([data["_Description"], data["_Essay"]])[0],
+        vectorizer.fit_transform([data["_Description"], data["_Essay"]])[1]
+    )[0][0]
+    data.drop("_Essay")
+    data.drop("_Description")
+    return data
+
 
 def label_data_1(data: DataFrame, threshold: float, select_cols: list):
     # Create new features by aggregating
@@ -48,6 +111,7 @@ def label_data_1(data: DataFrame, threshold: float, select_cols: list):
         lambda x : 0  if x["Fund Ratio"] < threshold  else 1, axis=1)
     select_cols = select_cols + ["Label", "Project Posted Date"]
     return data[select_cols].drop_duplicates()
+
 
 def label_data(data: DataFrame, threshold: float, select_cols: list):
     data["Posted Date to Donation Date"] = data["Donation Received Date"] \
@@ -68,6 +132,7 @@ def label_data(data: DataFrame, threshold: float, select_cols: list):
     select_cols = select_cols + ["Label", "Project Posted Date"]
 
     return data[select_cols].drop_duplicates()
+
 
 def run_pipeline(data, model):
     # Initiate lists to store data
