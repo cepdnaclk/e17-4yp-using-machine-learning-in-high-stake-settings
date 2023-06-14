@@ -42,15 +42,16 @@ def standardize_data(x_train, x_test, cols_list):
 
 
 def create_features(data: DataFrame):
-    pass
-
+    data = add_statement_grammertical_error_feature(data)
+    data = add_title_essay_relativity_score(data)
+    data = add_desc_essay_relativity_score(data)
+    return data
 
 def add_statement_grammertical_error_feature(data: DataFrame):
     # Creates a new feature called text size to error ratio
     data["Statement Error Ratio"] = len(lang_tool.check(
         str(data["Project Need Statement"]))) / len(str(data["Project Need Statement"]).split())
     return data
-
 
 
 def add_title_essay_relativity_score(data: DataFrame):
@@ -69,7 +70,7 @@ def add_title_essay_relativity_score(data: DataFrame):
     data["Title Essay Relativity"] = cosine_similarity(
         vectorizer.fit_transform([data["_Title"], data["_Essay"]])[0],
         vectorizer.fit_transform([data["_Title"], data["_Essay"]])[1]
-    )[0][0]
+    )[0][0] if not (str(data["_Title"]) == "None" or str(data["_Essay"]) == "None") else 0
     data.drop("_Essay")
     data.drop("_Title")
     return data
@@ -88,10 +89,10 @@ def add_desc_essay_relativity_score(data: DataFrame):
     vectorizer = TfidfVectorizer()
 
     # Calculate TF-IDF vectors & cosine similarity
-    data["Title Essay Relativity"] = cosine_similarity(
+    data["Description Essay Relativity"] = cosine_similarity(
         vectorizer.fit_transform([data["_Description"], data["_Essay"]])[0],
         vectorizer.fit_transform([data["_Description"], data["_Essay"]])[1]
-    )[0][0]
+    )[0][0] if not (str(data["_Description"]) == "None" or str(data["_Essay"]) == "None") else 0
     data.drop("_Essay")
     data.drop("_Description")
     return data
