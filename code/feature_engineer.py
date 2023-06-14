@@ -60,10 +60,10 @@ def add_title_essay_relativity_score(data: DataFrame):
     stop_words = set(stopwords.words('english'))
     # Preprocess topic and essay
     data["_Title"] = ' '.join(
-        [word.lower() for word in str(data["Project Title"]).split() if word.lower() not in stop_words])
+        [str(word).lower() for word in data["Project Title"].str.split() if str(word).lower() not in stop_words])
     data["_Essay"] = ' '.join(
-        [word.lower() for word in str(data["Project Essay"]).split() if word.lower() not in stop_words])
-
+        [str(word).lower() for word in data["Project Essay"].str.split() if str(word).lower() not in stop_words])
+    print("Success preprocess columns! ------- 1")
     vectorizer = TfidfVectorizer()
 
     # Calculate TF-IDF vectors & cosine similarity
@@ -82,9 +82,10 @@ def add_desc_essay_relativity_score(data: DataFrame):
     stop_words = set(stopwords.words('english'))
     # Preprocess desc and essay
     data["_Description"] = ' '.join(
-        [word.lower() for word in str(data["Project Short Description"]).split() if word.lower() not in stop_words])
+        [str(word).lower() for word in data["Project Short Description"].str.split() if str(word).lower() not in stop_words])
     data["_Essay"] = ' '.join(
-        [word.lower() for word in str(data["Project Essay"]).split() if word.lower() not in stop_words])
+        [str(word).lower() for word in data["Project Essay"].str.split() if str(word).lower() not in stop_words])
+    print("Success preprocess columns! ------- 2")
 
     vectorizer = TfidfVectorizer()
 
