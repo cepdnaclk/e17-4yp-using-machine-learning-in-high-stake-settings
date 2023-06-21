@@ -162,9 +162,6 @@ def run_pipeline(data, model):
         # Training will be done on data from t_start to t_filter
         # Testing will be done on data from t_filter to t_end
 
-        data_window.drop("Project Posted Date", inplace=True, axis=1)
-        print("Training data shape = ", data_window.shape)
-
         # Scaling
         x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
         print("Training set shape = ", x_test.shape)
