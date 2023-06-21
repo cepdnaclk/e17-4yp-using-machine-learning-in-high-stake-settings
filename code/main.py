@@ -36,7 +36,7 @@ data = fe.create_features(data)
 print("Added New Features, shape = ", data.shape)
 
 # filter training features
-data = data[config.TRAINING_FEATURES]
+data = data[config.TRAINING_FEATURES + ["Label"]]
 print("Filtered training Features, shape = ", data.shape)
 
 # export labelled data to csv
