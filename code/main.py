@@ -22,21 +22,33 @@ def load_model(model_file_path):
 
 print("Start data pre processing")
 data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
-print("shape 1 = ", data.shape)
+
 data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
-print("shape 2 = ", data.shape)
+
 data = dp.impute_data(data)
 print("Complete imputing = ", data.shape)
-print("shape 3 = ", data.shape)
+
+data = fe.label_data(data, config.THRESHOLD_RATIO)
+print("Complete labelling, shape = ", data.shape)
+
+# Create new labels
 data = fe.create_features(data)
-print("shape 3 = ", data.shape)
-print("columns = ", data.columns)
+print("Added New Features, shape = ", data.shape)
+
+# filter training features
+data = data[config.TRAINING_FEATURES]
+print("Filtered training Features, shape = ", data.shape)
+
+# export labelled data to csv
+time = datetime.datetime.now()
+file_path = config.DATA_DEST + f"labelled_data - {str(time.strftime('%Y-%m-%d %H:%M:%S'))[:10]}.csv"
+dp.export_data_frame(data=data, path=file_path)
 
 # Define models and parameters
 classifier_1 = LogisticRegression()
 parameters_1 = {"penalty":["l1","l2"]}
 
-# classifier_2 = RandomForestClassifier(warm_start=True)
+classifier_2 = RandomForestClassifier()
 # parameters_2 = {'max_depth':[2, 3, 4], 
 #                 'n_estimators':[5, 10, 20], 
 #                 'min_samples_split': 2, 
@@ -44,11 +56,8 @@ parameters_1 = {"penalty":["l1","l2"]}
 
 # classifier_3 = svm.SVC(kernel='linear')
 
-data = fe.label_data(data, config.THRESHOLD_RATIO, config.TRAINING_FEATURES)
-print("shape 4 = ", data.shape)
-# export labelled data to csv
-time = datetime.datetime.now()
-file_path = config.DATA_DEST + f"labelled_data - {str(time.strftime('%Y-%m-%d %H:%M:%S'))[:10]}.csv"
-dp.export_data_frame(data=data, path=file_path)
-trained_model = fe.run_pipeline(data, classifier_1)
+data = dp.encode_data(data, config.CATEGORICAL_COLS)
+print("encoded_data.shape = ", data.shape)
+
+trained_model = fe.run_pipeline(data, classifier_2)
 save_model(file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)

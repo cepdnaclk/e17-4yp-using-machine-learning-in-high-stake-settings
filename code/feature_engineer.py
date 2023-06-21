@@ -107,7 +107,7 @@ def label_data_1(data: DataFrame, threshold: float, select_cols: list):
     return data[select_cols].drop_duplicates()
 
 
-def label_data(data: DataFrame, threshold: float, select_cols: list):
+def label_data(data: DataFrame, threshold: float):
     data["Posted Date to Donation Date"] = data["Donation Received Date"] \
                                                  - data["Project Posted Date"]
     data["Posted Date to Donation Date"] = data["Posted Date to Donation Date"] \
@@ -123,9 +123,8 @@ def label_data(data: DataFrame, threshold: float, select_cols: list):
 
     data["Label"] = data.apply(
         lambda x : 0  if x["Fund Ratio"] < threshold  else 1, axis=1)
-    select_cols = select_cols + ["Label", "Project Posted Date"]
 
-    return data[select_cols].drop_duplicates()
+    return data.drop_duplicates()
 
 
 def run_pipeline(data, model):
@@ -136,14 +135,11 @@ def run_pipeline(data, model):
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
     min_t = pd.Timestamp(config.MIN_TIME)
-    time_period = timedelta(days=config.EVAL_PERIOD_DAYS)  
-    training_window = timedelta(days=config.TRAINING_WINDOW)
+    time_period = timedelta(days=config.DONATION_PERIOD)        # 30 days
+    training_window = timedelta(days=config.TRAINING_WINDOW)    # 30 * 4 = 120 days
 
     t_current = min_t
     print("1================", t_current, max_t, training_window)
-    data = dp.encode_data(data, config.CATEGORICAL_COLS)
-    print("encoded_data.shape = ", data.shape)
-
 
     while(t_current < max_t - training_window):
 
@@ -158,18 +154,25 @@ def run_pipeline(data, model):
         data_window = data_window[
             data_window["Project Posted Date"] > pd.to_datetime(t_start)]
         
-        print("final_data.shape = ", data_window.shape)
+        print("iteration_data.shape = ", data_window.shape)
 
         x_train, y_train, x_test, y_test = dp.split_time_series_train_test_data(
             data=data_window, filter_date=t_filter)
+        
+        # Training will be done on data from t_start to t_filter
+        # Testing will be done on data from t_filter to t_end
 
         # Scaling
         x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-        print(x_test.shape)
-        print(x_train.shape)
+        print("Training set shape = ", x_test.shape)
+        print("Testing set shape = ", x_train.shape)
+
+        # Model Training
         model = model.fit(x_train, y_train.values.ravel())
-        y_hat = model.predict(x_test)
-        y_pred = model.predict(x_train)
+
+        # Predicting
+        y_hat = model.predict_proba(x_test)
+        y_pred = model.predict_proba(x_train)
 
         # Evaluate
         cm = confusion_matrix(y_test, y_hat)
