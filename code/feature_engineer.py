@@ -173,7 +173,7 @@ def run_pipeline(data, model):
         # Predicting
         y_hat = model.predict_proba(x_test)
         print("Y hat = ", y_hat)
-        break
+        # break
         # y_pred = model.predict_proba(x_train)
 
         # Evaluate
@@ -193,6 +193,7 @@ def run_pipeline(data, model):
         print(classification_report(y_test, y_hat, output_dict=True))
         print("==============================================================================")
         t_current = t_current + training_window
+        break
     
     return model
         
