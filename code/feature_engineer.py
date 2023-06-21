@@ -171,8 +171,8 @@ def run_pipeline(data, model):
         model = model.fit(x_train, y_train.values.ravel())
 
         # Predicting
-        y_hat = model.predict_proba(x_test)
-        y_pred = model.predict_proba(x_train)
+        y_hat = model.predict(x_test)
+        y_pred = model.predict(x_train)
 
         # Evaluate
         cm = confusion_matrix(y_test, y_hat)
