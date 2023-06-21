@@ -171,20 +171,22 @@ def run_pipeline(data, model):
         model = model.fit(x_train, y_train.values.ravel())
 
         # Predicting
-        y_hat = model.predict(x_test)
-        y_pred = model.predict(x_train)
+        y_hat = model.predict_proba(x_test)
+        print("Y hat = ", y_hat)
+        break
+        # y_pred = model.predict_proba(x_train)
 
         # Evaluate
-        cm = confusion_matrix(y_test, y_hat)
-        sns.heatmap(cm, square=True, annot=True, cbar=False)
-        plt.xlabel('Predicted Value')
-        plt.ylabel('Actual Value')
-        plt.savefig(config.IMAGE_DEST + f"Confusion matrix for {str(t_current)[:10]}")
-        plt.clf()
+        # cm = confusion_matrix(y_test, y_hat)
+        # sns.heatmap(cm, square=True, annot=True, cbar=False)
+        # plt.xlabel('Predicted Value')
+        # plt.ylabel('Actual Value')
+        # plt.savefig(config.IMAGE_DEST + f"Confusion matrix for {str(t_current)[:10]}")
+        # plt.clf()
 
         print("==============================================================================")
-        print("Prediction evaluation scores for training: ")
-        print(classification_report(y_train, y_pred, output_dict=True))
+        # print("Prediction evaluation scores for training: ")
+        # print(classification_report(y_train, y_pred, output_dict=True))
 
 
         print("Prediction evaluation scores for testing: ")
