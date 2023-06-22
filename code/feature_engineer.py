@@ -124,7 +124,7 @@ def label_data(data: DataFrame, threshold: float):
         data["Total Donations In The Period"] / data["Project Cost"], 1)
 
     data["Label"] = data.apply(
-        lambda x : 1  if x["Fund Ratio"] < threshold  else 0, axis=1)
+        lambda x : 0  if x["Fund Ratio"] < threshold  else 1, axis=1)
 
     return data.drop_duplicates()
 
