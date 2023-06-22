@@ -159,7 +159,7 @@ def run_pipeline(data, model):
     training_window = timedelta(days=config.TRAINING_WINDOW)    # 30 * 4 = 120 days
 
     t_current = min_t
-    print("1================", t_current, max_t, training_window)
+    print("================\n", t_current, max_t, training_window)
 
     probability_thresholds = []
     model_eval_metrics =  {"accuracy": [], "f1_score": [], "precision": []}
@@ -187,8 +187,6 @@ def run_pipeline(data, model):
 
         # Scaling
         x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-        print("Training set shape = ", x_train.shape)
-        print("Testing set shape = ", x_test.shape)
 
         # Model Training
         model = model.fit(x_train, y_train.values.ravel())
@@ -206,6 +204,10 @@ def run_pipeline(data, model):
         model_eval_metrics["f1_score"].append(f1)
         
         print("==============================================================================")
+        print(f"Traing  from {str(t_start)[:10]} to {str(t_filter)[:10]}")
+        print(f"Testing from {str(t_filter)[:10]} to {str(t_end)[:10]}")
+        print("Training set shape = ", x_train.shape)
+        print("Testing set shape = ", x_test.shape)
         print("Prediction evaluation scores for testing: ")
         print("best_threshold = ", best_threshold)
         print("F1 score = ", f1)
@@ -227,8 +229,8 @@ def run_pipeline(data, model):
 
 
         # print(classification_report(y_test, y_hat, output_dict=True))
-        print("==============================================================================")
-        t_current = t_current + training_window
+        print("==============================================================================\n")
+        t_current = t_current + time_period
     
     print("")
     print("probability_thresholds = ", probability_thresholds)
