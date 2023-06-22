@@ -198,8 +198,8 @@ def run_pipeline(data, model):
 
         print("best_threshold = ", best_threshold)
 
-        f1 = f1_score(y_test, y_hat)
-        accuracy = accuracy_score(y_test, y_hat)
+        f1 = f1_score(y_test, best_prediction)
+        accuracy = accuracy_score(y_test, best_prediction)
 
         print("F1 score = ", f1)
         print("Accuracy = ", accuracy)
