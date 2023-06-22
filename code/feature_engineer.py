@@ -105,6 +105,9 @@ def label_data_1(data: DataFrame, threshold: float, select_cols: list):
     select_cols = select_cols + ["Label", "Project Posted Date"]
     return data[select_cols].drop_duplicates()
 
+def get_best_label_threshold(data: DataFrame):
+    actual_donation_period = 120
+
 
 def label_data(data: DataFrame, threshold: float):
     data["Posted Date to Donation Date"] = data["Donation Received Date"] \
@@ -121,7 +124,7 @@ def label_data(data: DataFrame, threshold: float):
         data["Total Donations In The Period"] / data["Project Cost"], 1)
 
     data["Label"] = data.apply(
-        lambda x : 0  if x["Fund Ratio"] < threshold  else 1, axis=1)
+        lambda x : 1  if x["Fund Ratio"] < threshold  else 0, axis=1)
 
     return data.drop_duplicates()
 
