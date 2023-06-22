@@ -6,7 +6,7 @@ from pandas.core.frame import DataFrame
 from datetime import timedelta
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, f1_score, accuracy_score
 import language_tool_python
 import nltk
 from nltk.corpus import stopwords
@@ -44,14 +44,13 @@ def create_features(data: DataFrame):
     data = add_statement_grammertical_error_feature(data)
     data = add_title_essay_relativity_score(data)
     data = add_desc_essay_relativity_score(data)
-    return data
+    return data.drop_duplicates()
 
 def add_statement_grammertical_error_feature(data: DataFrame):
     # Creates a new feature called text size to error ratio
     data["Statement Error Ratio"] = len(lang_tool.check(
         str(data["Project Need Statement"]))) / len(str(data["Project Need Statement"]).split())
     return data
-
 
 def add_title_essay_relativity_score(data: DataFrame):
     # Create a new feature that has the relatedness of title and essay
@@ -127,6 +126,27 @@ def label_data(data: DataFrame, threshold: float):
     return data.drop_duplicates()
 
 
+def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
+    thresholds = list(np.arange(0.3, 0.7, 0.05).round(2))
+    best_threshold = None
+    best_f1_score = 0.0
+    best_prediction = None
+
+    for threshold in thresholds:
+        # Convert probabilities to binary predictions based on the threshold
+        binary_predictions = (proba_predictions[:, 1] >= threshold).astype(int)
+
+        # Calculate F1 score
+        f1 = f1_score(y_test, binary_predictions)
+
+        if f1 > best_f1_score:
+            best_f1_score = f1
+            best_threshold = threshold
+            best_prediction = binary_predictions
+    print("best_f1_score = ", best_f1_score)
+    return best_threshold, best_prediction
+
+
 def run_pipeline(data, model):
     # Initiate lists to store data
     t_current_list = []
@@ -164,8 +184,8 @@ def run_pipeline(data, model):
 
         # Scaling
         x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-        print("Training set shape = ", x_test.shape)
-        print("Testing set shape = ", x_train.shape)
+        print("Training set shape = ", x_train.shape)
+        print("Testing set shape = ", x_test.shape)
 
         # Model Training
         model = model.fit(x_train, y_train.values.ravel())
@@ -173,6 +193,17 @@ def run_pipeline(data, model):
         # Predicting
         y_hat = model.predict_proba(x_test)
         print("Y hat = ", y_hat)
+
+        best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
+
+        print("best_threshold = ", best_threshold)
+
+        f1 = f1_score(y_test, y_hat)
+        accuracy = accuracy_score(y_test, y_hat)
+
+        print("F1 score = ", f1)
+        print("Accuracy = ", accuracy)
+
         # break
         # y_pred = model.predict_proba(x_train)
 
@@ -190,7 +221,7 @@ def run_pipeline(data, model):
 
 
         print("Prediction evaluation scores for testing: ")
-        print(classification_report(y_test, y_hat, output_dict=True))
+        # print(classification_report(y_test, y_hat, output_dict=True))
         print("==============================================================================")
         t_current = t_current + training_window
         break
