@@ -143,7 +143,7 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
             best_f1_score = f1
             best_threshold = threshold
             best_prediction = binary_predictions
-    print("best_f1_score = ", best_f1_score)
+    # print("best_f1_score = ", best_f1_score)
     return best_threshold, best_prediction
 
 
@@ -160,6 +160,9 @@ def run_pipeline(data, model):
 
     t_current = min_t
     print("1================", t_current, max_t, training_window)
+
+    probability_thresholds = []
+    model_eval_metrics =  {"accuracy": [], "f1_score": [], "precision": []}
 
     while(t_current < max_t - training_window):
 
@@ -192,15 +195,19 @@ def run_pipeline(data, model):
 
         # Predicting
         y_hat = model.predict_proba(x_test)
-        print("Y hat = ", y_hat)
 
         best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
-
-        print("best_threshold = ", best_threshold)
 
         f1 = f1_score(y_test, best_prediction)
         accuracy = accuracy_score(y_test, best_prediction)
 
+        probability_thresholds.append(best_threshold)
+        model_eval_metrics["accuracy"].append(accuracy)
+        model_eval_metrics["f1_score"].append(f1)
+        
+        print("==============================================================================")
+        print("Prediction evaluation scores for testing: ")
+        print("best_threshold = ", best_threshold)
         print("F1 score = ", f1)
         print("Accuracy = ", accuracy)
 
@@ -215,16 +222,24 @@ def run_pipeline(data, model):
         # plt.savefig(config.IMAGE_DEST + f"Confusion matrix for {str(t_current)[:10]}")
         # plt.clf()
 
-        print("==============================================================================")
         # print("Prediction evaluation scores for training: ")
         # print(classification_report(y_train, y_pred, output_dict=True))
 
 
-        print("Prediction evaluation scores for testing: ")
         # print(classification_report(y_test, y_hat, output_dict=True))
         print("==============================================================================")
         t_current = t_current + training_window
-        break
+    
+    print("")
+    print("probability_thresholds = ", probability_thresholds)
+    print("accuracies = ", model_eval_metrics["accuracy"])
+    print("f1_scores = ", model_eval_metrics["f1_score"])
+
+    print("")
+    print("Average accuracy = ", sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]))
+    print("Average f1_score = ", sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]))
+    print("Average probability_threshold = ", sum(probability_thresholds)/len(probability_thresholds))
+
     
     return model
         
