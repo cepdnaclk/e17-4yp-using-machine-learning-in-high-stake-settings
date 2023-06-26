@@ -59,5 +59,6 @@ classifier_2 = RandomForestClassifier()
 data = dp.encode_data(data, config.CATEGORICAL_COLS)
 print("encoded_data.shape = ", data.shape)
 
-trained_model = fe.run_pipeline(data, classifier_2)
+trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data, classifier_2)
+fe.plot_k_fold_evaluation_metrics(eval_metrics)
 save_model(file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
