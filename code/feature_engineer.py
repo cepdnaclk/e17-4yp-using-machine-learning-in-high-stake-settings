@@ -167,6 +167,8 @@ def run_pipeline(data, model):
     probability_thresholds = []
     model_eval_metrics =  {"accuracy": [], "f1_score": [], "precision": []}
 
+    folds = 0
+
     while(t_current < max_t - training_window):
 
         t_current_list += [t_current]
@@ -234,18 +236,39 @@ def run_pipeline(data, model):
         # print(classification_report(y_test, y_hat, output_dict=True))
         print("==============================================================================\n")
         t_current = t_current + time_period
+        folds += 1
     
     print("")
     print("probability_thresholds = ", probability_thresholds)
     print("accuracies = ", model_eval_metrics["accuracy"])
     print("f1_scores = ", model_eval_metrics["f1_score"])
 
+    avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
+                   "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
+                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds)}
+
     print("")
-    print("Average accuracy = ", sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]))
-    print("Average f1_score = ", sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]))
-    print("Average probability_threshold = ", sum(probability_thresholds)/len(probability_thresholds))
+    print("Average accuracy = ", avg_metrics["avg_accuracy"])
+    print("Average f1_score = ", avg_metrics["avg_f1_score"])
+    print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
 
     
-    return model
-        
+
+    # Filter rows for the relevant time period
+    data_window = data[
+        data["Project Posted Date"] < pd.to_datetime(max_t)]
+    data_window = data_window[
+        data_window["Project Posted Date"] > pd.to_datetime(min_t)]
+    t_filter = max_t - folds * time_period
+
+    x_train, y_train, x_test, y_test = dp.split_time_series_train_test_data(
+            data=data_window, filter_date=t_filter)
+    
+    # Scaling
+    x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
+
+    # Model Training
+    model = model.fit(x_train, y_train.values.ravel())
+
+    return model, model_eval_metrics, avg_metrics
 
