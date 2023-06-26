@@ -286,5 +286,5 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
     plt.title("Model's Accuracy and F1 Score for Each validation fold")
     plt.xticks(x_positions, x_labels)
     plt.legend()
-    plt.savefig('cross_validation_plot.png')
+    plt.savefig(config.IMAGE_DEST+'cross_validation_plot.png')
     plt.show()
