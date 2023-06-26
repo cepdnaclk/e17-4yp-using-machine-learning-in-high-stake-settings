@@ -272,3 +272,19 @@ def run_pipeline(data, model):
 
     return model, model_eval_metrics, avg_metrics
 
+
+def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
+    x_labels = list(model_eval_metrics.keys())
+    x_positions = np.arange(len(x_labels))
+    bar_width = 0.1
+
+    plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
+    plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
+    
+    plt.xlabel('Evaluation Metrics')
+    plt.ylabel('Values')
+    plt.title("Model's Accuracy and F1 Score for Each validation fold")
+    plt.xticks(x_positions, x_labels)
+    plt.legend()
+    plt.savefig('cross_validation_plot.png')
+    plt.show()
