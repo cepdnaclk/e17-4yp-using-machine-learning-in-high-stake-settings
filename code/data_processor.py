@@ -28,9 +28,18 @@ def impute_data(data: DataFrame):
 
     data["School County"] = data["School County"] \
         .fillna(data["School County"].mode()[0])
+    
+    data["School Name"] = data["School Name"].fillna("Unknown")
+    data["School District"] = data["School District"].fillna("Unknown")
+    data["School State"] = data["School State"].fillna("Unknown")
 
     data["Teacher Prefix"] = data["Teacher Prefix"] \
         .fillna(data["Teacher Prefix"].mode()[0])
+    
+    data["Project Title"] = data["Project Title"].fillna("No Title")
+    data["Project Essay"] = data["Project Essay"].fillna("None")
+    data["Project Short Description"] = data["Project Short Description"].fillna("No Description")
+    data["Project Need Statement"] = data["Project Need Statement"].fillna("None")
     
     return data
 
