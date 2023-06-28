@@ -165,7 +165,7 @@ def run_pipeline(data, model):
     print("================\n", t_current, max_t, training_window)
 
     probability_thresholds = []
-    model_eval_metrics =  {"accuracy": [], "f1_score": [], "precision": []}
+    model_eval_metrics =  {"accuracy": [], "f1_score": []}
 
     folds = 0
 
@@ -274,17 +274,18 @@ def run_pipeline(data, model):
 
 
 def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
-    x_labels = list(model_eval_metrics.keys())
+    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
     x_positions = np.arange(len(x_labels))
-    bar_width = 0.1
-
+    bar_width = 0.2
+    
+    print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
     plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
     plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
     
     plt.xlabel('Evaluation Metrics')
     plt.ylabel('Values')
     plt.title("Model's Accuracy and F1 Score for Each validation fold")
-    plt.xticks(x_positions, x_labels)
+    plt.xticks(x_positions, x_labels, rotation = 90)
     plt.legend()
     plt.savefig(config.IMAGE_DEST+'cross_validation_plot.png')
     plt.show()
