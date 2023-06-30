@@ -165,7 +165,7 @@ def run_pipeline(data, model):
     print("================\n", t_current, max_t, training_window)
 
     probability_thresholds = []
-    model_eval_metrics =  {"accuracy": [], "f1_score": [], "precision": []}
+    model_eval_metrics =  {"accuracy": [], "f1_score": [], "model_score": []}
 
     folds = 0
 
@@ -199,14 +199,18 @@ def run_pipeline(data, model):
         # Predicting
         y_hat = model.predict_proba(x_test)
 
+        # Find the best probability threshold for classifying
         best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
 
+        # Evaluate the model
         f1 = f1_score(y_test, best_prediction)
         accuracy = accuracy_score(y_test, best_prediction)
+        model_score = model.score(x_test, y_test)
 
         probability_thresholds.append(best_threshold)
         model_eval_metrics["accuracy"].append(accuracy)
         model_eval_metrics["f1_score"].append(f1)
+        model_eval_metrics["model_score"].append(model_score)
         
         print("==============================================================================")
         print(f"Traing  from {str(t_start)[:10]} to {str(t_filter)[:10]}")
@@ -217,6 +221,7 @@ def run_pipeline(data, model):
         print("best_threshold = ", best_threshold)
         print("F1 score = ", f1)
         print("Accuracy = ", accuracy)
+        print("Model score = ", model_score)
 
         # break
         # y_pred = model.predict_proba(x_train)
@@ -242,14 +247,17 @@ def run_pipeline(data, model):
     print("probability_thresholds = ", probability_thresholds)
     print("accuracies = ", model_eval_metrics["accuracy"])
     print("f1_scores = ", model_eval_metrics["f1_score"])
+    print("model_scores = ", model_eval_metrics["model_score"])
 
     avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
                    "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
+                   "avg_model_score": sum(model_eval_metrics["model_score"])/len(model_eval_metrics["model_score"]),
                    "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds)}
 
     print("")
     print("Average accuracy = ", avg_metrics["avg_accuracy"])
     print("Average f1_score = ", avg_metrics["avg_f1_score"])
+    print("Average model score = ", avg_metrics["avg_model_score"])
     print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
 
     
@@ -274,17 +282,31 @@ def run_pipeline(data, model):
 
 
 def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
-    x_labels = list(model_eval_metrics.keys())
+    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
     x_positions = np.arange(len(x_labels))
-    bar_width = 0.1
-
+    bar_width = 0.2
+    
+    # Plot accuracy and f1 score for all the folds
+    print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
     plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
     plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
     
     plt.xlabel('Evaluation Metrics')
     plt.ylabel('Values')
     plt.title("Model's Accuracy and F1 Score for Each validation fold")
-    plt.xticks(x_positions, x_labels)
+    plt.xticks(x_positions, x_labels, rotation = 90)
     plt.legend()
     plt.savefig(config.IMAGE_DEST+'cross_validation_plot.png')
     plt.show()
+
+    # Plot the model accuracy for all the folds
+    plt.cla()
+    plt.plot(x_labels, model_eval_metrics["model_score"])
+
+    plt.xlabel('Fold')
+    plt.ylabel('Model Score')
+    plt.title("Model Score for each fold")
+    plt.xticks(x_positions, x_labels, rotation = 90)
+    plt.savefig(config.IMAGE_DEST+'model_score_plot.png')
+    plt.show()
+

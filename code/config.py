@@ -1,7 +1,10 @@
-DATA_SOURCE="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/data/DsDnsPrScTch.csv"
-DATA_DEST="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/processed_data/"
-MODEL_DEST="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/trained_models/"
-IMAGE_DEST="/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/model_outputs/figures/"
+
+# ROOT = "/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/"
+ROOT = "./"
+DATA_SOURCE=ROOT + "data/DsDnsPrScTch.csv"
+DATA_DEST=ROOT + "processed_data/"
+MODEL_DEST=ROOT + "trained_models/"
+IMAGE_DEST=ROOT + "model_outputs/figures/"
 
 MAX_ROWS=10000
 
