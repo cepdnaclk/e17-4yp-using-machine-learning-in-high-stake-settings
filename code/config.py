@@ -5,6 +5,8 @@ DATA_SOURCE=ROOT + "data/DsDnsPrScTch.csv"
 DATA_DEST=ROOT + "processed_data/"
 MODEL_DEST=ROOT + "trained_models/"
 IMAGE_DEST=ROOT + "model_outputs/figures/"
+LIME_DEST=ROOT + "model_outputs/lime/"
+SHAP_DEST=ROOT + "model_outputs/shap/"
 
 MAX_ROWS=10000
 
