@@ -6,7 +6,7 @@ from pandas.core.frame import DataFrame
 from datetime import timedelta
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import classification_report, f1_score, accuracy_score
+from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score
 import language_tool_python
 import nltk
 from nltk.corpus import stopwords
@@ -148,6 +148,43 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
             best_prediction = binary_predictions
     # print("best_f1_score = ", best_f1_score)
     return best_threshold, best_prediction
+
+
+# Function to observe PR to select the best k
+def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: int, k_gap: int, y_test, t_current):
+    # Temp: consider 0 for failing projects and 1 for projects getting fully funded in four months
+    # Select the probabilities for label 1
+    probabilities = proba_predictions[:, 1]
+    # Rank the probabilities in descending order
+    temp = (-1 * probabilities).argsort()
+    ranks = np.empty_like(temp)
+    ranks[temp] = np.arange(len(probabilities))
+
+    # Create new labels based on the k value and plot precision and recall
+    precision = []
+    recall = []
+    k_value = []
+    new_labels = []
+    for k in range(k_start, k_end+k_gap, k_gap):
+        k_labels = (ranks <= k).astype(int)
+        new_labels.append(k_labels)
+        k_value.append(k)
+        k_precision = precision_score(y_test, k_labels)
+        k_recall = recall_score(y_test, k_labels)
+        precision.append(k_precision)
+        recall.append(k_recall)
+
+    # Plot the prk curve
+    plt.cla()
+    plt.plot(k_value, precision, label='precision')
+    plt.plot(k_value, recall, label='recall')
+    plt.xlabel('Value of k')
+    plt.title("Model's Precision and Recall for Varying k")
+    plt.legend()
+    plt.savefig(config.K_PROJECTS_DEST+ f"prk_curve_for_{t_current[:10]}")
+    plt.show()
+
+    return
 
 
 def run_pipeline(data, model):
