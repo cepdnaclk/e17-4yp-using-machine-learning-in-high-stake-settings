@@ -42,9 +42,7 @@ class Data:
     def preprocess_data(self):
         if(self.preprocessor is None):
             raise ValueError("Preprocessor must be set")
-        
-        print(self.preprocessor)
-        
+                
         
         # for preprocess in self.preprocessors:
         with config_context(transform_output="pandas"):
@@ -116,9 +114,6 @@ class DataBuilder:
     
 from feature_filter import FeatureFilter
     
-    
-    
-        
 if __name__ == "__main__":
     
     data = DataBuilder()
@@ -132,7 +127,7 @@ if __name__ == "__main__":
     
     data = DataBuilder()\
         .set_file_path("./test.csv")\
-        .add_preprocessor(FeatureFilter(['Project ID',"unmapped: 0"]))\
+        .add_preprocessor(FeatureFilter(['ID',"Unnamed:"]))\
         .build()
 
     data.preprocess_data()
@@ -142,18 +137,3 @@ if __name__ == "__main__":
         
     print(data.get_preprocessed_data())
     
-    
-    from abc import ABC, abstractmethod
-from sklearn.compose import ColumnTransformer
-import pandas as pd
-
-class Preprocessor(ABC):
-    @abstractmethod
-    def fit_transform(self, data):
-        pass
-
-class NumericPreprocessor(Preprocessor):
-    def fit_transform(self, data):
-        numeric_features = data.select_dtypes(include=['float64', 'int64']).columns
-        numeric_transformer = ColumnTransformer(transformers=[('num', 'passthrough', numeric_features)])
-        return numeric_transformer.fit_transform(data)

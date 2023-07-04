@@ -7,44 +7,43 @@ class Preprocessor(ABC):
         pass
     
 class FeatureFilter(BaseEstimator, TransformerMixin):
-    def __init__(self, remove_features):
-        print("hiii",remove_features)
-        self.remove_features = remove_features
+    def __init__(self, _remove_features, exact= False):
+        self._remove_features = _remove_features
+        self._features = None
+        self.exact = exact
         
     def fit(self, X, y=None):
-        print("hi2")
         
         # FeatureFilter doesn't require fitting, so this method is a no-op
         # return self
         return self
+
+    def _set_features(self, data):
+        
+        #! optimize
+        should_remove_feature = []
+        for i in data.columns:
+            for j in self._remove_features:
+                if j.lower() in i.lower():
+                    should_remove_feature.append(i)
+                
+        self._features = should_remove_feature
+        
+        
+        return
+        
+        
+        
+        
     
     def transform(self, X):
-        # FeatureFilter doesn't require fitting, so this method is a no-op
-        # return self
-        print("_"*10)
-        # Select only the specified features from the input X
         
-        should_remove_feature = []
-        for i in X.columns:
-            if "Unnamed:" in i.split(" ") or "ID" in i.split(" "):
-                should_remove_feature.append(i)
+        if(self.exact):
+           #! validate
+            return X.drop(columns=self._remove_features, axis=1)
                 
-        self.remove_features = should_remove_feature
-        print("should_remove_feature")
-        
-        return X.drop(columns=should_remove_feature, axis=1)
+        self._set_features(X)
+        print(f"Columns : {self._features} are removed from the dataset")
+        return X.drop(columns=self._features, axis=1)
     
-    # def fit_transform(self, X):
-    #     print("_"*10)
-    #     # Select only the specified features from the input X
-        
-    #     should_remove_feature = []
-    #     for i in X.columns:
-    #         if "Unnamed:" in i.split(" ") or "ID" in i.split(" "):
-    #             should_remove_feature.append(i)
-                
-        
-    #     print(should_remove_feature)
-        
-    #     return X.drop(columns=should_remove_feature)
     
