@@ -7,6 +7,7 @@ MODEL_DEST=ROOT + "trained_models/"
 IMAGE_DEST=ROOT + "model_outputs/figures/"
 LIME_DEST=ROOT + "model_outputs/lime/"
 SHAP_DEST=ROOT + "model_outputs/shap/"
+K_PROJECTS_DEST=IMAGE_DEST + "k_projects/"
 
 MAX_ROWS=10000
 
