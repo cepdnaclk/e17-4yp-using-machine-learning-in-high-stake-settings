@@ -186,8 +186,96 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
 
     return
 
+def cross_validate(data, model):
+    # Initiate timing variables
+    max_t = pd.Timestamp(config.MAX_TIME)
+    min_t = pd.Timestamp(config.MIN_TIME)
+    shift_period = timedelta(days=config.LEAK_OFFSET)   # 4 months
+    fold_period = timedelta(days=config.WINDOW)    # 15 months
+
+    time_period = timedelta(days=config.DONATION_PERIOD)        # 30 days
+
+    t_current = max_t
+    # print("================\n", t_current, max_t, training_window)
+
+    probability_thresholds = []
+    model_eval_metrics =  {"accuracy": [], "f1_score": [], "model_score": []}
+
+    folds = 0
+
+    while t_current > min_t + fold_period:
+        start_date = t_current - fold_period
+
+        x_train, y_train, x_test, y_test = dp.split_temporal_train_test_data(
+            data=data,
+            start_date=start_date
+        )
+
+        # Scaling
+        x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
+
+        # Model Training
+        model = model.fit(x_train, y_train.values.ravel())
+
+        # Predicting
+        y_hat = model.predict_proba(x_test)
+
+        # Find the best probability threshold for classifying
+        best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
+
+        # Evaluate the model
+        f1 = f1_score(y_test, best_prediction)
+        accuracy = accuracy_score(y_test, best_prediction)
+        model_score = model.score(x_test, y_test)
+
+        probability_thresholds.append(best_threshold)
+        model_eval_metrics["accuracy"].append(accuracy)
+        model_eval_metrics["f1_score"].append(f1)
+        model_eval_metrics["model_score"].append(model_score)
+        
+        print(f"======================================FOLD==== {folds+1}")
+        train_end = start_date + timedelta(config.TRAIN_SIZE)
+        test_start = train_end + timedelta(config.LEAK_OFFSET)
+        test_end = test_start + timedelta(config.TEST_SIZE)
+        print(f"Traing  from {str(start_date)[:10]} to {str(train_end)[:10]}")
+        print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
+        print("Training set shape = ", x_train.shape)
+        print("Testing set shape = ", x_test.shape)
+        print("Prediction evaluation scores for testing: ")
+        print("best_threshold = ", best_threshold)
+        print("F1 score = ", f1)
+        print("Accuracy = ", accuracy)
+        print("Model score = ", model_score)
+
+        t_current -= shift_period
+        folds += 1
+    
+    return model_eval_metrics, probability_thresholds
 
 def run_pipeline(data, model):
+    model_eval_metrics, probability_thresholds = cross_validate(data, model)
+    print("")
+    print("probability_thresholds = ", probability_thresholds)
+    print("accuracies = ", model_eval_metrics["accuracy"])
+    print("f1_scores = ", model_eval_metrics["f1_score"])
+    print("model_scores = ", model_eval_metrics["model_score"])
+
+    avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
+                   "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
+                   "avg_model_score": sum(model_eval_metrics["model_score"])/len(model_eval_metrics["model_score"]),
+                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds)}
+
+    print("")
+    print("Average accuracy = ", avg_metrics["avg_accuracy"])
+    print("Average f1_score = ", avg_metrics["avg_f1_score"])
+    print("Average model score = ", avg_metrics["avg_model_score"])
+    print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
+
+    return model, model_eval_metrics, avg_metrics
+
+
+
+def run_pipeline_old(data, model):
     # Initiate lists to store data
     t_current_list = []
     t_current_accuracy = []
@@ -324,7 +412,7 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
     bar_width = 0.2
     
     # Plot accuracy and f1 score for all the folds
-    print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
+    # print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
     plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
     plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
     
