@@ -2,6 +2,7 @@ import config
 import pandas as pd
 import numpy as np
 from pandas.core.frame import DataFrame
+from datetime import timedelta
 
 def load_data_to_df(path: str, rows: int=None):
     if rows:
@@ -62,8 +63,46 @@ def split_time_series_train_test_data(data: DataFrame, filter_date: str):
 
     return x_train, y_train, x_test, y_test
 
+def split_temporal_train_test_data(
+        data: DataFrame,
+        start_date: str,
+        train_months: int = 6, 
+        test_months: int = 1, 
+        leak_offset: int = 4) -> DataFrame:
+    train_start = pd.Timestamp(start_date)
+    train_end = train_start + timedelta(days=train_months*30)
+    test_start = train_end + timedelta(days=leak_offset*30)
+    test_end = test_start + timedelta(days=test_months*30)
 
+    print("-----")
+    print(f"train {str(train_start)[:10]} - {str(train_end)[:10]}")
+    print(f"test  {str(test_start)[:10]} - {str(test_end)[:10]}")
 
+    train_set = data[
+        (data["Project Posted Date"] > pd.to_datetime(train_start))
+        ]
+    train_set = data[
+        (data["Project Posted Date"] < pd.to_datetime(train_end))
+        ].drop(["Project ID", "Project Posted Date"], axis=1)
+    
+    x_train = train_set.loc[:, train_set.columns != "Label"]
+    y_train = train_set.loc[:, ["Label"]]
+    
+    test_set = data[
+        (data["Project Posted Date"] > pd.to_datetime(test_start))]
+    test_set = data[
+        (data["Project Posted Date"] < pd.to_datetime(test_end))
+        ].drop(["Project ID", "Project Posted Date"], axis=1)
+    
+    x_test = test_set.loc[:, test_set.columns != "Label"]
+    y_test = test_set.loc[:, ["Label"]]
+
+    print("Training set shape = ", x_train.shape)
+    print("Testing set shape = ", x_test.shape)
+    print("-----")
+    
+    return x_train, y_train, x_test, y_test
+    
 if __name__ == "__main__":
     print("Start data pre processing")
     data = load_data_to_df(config.DATA_SOURCE, rows=10)
