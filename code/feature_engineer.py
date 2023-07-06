@@ -6,7 +6,7 @@ from pandas.core.frame import DataFrame
 from datetime import timedelta
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_curve, roc_auc_score, precision_recall_curve
 import language_tool_python
 import nltk
 from nltk.corpus import stopwords
@@ -165,6 +165,10 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
     recall = []
     k_value = []
     new_labels = []
+    precision_recall_smallest_gap = 1.0
+    best_k = None
+    best_labels = None
+
     for k in range(k_start, k_end+k_gap, k_gap):
         k_labels = (ranks <= k).astype(int)
         new_labels.append(k_labels)
@@ -173,6 +177,16 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
         k_recall = recall_score(y_test, k_labels)
         precision.append(k_precision)
         recall.append(k_recall)
+
+        # Find the smallest gap between precision and recall
+        difference = abs(k_precision - k_recall)
+        if precision_recall_smallest_gap >= difference:
+            precision_recall_smallest_gap = difference
+            best_k = k
+            best_labels = k_labels
+
+    # Print the k with the minimum difference between P and R 
+    #print(f"K with the minimum difference between P and R: {best_k}")
 
     # Plot the prk curve
     plt.cla()
@@ -184,7 +198,69 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
     plt.savefig(config.K_PROJECTS_DEST+ f"prk_curve_for_{t_current[:10]}")
     plt.show()
 
-    return
+    return k_value, precision, recall, new_labels, best_k, best_labels
+
+
+def plot_roc_curve(proba_predictions, y_test, t_current):
+
+    # Get the probabilities for class 1
+    probabilities = proba_predictions[:, 1]
+    # Find the ROC curve and get the threshold list
+    fpr, tpr, thresholds = roc_curve(y_test, probabilities)
+    # Calculate the distance of each point on the ROC curve to the top-left corner
+    distances = np.sqrt((1 - tpr) ** 2 + fpr ** 2)
+
+    # Find the index of the point with the minimum distance
+    best_index = np.argmin(distances)
+
+    # Get the corresponding threshold value
+    best_threshold = thresholds[best_index]
+
+    #print(f"Best Threshold: {best_threshold} for {t_current[: 10]}")
+
+    # Find the AUC
+    auc = round(roc_auc_score(y_test, probabilities), 4)
+    # Plot the curve and save
+    plt.plot(fpr,tpr,label="AUC="+str(auc))
+    plt.title("ROC curve")
+    plt.axis("square")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend()
+    plt.savefig(config.ROC_CURVE_DEST+ f"roc_curve_for_{t_current[: 10]}")
+    plt.show()
+
+    return best_threshold
+
+
+def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
+
+    # Get the probabilities for class 1
+    probabilities = proba_predictions[:, 1]
+    # Find the P-R curve and get the threshold list
+    precision, recall, thresholds = precision_recall_curve(y_test, probabilities)
+    # Calculate the distance of each point on the P-R curve to the top-right corner
+    distances = np.sqrt((1 - precision) ** 2 + (1 - recall) ** 2)
+
+    # Find the index of the point with the minimum distance
+    best_index = np.argmin(distances)
+
+    # Get the corresponding threshold value
+    best_threshold = thresholds[best_index]
+
+    #print(f"Best Threshold: {best_threshold} for {t_current[: 10]}")
+    
+
+    # Plot the curve and save
+    plt.plot(recall, precision)
+    plt.title("Precision vs Recall Curve")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.savefig(config.P_VS_R_CURVE_DEST+ f"precision_vs_recall_curve_for_{t_current[: 10]}")
+    plt.show()
+
+    return best_threshold
+
 
 def cross_validate(data, model):
     # Initiate timing variables
@@ -222,6 +298,10 @@ def cross_validate(data, model):
 
         # Find the best probability threshold for classifying
         best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
+        # Observing the best threshold using different methods
+        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk = prk_curve_for_top_k_projects(y_hat, 100, 1100, 100, y_test, t_current)
+        best_threshold_roc = plot_roc_curve(y_hat, y_test, t_current)
+        best_threshold_pr = plot_precision_vs_recall_curve(y_hat, y_test, t_current)
 
         # Evaluate the model
         f1 = f1_score(y_test, best_prediction)
@@ -232,6 +312,7 @@ def cross_validate(data, model):
         model_eval_metrics["accuracy"].append(accuracy)
         model_eval_metrics["f1_score"].append(f1)
         model_eval_metrics["model_score"].append(model_score)
+
         
         print(f"======================================FOLD==== {folds+1}")
         train_end = start_date + timedelta(config.TRAIN_SIZE)
@@ -243,6 +324,9 @@ def cross_validate(data, model):
         print("Testing set shape = ", x_test.shape)
         print("Prediction evaluation scores for testing: ")
         print("best_threshold = ", best_threshold)
+        print(f"K with the minimum difference between P and R: {best_k}")
+        print(f"Best Threshold from ROC: {best_threshold_roc}")
+        print(f"Best Threshold from P-R curve: {best_threshold_pr}")
         print("F1 score = ", f1)
         print("Accuracy = ", accuracy)
         print("Model score = ", model_score)
