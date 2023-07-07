@@ -195,7 +195,7 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
     plt.xlabel('Value of k')
     plt.title("Model's Precision and Recall for Varying k")
     plt.legend()
-    plt.savefig(config.K_PROJECTS_DEST+ f"prk_curve_for_{t_current[:10]}")
+    plt.savefig(config.K_PROJECTS_DEST+ f"prk_curve_for_{str(t_current)[:10]}")
     plt.show()
 
     return k_value, precision, recall, new_labels, best_k, best_labels
@@ -227,7 +227,7 @@ def plot_roc_curve(proba_predictions, y_test, t_current):
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.legend()
-    plt.savefig(config.ROC_CURVE_DEST+ f"roc_curve_for_{t_current[: 10]}")
+    plt.savefig(config.ROC_CURVE_DEST+ f"roc_curve_for_{str(t_current)[: 10]}")
     plt.show()
 
     return best_threshold
@@ -256,7 +256,7 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
     plt.title("Precision vs Recall Curve")
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.savefig(config.P_VS_R_CURVE_DEST+ f"precision_vs_recall_curve_for_{t_current[: 10]}")
+    plt.savefig(config.P_VS_R_CURVE_DEST+ f"precision_vs_recall_curve_for_{str(t_current)[: 10]}")
     plt.show()
 
     return best_threshold
