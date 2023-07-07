@@ -38,8 +38,8 @@ TRAINING_FEATURES=["Project ID", "Project Posted Date", "Project Type", "Project
                   "Project Subject Subcategory Tree", "Project Grade Level Category", "Project Resource Category", 
                   "School Metro Type", "School Percentage Free Lunch", "School State", "School County",
                   "School Name", "School City", "School District",
-                  "Teacher Prefix", "Teacher Project Posted Sequence",
-                  "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
+                  "Teacher Prefix", "Teacher Project Posted Sequence"]
+                #   "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
 
-VARIABLES_TO_SCALE=["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost",
-                    "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
+VARIABLES_TO_SCALE=["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost"]
+                    # "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
