@@ -19,11 +19,12 @@ import data_processor as dp
 lang_tool = language_tool_python.LanguageTool('en-US')
 
 
-def standardize_data(x_train, x_test, cols_list):
+def standardize_data(x_train, x_validate, x_test, cols_list):
     """Function for scaling after seperating into train/test."""
     # Create scaler
     ss = StandardScaler()
     features_train = x_train[cols_list]
+    features_validate = x_validate[cols_list]
     features_test = x_test[cols_list]
 
     # Fit scaler only for training data
@@ -33,11 +34,15 @@ def standardize_data(x_train, x_test, cols_list):
     features_t = scaler.transform(features_train)
     x_train[cols_list] = features_t
 
+    # Transforming validation data
+    for_validation = scaler.transform(features_validate)
+    x_validate[cols_list] = for_validation
+    
     # Transforming test data
     for_test = scaler.transform(features_test)
     x_test[cols_list] = for_test
 
-    return x_train, x_test
+    return x_train, x_validate, x_test
 
 
 def create_features(data: DataFrame):
@@ -148,6 +153,9 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
             best_prediction = binary_predictions
     # print("best_f1_score = ", best_f1_score)
     return best_threshold, best_prediction
+
+def proba_to_binary_predict(y_pred, threshold):
+    return (y_pred[:, 1] >= threshold).astype(int)
 
 
 # Function to observe PR to select the best k
@@ -282,51 +290,59 @@ def cross_validate(data, model):
     while t_current > min_t + fold_period:
         start_date = t_current - fold_period
 
-        x_train, y_train, x_test, y_test = dp.split_temporal_train_test_data(
+        x_train, y_train, x_validate, y_validate, x_test, y_test = dp.split_temporal_train_test_data(
             data=data,
             start_date=start_date
         )
 
         # Scaling
-        x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
+        x_train, x_validate, x_test = standardize_data(x_train, x_validate, x_test, config.VARIABLES_TO_SCALE)
 
         # Model Training
         model = model.fit(x_train, y_train.values.ravel())
 
         # Predicting
-        y_hat = model.predict_proba(x_test)
+        y_hat = model.predict_proba(x_validate) # validation purpose
 
         # Find the best probability threshold for classifying
-        best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
+        # best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_validate)
         # Observing the best threshold using different methods
-        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk = prk_curve_for_top_k_projects(y_hat, 100, 1100, 100, y_test, t_current)
-        best_threshold_roc = plot_roc_curve(y_hat, y_test, t_current)
-        best_threshold_pr = plot_precision_vs_recall_curve(y_hat, y_test, t_current)
+        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk = prk_curve_for_top_k_projects(y_hat, int(config.MAX_ROWS*0.01), int(config.MAX_ROWS*0.4), 100, y_validate, t_current)
+        best_threshold_roc = plot_roc_curve(y_hat, y_validate, t_current)
+        best_threshold_pr = plot_precision_vs_recall_curve(y_hat, y_validate, t_current)
+
+        fold_opt_thresh = (best_threshold_pr + best_threshold_roc) / 2
+
+        y_pred = model.predict_proba(x_test)     # evaluation purpose
 
         # Evaluate the model
-        f1 = f1_score(y_test, best_prediction)
-        accuracy = accuracy_score(y_test, best_prediction)
+        binary_pred = proba_to_binary_predict(y_pred, fold_opt_thresh)
+
+        f1 = f1_score(y_test, binary_pred)
+        accuracy = accuracy_score(y_test, binary_pred)
         model_score = model.score(x_test, y_test)
 
-        probability_thresholds.append(best_threshold)
+        probability_thresholds.append(fold_opt_thresh)
         model_eval_metrics["accuracy"].append(accuracy)
         model_eval_metrics["f1_score"].append(f1)
         model_eval_metrics["model_score"].append(model_score)
 
         
         print(f"======================================FOLD==== {folds+1}")
-        train_end = start_date + timedelta(config.TRAIN_SIZE)
-        test_start = train_end + timedelta(config.LEAK_OFFSET)
-        test_end = test_start + timedelta(config.TEST_SIZE)
-        print(f"Traing  from {str(start_date)[:10]} to {str(train_end)[:10]}")
-        print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
-        print("Training set shape = ", x_train.shape)
-        print("Testing set shape = ", x_test.shape)
+
+        # Evaluate
+        cm = confusion_matrix(y_test, binary_pred)
+        sns.heatmap(cm, square=True, annot=True, cbar=False)
+        plt.xlabel('Predicted Value')
+        plt.ylabel('Actual Value')
+        plt.savefig(config.IMAGE_DEST + f"Confusion matrix for {str(t_current)[:10]}")
+        plt.clf()
+
         print("Prediction evaluation scores for testing: ")
-        print("best_threshold = ", best_threshold)
-        print(f"K with the minimum difference between P and R: {best_k}")
         print(f"Best Threshold from ROC: {best_threshold_roc}")
         print(f"Best Threshold from P-R curve: {best_threshold_pr}")
+        print("Best avg threshold = ", fold_opt_thresh)
+        print(f"K with the minimum difference between P and R: {best_k}")
         print("F1 score = ", f1)
         print("Accuracy = ", accuracy)
         print("Model score = ", model_score)
@@ -356,139 +372,6 @@ def run_pipeline(data, model):
     print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
 
     return model, model_eval_metrics, avg_metrics
-
-
-
-def run_pipeline_old(data, model):
-    # Initiate lists to store data
-    t_current_list = []
-    t_current_accuracy = []
-
-    # Initiate timing variables
-    max_t = pd.Timestamp(config.MAX_TIME)
-    min_t = pd.Timestamp(config.MIN_TIME)
-    time_period = timedelta(days=config.DONATION_PERIOD)        # 30 days
-    training_window = timedelta(days=config.TRAINING_WINDOW)    # 30 * 4 = 120 days
-
-    t_current = min_t
-    print("================\n", t_current, max_t, training_window)
-
-    probability_thresholds = []
-    model_eval_metrics =  {"accuracy": [], "f1_score": [], "model_score": []}
-
-    folds = 0
-
-    while(t_current < max_t - training_window):
-
-        t_current_list += [t_current]
-        t_start = t_current
-        t_end = t_current + training_window
-        t_filter = t_end - time_period
-
-        # Filter rows for the relevant time period
-        data_window = data[
-            data["Project Posted Date"] < pd.to_datetime(t_end)]
-        data_window = data_window[
-            data_window["Project Posted Date"] > pd.to_datetime(t_start)]
-        
-        print("iteration_data.shape = ", data_window.shape)
-
-        x_train, y_train, x_test, y_test = dp.split_time_series_train_test_data(
-            data=data_window, filter_date=t_filter)
-        
-        # Training will be done on data from t_start to t_filter
-        # Testing will be done on data from t_filter to t_end
-
-        # Scaling
-        x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-
-        # Model Training
-        model = model.fit(x_train, y_train.values.ravel())
-
-        # Predicting
-        y_hat = model.predict_proba(x_test)
-
-        # Find the best probability threshold for classifying
-        best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
-
-        # Evaluate the model
-        f1 = f1_score(y_test, best_prediction)
-        accuracy = accuracy_score(y_test, best_prediction)
-        model_score = model.score(x_test, y_test)
-
-        probability_thresholds.append(best_threshold)
-        model_eval_metrics["accuracy"].append(accuracy)
-        model_eval_metrics["f1_score"].append(f1)
-        model_eval_metrics["model_score"].append(model_score)
-        
-        print("==============================================================================")
-        print(f"Traing  from {str(t_start)[:10]} to {str(t_filter)[:10]}")
-        print(f"Testing from {str(t_filter)[:10]} to {str(t_end)[:10]}")
-        print("Training set shape = ", x_train.shape)
-        print("Testing set shape = ", x_test.shape)
-        print("Prediction evaluation scores for testing: ")
-        print("best_threshold = ", best_threshold)
-        print("F1 score = ", f1)
-        print("Accuracy = ", accuracy)
-        print("Model score = ", model_score)
-
-        # break
-        # y_pred = model.predict_proba(x_train)
-
-        # Evaluate
-        # cm = confusion_matrix(y_test, y_hat)
-        # sns.heatmap(cm, square=True, annot=True, cbar=False)
-        # plt.xlabel('Predicted Value')
-        # plt.ylabel('Actual Value')
-        # plt.savefig(config.IMAGE_DEST + f"Confusion matrix for {str(t_current)[:10]}")
-        # plt.clf()
-
-        # print("Prediction evaluation scores for training: ")
-        # print(classification_report(y_train, y_pred, output_dict=True))
-
-
-        # print(classification_report(y_test, y_hat, output_dict=True))
-        print("==============================================================================\n")
-        t_current = t_current + time_period
-        folds += 1
-    
-    print("")
-    print("probability_thresholds = ", probability_thresholds)
-    print("accuracies = ", model_eval_metrics["accuracy"])
-    print("f1_scores = ", model_eval_metrics["f1_score"])
-    print("model_scores = ", model_eval_metrics["model_score"])
-
-    avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
-                   "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
-                   "avg_model_score": sum(model_eval_metrics["model_score"])/len(model_eval_metrics["model_score"]),
-                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds)}
-
-    print("")
-    print("Average accuracy = ", avg_metrics["avg_accuracy"])
-    print("Average f1_score = ", avg_metrics["avg_f1_score"])
-    print("Average model score = ", avg_metrics["avg_model_score"])
-    print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
-
-    
-
-    # Filter rows for the relevant time period
-    data_window = data[
-        data["Project Posted Date"] < pd.to_datetime(max_t)]
-    data_window = data_window[
-        data_window["Project Posted Date"] > pd.to_datetime(min_t)]
-    t_filter = max_t - folds * time_period
-
-    x_train, y_train, x_test, y_test = dp.split_time_series_train_test_data(
-            data=data_window, filter_date=t_filter)
-    
-    # Scaling
-    x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-
-    # Model Training
-    model = model.fit(x_train, y_train.values.ravel())
-
-    return model, model_eval_metrics, avg_metrics
-
 
 def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
     x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
