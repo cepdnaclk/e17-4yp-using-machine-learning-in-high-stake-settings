@@ -3,47 +3,38 @@ from abc import ABC, abstractmethod
 from sklearn.base import BaseEstimator, TransformerMixin
 class Preprocessor(ABC):
     @abstractmethod
-    def fit_transform(self, data):
+    def preprocess(self, data, features):
         pass
     
-class FeatureFilter(BaseEstimator, TransformerMixin):
-    def __init__(self, _remove_features, exact= False):
-        self._remove_features = _remove_features
-        self._features = None
-        self.exact = exact
-        
-    def fit(self, X, y=None):
-        
-        # FeatureFilter doesn't require fitting, so this method is a no-op
-        # return self
-        return self
+#! what if i want to remove not exact features to be removed
 
-    def _set_features(self, data):
+class FeatureFilter(Preprocessor):
+    def __init__(self):
+        
+        self._remove_features = None
+        
+
+    def _set_features(self, data, features):
         
         #! optimize
         should_remove_feature = []
         for i in data.columns:
-            for j in self._remove_features:
+            for j in features:
                 if j.lower() in i.lower():
                     should_remove_feature.append(i)
                 
-        self._features = should_remove_feature
-        
-        
+        self._remove_features = should_remove_feature
         return
         
         
         
         
     
-    def transform(self, X):
+    def preprocess(self, data, features):
         
-        if(self.exact):
-           #! validate
-            return X.drop(columns=self._remove_features, axis=1)
-                
-        self._set_features(X)
-        print(f"Columns : {self._features} are removed from the dataset")
-        return X.drop(columns=self._features, axis=1)
+        if(features is None):
+            raise ValueError("features is a must")
+        self._set_features(data, features)
+        return data.drop(columns=self._remove_features, axis=1)
     
     
