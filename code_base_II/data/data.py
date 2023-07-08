@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn.base import BaseEstimator
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
-
+import seaborn as sns
 
 from sklearn import config_context
 
@@ -104,11 +104,14 @@ class Data:
         # with sklearn.config_context(transform_output="pandas"):
         # with config_context(transform_output="pandas"):
         
+        
         for preprocessor in self._preprocessors:
             if(preprocessor.__name__ == "FeatureFilter"):
                 ##print(preprocessor)
                 self._preprocessed_data = preprocessor().preprocess(self._preprocessed_data, self._clean_features)
             elif(preprocessor.__name__ == "TypePreprocessor"):
+                #! if this run again there will be an issue
+                self.set_feature_types()
                 ##print("hello",self._categorical_features)
                 self._preprocessed_data = preprocessor().preprocess(self._preprocessed_data, self.get_feature_types())
             # self._preprocessed_data = preprocessor.preprocess(self._preprocessed_data, self._clean_features)
@@ -116,7 +119,7 @@ class Data:
        
         # self._preprocessed_data = self._preprocessor.fit_transform(self._preprocessed_data)
         
-    def get_feature_types(self):
+    def set_feature_types(self):
         """
         Identifies the feature types in the raw data and sets them in the Data object.
 
@@ -149,9 +152,13 @@ class Data:
         records = []
         for column in self._preprocessed_data.columns:
             column_type = self._preprocessed_data[column].dtype
-
+            
             if column_type in ['float64', 'int64']:
                 record = {'Feature': column, 'Type': 'numerical', 'Format': ''}
+            
+            elif column_type == 'datetime64[ns]':
+                record = {'Feature': column, 'Type': 'date', 'Format': 'MM/DD/YYYY'}
+                
                 
             elif column_type == 'object':
                 try:
@@ -166,7 +173,11 @@ class Data:
             
         feature_types = pd.DataFrame.from_records(records,columns=['Feature', 'Type', 'Format'])
         
+        self.feature_types = feature_types
         return feature_types 
+    
+    def get_feature_types(self):
+        return self.feature_types 
       
     def get_data(self):
         """
@@ -175,7 +186,7 @@ class Data:
         Returns:
             pandas.DataFrame: The raw data.
         """
-        return self._preprocessed_data
+        return self._raw_data
         
     def get_preprocessed_data(self):
         """
@@ -260,14 +271,37 @@ if __name__ == "__main__":
     # preprocessor = data.with_feature_filter(("feture_detect",FeatureFilter(["Project ID"]))).build()
     
     data = DataBuilder()\
-        .load_data("./test.csv",100)\
+        .load_data("./test.csv",1000)\
         .add_clean_features(['ID',"Unnamed:"])\
         .add_preprocessor(FeatureFilter)\
         .add_preprocessor(TypePreprocessor)\
         .build()
         
         
-        
     data.preprocess_data()
+    
+    
+    print("........................")
+    
     print(data.get_preprocessed_data().head())
+    
+    print(data.get_feature_types())
+    
+    feature_type = data.get_feature_types()[data.get_feature_types()["Type"]=="categorical"]
+    print(feature_type)
+    
+    feature_type = data.get_feature_types()[data.get_feature_types()["Type"]=="date"]
+    print(feature_type)
+    
+    num_feature_type = data.get_feature_types()[data.get_feature_types()["Type"]=="numerical"]["Feature"]
+    print(num_feature_type)
+    numeric_features = ['Donation Amount', 'Donor Cart Sequence', 'Donor Zip', 'Teacher Project Posted Sequence']
+    numeric_data = data.get_data()[num_feature_type]
+    print(numeric_data)
+    
+    correlation_matrix = numeric_data.corr(method="kendall")
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
+    plt.title('Correlation Matrix')
+    plt.show()
+
    

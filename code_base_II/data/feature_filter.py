@@ -26,9 +26,6 @@ class FeatureFilter(Preprocessor):
         self._remove_features = should_remove_feature
         return
         
-        
-        
-        
     
     def preprocess(self, data, features):
         
