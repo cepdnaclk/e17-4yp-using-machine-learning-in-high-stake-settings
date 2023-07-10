@@ -74,14 +74,11 @@ def split_temporal_train_test_data(
     # validation period = test period
     train_start = pd.Timestamp(start_date)
     train_end = train_start + timedelta(days=train_months*30)
-    validate_start = train_end + timedelta(days=leak_offset*30)
-    validate_end = validate_start + timedelta(days=test_months*30)
-    test_start = validate_end + timedelta(days=leak_offset*30)
+    test_start = train_end + timedelta(days=leak_offset*30)
     test_end = test_start + timedelta(days=test_months*30)
 
     print("-----")
     print(f"train    {str(train_start)[:10]} - {str(train_end)[:10]}")
-    print(f"validate {str(validate_start)[:10]} - {str(validate_end)[:10]}")
     print(f"test     {str(test_start)[:10]} - {str(test_end)[:10]}")
 
     train_set = data[
@@ -94,15 +91,6 @@ def split_temporal_train_test_data(
     x_train = train_set.loc[:, train_set.columns != "Label"]
     y_train = train_set.loc[:, ["Label"]]
     
-    validation_set = data[
-        (data["Project Posted Date"] > pd.to_datetime(validate_start))]
-    validation_set = data[
-        (data["Project Posted Date"] < pd.to_datetime(validate_end))
-        ].drop(["Project ID", "Project Posted Date"], axis=1)
-    
-    x_validate = validation_set.loc[:, validation_set.columns != "Label"]
-    y_validate = validation_set.loc[:, ["Label"]]
-    
     test_set = data[
         (data["Project Posted Date"] > pd.to_datetime(test_start))]
     test_set = data[
@@ -113,11 +101,10 @@ def split_temporal_train_test_data(
     y_test = test_set.loc[:, ["Label"]]
 
     print("Training set shape = ", x_train.shape)
-    print("Validation set shape = ", x_validate.shape)
     print("Testing set shape = ", x_test.shape)
     print("-----")
     
-    return x_train, y_train, x_validate, y_validate, x_test, y_test
+    return x_train, y_train, x_test, y_test
     
 if __name__ == "__main__":
     print("Start data pre processing")
