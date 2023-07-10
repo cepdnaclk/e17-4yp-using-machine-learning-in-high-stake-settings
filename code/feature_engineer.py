@@ -1,9 +1,5 @@
 import matplotlib
 matplotlib.use('Agg')
-<<<<<<< HEAD
-=======
-
->>>>>>> 88db5c7e28d58ba6e0656e454deed7e05fffc59c
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
