@@ -1,6 +1,6 @@
 
-# ROOT = "/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/"
-ROOT = "./"
+ROOT = "/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/"
+# ROOT = "./"
 DATA_SOURCE=ROOT + "data/DsDnsPrScTch.csv"
 DATA_DEST=ROOT + "processed_data/"
 MODEL_DEST=ROOT + "trained_models/"
@@ -11,7 +11,7 @@ K_PROJECTS_DEST=IMAGE_DEST + "k_projects/"
 ROC_CURVE_DEST=IMAGE_DEST + "roc_curve/"
 P_VS_R_CURVE_DEST=IMAGE_DEST + "pr_curve/"
 
-MAX_ROWS=100000
+MAX_ROWS=10000
 
 # To label data  
 DONATION_PERIOD=30
