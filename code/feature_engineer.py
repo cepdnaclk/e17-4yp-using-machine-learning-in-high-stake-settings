@@ -299,7 +299,7 @@ def cross_validate(data, model):
         # Find the best probability threshold for classifying
         best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
         # Observing the best threshold using different methods
-        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk = prk_curve_for_top_k_projects(y_hat, 100, 1100, 100, y_test, t_current)
+        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk = prk_curve_for_top_k_projects(y_hat, int(config.MAX_ROWS*0.01), int(config.MAX_ROWS*0.3), 100, y_test, t_current)
         best_threshold_roc = plot_roc_curve(y_hat, y_test, t_current)
         best_threshold_pr = plot_precision_vs_recall_curve(y_hat, y_test, t_current)
 
