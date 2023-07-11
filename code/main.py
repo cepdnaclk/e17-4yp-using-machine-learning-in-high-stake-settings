@@ -31,9 +31,9 @@ print("Complete imputing = ", data.shape)
 data = fe.label_data(data, config.THRESHOLD_RATIO)
 print("Complete labelling, shape = ", data.shape)
 
-# Create new labels
-data = fe.create_features(data)
-print("Added New Features, shape = ", data.shape)
+# Create new Features
+# data = fe.create_features(data)
+# print("Added New Features, shape = ", data.shape)
 
 # filter training features
 data = data[config.TRAINING_FEATURES + ["Label"]]

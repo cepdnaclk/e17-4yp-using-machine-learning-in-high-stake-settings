@@ -1,0 +1,22 @@
+name: xai_venv
+dependencies:
+  - matplotlib
+  - numpy
+  - scikit-learn
+  - scipy
+  - seaborn
+  - nltk
+  - contourpy
+  - cycler
+  - fonttools
+  - joblib
+  - kiwisolver
+  - packaging
+  - pandas
+  - Pillow
+  - pyparsing
+  - python-dateutil
+  - pytz
+  - six
+  - threadpoolctl
+  - tzdata
