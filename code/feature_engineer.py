@@ -152,7 +152,7 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
 
 # Function to observe PR to select the best k
 def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: int, k_gap: int, y_test, t_current, model_name):
-    # Temp: consider 0 for failing projects and 1 for projects getting fully funded in four months
+    # Temp: consider 1 for failing projects and 0 for projects getting fully funded in four months
     # Select the probabilities for label 1
     probabilities = proba_predictions[:, 1]
     # Rank the probabilities in descending order
@@ -262,6 +262,22 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
     return best_threshold
 
 
+def get_precision_for_fixed_k(k, proba_predictions, y_test):
+
+    # Select the probabilities for label 1
+    probabilities = proba_predictions[:, 1]
+    # Rank the probabilities in descending order
+    temp = (-1 * probabilities).argsort()
+    ranks = np.empty_like(temp)
+    ranks[temp] = np.arange(len(probabilities))
+
+    # Create new labels based on the k value
+    k_labels = (ranks <= k).astype(int)
+    k_precision = precision_score(y_test, k_labels)
+
+    return k_labels, k_precision
+
+
 def cross_validate(data, model, model_name):
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
@@ -275,7 +291,7 @@ def cross_validate(data, model, model_name):
     # print("================\n", t_current, max_t, training_window)
 
     probability_thresholds = []
-    model_eval_metrics =  {"accuracy": [], "precision": [], "f1_score": [], "model_score": []}
+    model_eval_metrics =  {"accuracy": [], "precision": [], "f1_score": [], "model_score": [], "k_fixed_precision": []}
 
     folds = 0
 
@@ -303,6 +319,9 @@ def cross_validate(data, model, model_name):
         # best_threshold_roc = plot_roc_curve(y_hat, y_test, t_current)
         # best_threshold_pr = plot_precision_vs_recall_curve(y_hat, y_test, t_current)
 
+        # For a fixed value of k, find the precision for each fold
+        k_fixed_labels, k_fixed_precision = get_precision_for_fixed_k(1000, y_hat, y_test)
+
         # Evaluate the model
         f1 = f1_score(y_test, best_prediction)
         accuracy = accuracy_score(y_test, best_prediction)
@@ -314,6 +333,7 @@ def cross_validate(data, model, model_name):
         model_eval_metrics["f1_score"].append(f1)
         model_eval_metrics["precision"].append(precision)
         model_eval_metrics["model_score"].append(model_score)
+        model_eval_metrics["k_fixed_precision"].append(k_fixed_precision)
 
         
         print(f"======================================FOLD==== {folds+1}")
@@ -346,17 +366,20 @@ def run_pipeline(data, model, model_name):
     print("accuracies = ", model_eval_metrics["accuracy"])
     print("f1_scores = ", model_eval_metrics["f1_score"])
     print("model_scores = ", model_eval_metrics["model_score"])
+    print("precision for fixed k values = ", model_eval_metrics["k_fixed_precision"])
 
     avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
                    "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
                    "avg_model_score": sum(model_eval_metrics["model_score"])/len(model_eval_metrics["model_score"]),
-                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds)}
+                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds), 
+                   "avg_fixed_k_precision": sum(model_eval_metrics["k_fixed_precision"])/len(model_eval_metrics["k_fixed_precision"])}
 
     print("")
     print("Average accuracy = ", avg_metrics["avg_accuracy"])
     print("Average f1_score = ", avg_metrics["avg_f1_score"])
     print("Average model score = ", avg_metrics["avg_model_score"])
     print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
+    print("Average precision for fixed k = ", avg_metrics["avg_fixed_k_precision"])
 
     return model, model_eval_metrics, avg_metrics
 
@@ -494,6 +517,7 @@ def run_pipeline_old(data, model):
 
 
 def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
+
     x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
     x_positions = np.arange(len(x_labels))
     bar_width = 0.2
@@ -521,4 +545,26 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
     plt.xticks(x_positions, x_labels, rotation = 90)
     plt.savefig(config.IMAGE_DEST + model_name +'model_score_plot.png')
     plt.show()
+
+
+
+
+def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
+
+    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
+    x_positions = np.arange(len(x_labels))
+
+    # Plot the model precision for all the folds for a fixed value of k
+    plt.cla()
+    plt.plot(x_labels, model_eval_metrics["k_fixed_precision"])
+
+    plt.xlabel('Fold')
+    plt.ylabel('Precision for fixed k')
+    plt.title("Precision for each fold for fixed k")
+    plt.xticks(x_positions, x_labels, rotation = 90)
+    plt.savefig(config.IMAGE_DEST + model_name +'k_fixed_precision_plot.png')
+    plt.show()
+
+    return
+
 
