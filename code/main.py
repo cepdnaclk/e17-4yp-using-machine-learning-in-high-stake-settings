@@ -68,6 +68,7 @@ data_3 = data_1.copy(deep=True)
 print("Classifier: Logistic Regression")
 trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_1, classifier_1, 'log_reg/')
 fe.plot_k_fold_evaluation_metrics(eval_metrics, 'log_reg/')
+fe.plot_precision_for_fixed_k(eval_metrics, 'log_reg/')
 save_model(file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
 
 # print("Classifier: Random Forest")
