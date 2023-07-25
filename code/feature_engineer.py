@@ -159,6 +159,7 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
     temp = (-1 * probabilities).argsort()
     ranks = np.empty_like(temp)
     ranks[temp] = np.arange(len(probabilities))
+    total_probabilities = len(proba_predictions)
 
     # Create new labels based on the k value and plot precision and recall
     precision = []
@@ -167,6 +168,7 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
     new_labels = []
     precision_recall_smallest_gap = 1.0
     best_k = None
+    best_k_perc = None
     best_labels = None
 
     for k in range(k_start, len(proba_predictions)+k_gap, k_gap):
@@ -183,22 +185,24 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
         if precision_recall_smallest_gap >= difference:
             precision_recall_smallest_gap = difference
             best_k = k
+            best_k_perc = k/total_probabilities
             best_labels = k_labels
 
     # Print the k with the minimum difference between P and R 
     #print(f"K with the minimum difference between P and R: {best_k}")
+    k_value_perc = [val/total_probabilities*100 for val in k_value]
 
     # Plot the prk curve
     plt.cla()
-    plt.plot(k_value, precision, label='precision')
-    plt.plot(k_value, recall, label='recall')
-    plt.xlabel('Value of k')
+    plt.plot(k_value_perc, precision, label='precision')
+    plt.plot(k_value_perc, recall, label='recall')
+    plt.xlabel('Value of k as a percentage (%)')
     plt.title("Model's Precision and Recall for Varying k")
     plt.legend()
     plt.savefig(config.K_PROJECTS_DEST + model_name + f"prk_curve_for_{str(t_current)[:10]}")
     plt.show()
 
-    return k_value, precision, recall, new_labels, best_k, best_labels
+    return k_value, precision, recall, new_labels, best_k, best_labels, best_k_perc
 
 
 def plot_roc_curve(proba_predictions, y_test, t_current):
@@ -278,6 +282,15 @@ def get_precision_for_fixed_k(k, proba_predictions, y_test):
     return k_labels, k_precision
 
 
+
+def get_positive_percentage(y_train, y_test):
+
+    train_pos = len(y_train[y_train==1])/len(y_train)
+    test_pos = len(y_test[y_test==1])/len(y_test)
+
+    return train_pos, test_pos
+
+
 def cross_validate(data, model, model_name):
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
@@ -303,6 +316,9 @@ def cross_validate(data, model, model_name):
             start_date=start_date
         )
 
+        # Count the positive labeled percentage in the training set and the test set
+        train_pos_perc, test_pos_perc = get_positive_percentage(y_train, y_test)
+
         # Scaling
         x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
 
@@ -315,7 +331,7 @@ def cross_validate(data, model, model_name):
         # Find the best probability threshold for classifying
         best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
         # Observing the best threshold using different methods
-        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk = prk_curve_for_top_k_projects(y_hat, int(config.MAX_ROWS*0.01), int(config.MAX_ROWS*0.3), 100, y_test, t_current, model_name)
+        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk, best_k_perc = prk_curve_for_top_k_projects(y_hat, int(config.MAX_ROWS*0.01), int(config.MAX_ROWS*0.3), 100, y_test, t_current, model_name)
         # best_threshold_roc = plot_roc_curve(y_hat, y_test, t_current)
         # best_threshold_pr = plot_precision_vs_recall_curve(y_hat, y_test, t_current)
 
@@ -340,13 +356,15 @@ def cross_validate(data, model, model_name):
         train_end = start_date + timedelta(config.TRAIN_SIZE)
         test_start = train_end + timedelta(config.LEAK_OFFSET)
         test_end = test_start + timedelta(config.TEST_SIZE)
-        print(f"Traing  from {str(start_date)[:10]} to {str(train_end)[:10]}")
+        print(f"Training  from {str(start_date)[:10]} to {str(train_end)[:10]}")
         print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
         print("Training set shape = ", x_train.shape)
+        print("Percentage of positive labels in training set: ", train_pos_perc)
         print("Testing set shape = ", x_test.shape)
+        print("Percentage of positive labels in testing set: ", test_pos_perc)
         print("Prediction evaluation scores for testing: ")
         print("best_threshold = ", best_threshold)
-        print(f"K with the minimum difference between P and R: {best_k}")
+        print(f"K with the minimum difference between P and R: {best_k}; as a percentage {best_k_perc}")
         # print(f"Best Threshold from ROC: {best_threshold_roc}")
         # print(f"Best Threshold from P-R curve: {best_threshold_pr}")
         print("F1 score = ", f1)
