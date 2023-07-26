@@ -9,16 +9,9 @@ from datetime import timedelta
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_curve, roc_auc_score, precision_recall_curve
-import language_tool_python
-import nltk
-from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 import config
 import data_processor as dp
-
-lang_tool = language_tool_python.LanguageTool('en-US')
 
 
 def standardize_data(x_train, x_test, cols_list):
@@ -40,72 +33,6 @@ def standardize_data(x_train, x_test, cols_list):
     x_test[cols_list] = for_test
 
     return x_train, x_test
-
-
-def create_features(data: DataFrame):
-    data = add_statement_grammertical_error_feature(data)
-    data = add_title_essay_relativity_score(data)
-    data = add_desc_essay_relativity_score(data)
-    return data.drop_duplicates()
-
-def add_statement_grammertical_error_feature(data: DataFrame):
-    # Creates a new feature called text size to error ratio
-    data["Statement Error Ratio"] = len(lang_tool.check(
-        str(data["Project Need Statement"]))) / len(str(data["Project Need Statement"]).split())
-    return data
-
-def add_title_essay_relativity_score(data: DataFrame):
-    # Create a new feature that has the relatedness of title and essay
-    # using cosine similarity
-
-    # Create a TfidfVectorizer object
-    vectorizer = TfidfVectorizer()
-
-    # Fit and transform the 'text' column to obtain the TF-IDF matrix
-    tfidf_matrix = vectorizer.fit_transform(data['Project Essay'])
-
-    # Calculate the cosine similarity matrix between the 'topic' and 'text' columns
-    similarity_matrix = cosine_similarity(tfidf_matrix, vectorizer.transform(data['Project Title']))
-
-    # Create a new feature "Title Essay Relativity" in the DataFrame and assign the similarity scores
-    data["Title Essay Relativity"] = similarity_matrix.diagonal()
-
-    return data
-
-
-def add_desc_essay_relativity_score(data: DataFrame):
-    # Create a new feature that has the relatedness of description and essay
-    # using cosine similarity
-
-    # Create a TfidfVectorizer object
-    vectorizer = TfidfVectorizer()
-
-    # Fit and transform the 'text' column to obtain the TF-IDF matrix
-    tfidf_matrix = vectorizer.fit_transform(data['Project Essay'])
-
-    # Calculate the cosine similarity matrix between the 'topic' and 'text' columns
-    similarity_matrix = cosine_similarity(tfidf_matrix, vectorizer.transform(data['Project Short Description']))
-
-    # Create a new feature "Title Essay Relativity" in the DataFrame and assign the similarity scores
-    data["Description Essay Relativity"] = similarity_matrix.diagonal()
-
-    return data
-
-
-def label_data_1(data: DataFrame, threshold: float, select_cols: list):
-    # Create new features by aggregating
-    data["Total Donations"] = data.groupby("Project ID")["Donation Amount"] \
-                                                        .transform("sum")
-
-    data["Donation to Cost"] = data["Donation Amount"] / data["Project Cost"]
-
-    data["Fund Ratio"] = data.groupby("Project ID")["Donation to Cost"] \
-                                                        .transform("sum")
-
-    data["Label"] = data.apply(
-        lambda x : 0  if x["Fund Ratio"] < threshold  else 1, axis=1)
-    select_cols = select_cols + ["Label", "Project Posted Date"]
-    return data[select_cols].drop_duplicates()
 
 
 def label_data(data: DataFrame, threshold: float):
@@ -202,7 +129,17 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
     plt.savefig(config.K_PROJECTS_DEST + model_name + f"prk_curve_for_{str(t_current)[:10]}")
     plt.show()
 
-    return k_value, precision, recall, new_labels, best_k, best_labels, best_k_perc
+    prk_results = {
+        'k_value': k_value,
+        'precision': precision,
+        'recall': recall,
+        'new_labels': new_labels,
+        'best_k': best_k,
+        'best_labels': best_labels,
+        'best_k_perc': best_k_perc
+    }
+
+    return prk_results
 
 
 def plot_roc_curve(proba_predictions, y_test, t_current):
@@ -254,7 +191,6 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
 
     #print(f"Best Threshold: {best_threshold} for {t_current[: 10]}")
     
-
     # Plot the curve and save
     plt.plot(recall, precision)
     plt.title("Precision vs Recall Curve")
@@ -264,7 +200,6 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
     plt.show()
 
     return best_threshold
-
 
 def get_precision_for_fixed_k(k, proba_predictions, y_test):
 
@@ -281,14 +216,63 @@ def get_precision_for_fixed_k(k, proba_predictions, y_test):
 
     return k_labels, k_precision
 
-
-
 def get_positive_percentage(y_train, y_test):
 
     train_pos = len(y_train[y_train==1])/len(y_train)
     test_pos = len(y_test[y_test==1])/len(y_test)
 
     return train_pos, test_pos
+
+
+def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
+
+    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
+    x_positions = np.arange(len(x_labels))
+    bar_width = 0.2
+    
+    # Plot accuracy and f1 score for all the folds
+    # print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
+    plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
+    plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
+    
+    plt.xlabel('Evaluation Metrics')
+    plt.ylabel('Values')
+    plt.title("Model's Accuracy and F1 Score for Each validation fold")
+    plt.xticks(x_positions, x_labels, rotation = 90)
+    plt.legend()
+    plt.savefig(config.IMAGE_DEST + model_name +'cross_validation_plot.png')
+    plt.show()
+
+    # Plot the model accuracy for all the folds
+    plt.cla()
+    plt.plot(x_labels, model_eval_metrics["model_score"])
+
+    plt.xlabel('Fold')
+    plt.ylabel('Model Score')
+    plt.title("Model Score for each fold")
+    plt.xticks(x_positions, x_labels, rotation = 90)
+    plt.savefig(config.IMAGE_DEST + model_name +'model_score_plot.png')
+    plt.show()
+
+
+def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
+
+    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
+    x_positions = np.arange(len(x_labels))
+
+    # Plot the model precision for all the folds for a fixed value of k
+    plt.cla()
+    plt.plot(x_labels, model_eval_metrics["k_fixed_precision"])
+
+    plt.xlabel('Fold')
+    plt.ylabel('Precision for fixed k')
+    plt.title("Precision for each fold for fixed k")
+    plt.xticks(x_positions, x_labels, rotation = 90)
+    plt.savefig(config.IMAGE_DEST + model_name +'k_fixed_precision_plot.png')
+    plt.show()
+
+    return
+
 
 
 def cross_validate(data, model, model_name):
@@ -330,10 +314,20 @@ def cross_validate(data, model, model_name):
 
         # Find the best probability threshold for classifying
         best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
+        
         # Observing the best threshold using different methods
-        k_value, precision_list, recall_list, new_labels, best_k, best_labels_prk, best_k_perc = prk_curve_for_top_k_projects(y_hat, int(config.MAX_ROWS*0.01), int(config.MAX_ROWS*0.3), 100, y_test, t_current, model_name)
-        # best_threshold_roc = plot_roc_curve(y_hat, y_test, t_current)
-        # best_threshold_pr = plot_precision_vs_recall_curve(y_hat, y_test, t_current)
+        prk_results = prk_curve_for_top_k_projects(
+                        y_hat, 
+                        int(config.MAX_ROWS*0.01), 
+                        int(config.MAX_ROWS*0.3), 
+                        100, 
+                        y_test, 
+                        t_current, 
+                        model_name
+                    )
+        
+        best_k = prk_results.get('best_k')
+        best_k_perc = prk_results.get('best_k_perc')
 
         # For a fixed value of k, find the precision for each fold
         k_fixed_labels, k_fixed_precision = get_precision_for_fixed_k(1000, y_hat, y_test)
@@ -365,8 +359,6 @@ def cross_validate(data, model, model_name):
         print("Prediction evaluation scores for testing: ")
         print("best_threshold = ", best_threshold)
         print(f"K with the minimum difference between P and R: {best_k}; as a percentage {best_k_perc}")
-        # print(f"Best Threshold from ROC: {best_threshold_roc}")
-        # print(f"Best Threshold from P-R curve: {best_threshold_pr}")
         print("F1 score = ", f1)
         print("Accuracy = ", accuracy)
         print("Precision = ", precision)
@@ -376,6 +368,7 @@ def cross_validate(data, model, model_name):
         folds += 1
     
     return model_eval_metrics, probability_thresholds
+
 
 def run_pipeline(data, model, model_name):
     model_eval_metrics, probability_thresholds = cross_validate(data, model, model_name)
@@ -400,189 +393,3 @@ def run_pipeline(data, model, model_name):
     print("Average precision for fixed k = ", avg_metrics["avg_fixed_k_precision"])
 
     return model, model_eval_metrics, avg_metrics
-
-
-
-def run_pipeline_old(data, model):
-    # Initiate lists to store data
-    t_current_list = []
-    t_current_accuracy = []
-
-    # Initiate timing variables
-    max_t = pd.Timestamp(config.MAX_TIME)
-    min_t = pd.Timestamp(config.MIN_TIME)
-    time_period = timedelta(days=config.DONATION_PERIOD)        # 30 days
-    training_window = timedelta(days=config.TRAINING_WINDOW)    # 30 * 4 = 120 days
-
-    t_current = min_t
-    print("================\n", t_current, max_t, training_window)
-
-    probability_thresholds = []
-    model_eval_metrics =  {"accuracy": [], "f1_score": [], "model_score": []}
-
-    folds = 0
-
-    while(t_current < max_t - training_window):
-
-        t_current_list += [t_current]
-        t_start = t_current
-        t_end = t_current + training_window
-        t_filter = t_end - time_period
-
-        # Filter rows for the relevant time period
-        data_window = data[
-            data["Project Posted Date"] < pd.to_datetime(t_end)]
-        data_window = data_window[
-            data_window["Project Posted Date"] > pd.to_datetime(t_start)]
-        
-        print("iteration_data.shape = ", data_window.shape)
-
-        x_train, y_train, x_test, y_test = dp.split_time_series_train_test_data(
-            data=data_window, filter_date=t_filter)
-        
-        # Training will be done on data from t_start to t_filter
-        # Testing will be done on data from t_filter to t_end
-
-        # Scaling
-        x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-
-        # Model Training
-        model = model.fit(x_train, y_train.values.ravel())
-
-        # Predicting
-        y_hat = model.predict_proba(x_test)
-
-        # Find the best probability threshold for classifying
-        best_threshold ,best_prediction = get_best_proba_threshold_prediction(y_hat, y_test)
-
-        # Evaluate the model
-        f1 = f1_score(y_test, best_prediction)
-        accuracy = accuracy_score(y_test, best_prediction)
-        model_score = model.score(x_test, y_test)
-
-        probability_thresholds.append(best_threshold)
-        model_eval_metrics["accuracy"].append(accuracy)
-        model_eval_metrics["f1_score"].append(f1)
-        model_eval_metrics["model_score"].append(model_score)
-        
-        print("==============================================================================")
-        print(f"Traing  from {str(t_start)[:10]} to {str(t_filter)[:10]}")
-        print(f"Testing from {str(t_filter)[:10]} to {str(t_end)[:10]}")
-        print("Training set shape = ", x_train.shape)
-        print("Testing set shape = ", x_test.shape)
-        print("Prediction evaluation scores for testing: ")
-        print("best_threshold = ", best_threshold)
-        print("F1 score = ", f1)
-        print("Accuracy = ", accuracy)
-        print("Model score = ", model_score)
-
-        # break
-        # y_pred = model.predict_proba(x_train)
-
-        # Evaluate
-        # cm = confusion_matrix(y_test, y_hat)
-        # sns.heatmap(cm, square=True, annot=True, cbar=False)
-        # plt.xlabel('Predicted Value')
-        # plt.ylabel('Actual Value')
-        # plt.savefig(config.IMAGE_DEST + f"Confusion matrix for {str(t_current)[:10]}")
-        # plt.clf()
-
-        # print("Prediction evaluation scores for training: ")
-        # print(classification_report(y_train, y_pred, output_dict=True))
-
-
-        # print(classification_report(y_test, y_hat, output_dict=True))
-        print("==============================================================================\n")
-        t_current = t_current + time_period
-        folds += 1
-    
-    print("")
-    print("probability_thresholds = ", probability_thresholds)
-    print("accuracies = ", model_eval_metrics["accuracy"])
-    print("f1_scores = ", model_eval_metrics["f1_score"])
-    print("model_scores = ", model_eval_metrics["model_score"])
-
-    avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
-                   "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
-                   "avg_model_score": sum(model_eval_metrics["model_score"])/len(model_eval_metrics["model_score"]),
-                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds)}
-
-    print("")
-    print("Average accuracy = ", avg_metrics["avg_accuracy"])
-    print("Average f1_score = ", avg_metrics["avg_f1_score"])
-    print("Average model score = ", avg_metrics["avg_model_score"])
-    print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
-
-    
-
-    # Filter rows for the relevant time period
-    data_window = data[
-        data["Project Posted Date"] < pd.to_datetime(max_t)]
-    data_window = data_window[
-        data_window["Project Posted Date"] > pd.to_datetime(min_t)]
-    t_filter = max_t - folds * time_period
-
-    x_train, y_train, x_test, y_test = dp.split_time_series_train_test_data(
-            data=data_window, filter_date=t_filter)
-    
-    # Scaling
-    x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-
-    # Model Training
-    model = model.fit(x_train, y_train.values.ravel())
-
-    return model, model_eval_metrics, avg_metrics
-
-
-def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
-
-    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
-    x_positions = np.arange(len(x_labels))
-    bar_width = 0.2
-    
-    # Plot accuracy and f1 score for all the folds
-    # print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
-    plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
-    plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
-    
-    plt.xlabel('Evaluation Metrics')
-    plt.ylabel('Values')
-    plt.title("Model's Accuracy and F1 Score for Each validation fold")
-    plt.xticks(x_positions, x_labels, rotation = 90)
-    plt.legend()
-    plt.savefig(config.IMAGE_DEST + model_name +'cross_validation_plot.png')
-    plt.show()
-
-    # Plot the model accuracy for all the folds
-    plt.cla()
-    plt.plot(x_labels, model_eval_metrics["model_score"])
-
-    plt.xlabel('Fold')
-    plt.ylabel('Model Score')
-    plt.title("Model Score for each fold")
-    plt.xticks(x_positions, x_labels, rotation = 90)
-    plt.savefig(config.IMAGE_DEST + model_name +'model_score_plot.png')
-    plt.show()
-
-
-
-
-def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
-
-    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
-    x_positions = np.arange(len(x_labels))
-
-    # Plot the model precision for all the folds for a fixed value of k
-    plt.cla()
-    plt.plot(x_labels, model_eval_metrics["k_fixed_precision"])
-
-    plt.xlabel('Fold')
-    plt.ylabel('Precision for fixed k')
-    plt.title("Precision for each fold for fixed k")
-    plt.xticks(x_positions, x_labels, rotation = 90)
-    plt.savefig(config.IMAGE_DEST + model_name +'k_fixed_precision_plot.png')
-    plt.show()
-
-    return
-
-

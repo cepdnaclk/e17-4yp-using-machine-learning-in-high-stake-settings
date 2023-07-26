@@ -32,10 +32,6 @@ print("Complete imputing = ", data.shape)
 data = fe.label_data(data, config.THRESHOLD_RATIO)
 print("Complete labelling, shape = ", data.shape)
 
-# Create new Features
-# data = fe.create_features(data)
-# print("Added New Features, shape = ", data.shape)
-
 # filter training features
 data = data[config.TRAINING_FEATURES + ["Label"]]
 print("Filtered training Features, shape = ", data.shape)
@@ -65,11 +61,11 @@ print("encoded_data.shape = ", data_1.shape)
 data_2 = data_1.copy(deep=True)
 data_3 = data_1.copy(deep=True)
 
-print("Classifier: Logistic Regression")
-trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_1, classifier_1, 'log_reg/')
-fe.plot_k_fold_evaluation_metrics(eval_metrics, 'log_reg/')
-fe.plot_precision_for_fixed_k(eval_metrics, 'log_reg/')
-save_model(file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+# print("Classifier: Logistic Regression")
+# trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_1, classifier_1, 'log_reg/')
+# fe.plot_k_fold_evaluation_metrics(eval_metrics, 'log_reg/')
+# fe.plot_precision_for_fixed_k(eval_metrics, 'log_reg/')
+# save_model(file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
 
 print("Classifier: Random Forest")
 trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_1, classifier_2, 'random_forest/')
@@ -77,8 +73,8 @@ fe.plot_k_fold_evaluation_metrics(eval_metrics, 'random_forest/')
 fe.plot_precision_for_fixed_k(eval_metrics, 'random_forest/')
 save_model(file_name=f'RandForest_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
 
-print("Classifier: Decision Tree")
-trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_3, classifier_4, 'decision_tree/')
-fe.plot_k_fold_evaluation_metrics(eval_metrics, 'decision_tree/')
-fe.plot_precision_for_fixed_k(eval_metrics, 'decision_tree/')
-save_model(file_name=f'DecTree_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+# print("Classifier: Decision Tree")
+# trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_3, classifier_4, 'decision_tree/')
+# fe.plot_k_fold_evaluation_metrics(eval_metrics, 'decision_tree/')
+# fe.plot_precision_for_fixed_k(eval_metrics, 'decision_tree/')
+# save_model(file_name=f'DecTree_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
