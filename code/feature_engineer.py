@@ -133,9 +133,9 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
         'k_value': k_value,
         'precision': precision,
         'recall': recall,
-        'new_labels': new_labels,
+        # 'new_labels': new_labels,
         'best_k': best_k,
-        'best_labels': best_labels,
+        # 'best_labels': best_labels,
         'best_k_perc': best_k_perc
     }
 
@@ -347,9 +347,40 @@ def cross_validate(data, model, model_name):
 
         
         print(f"======================================FOLD==== {folds+1}")
+
         train_end = start_date + timedelta(config.TRAIN_SIZE)
         test_start = train_end + timedelta(config.LEAK_OFFSET)
         test_end = test_start + timedelta(config.TEST_SIZE)
+
+        fold_info = {
+            'classifier': model_name,
+            'fold_number': folds+1,
+            'timeline': {
+                'train_start': str(start_date)[:10],
+                'train_end': str(train_end)[:10],
+                'test_start': str(test_start)[:10],
+                'test_end': str(test_end)[:10]
+            },
+            'shape': {
+                'training_shape': str(x_train.shape),
+                'test_shape': str(x_test.shape),
+            },
+            'data_distribution': {
+                'train_positive_ratio': train_pos_perc,
+                'test_positive_ratio': test_pos_perc
+            },
+            'predict_proba_clas_threshold': best_threshold,
+            'evaluation_metrics': {
+                'accuracy': accuracy,
+                'precision': precision,
+                'f1_score': f1,
+                'model_score': model_score
+            },
+            'prk_results': prk_results
+        }
+        file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
+        dp.save_json(fold_info, config.INFO_DEST+model_name+file_name)
+
         print(f"Training  from {str(start_date)[:10]} to {str(train_end)[:10]}")
         print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
         print("Training set shape = ", x_train.shape)
