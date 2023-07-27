@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from pandas.core.frame import DataFrame
 from datetime import timedelta
+import json
 
 def load_data_to_df(path: str, rows: int=None):
     if rows:
@@ -13,6 +14,11 @@ def load_data_to_df(path: str, rows: int=None):
 
 def export_data_frame(data: DataFrame, path: str, columns: list=None):
     data.to_csv(path, columns=columns)
+
+def save_json(dict_obj: dict, path: str):
+    writable_json = json.dumps(dict_obj)
+    with open(path, 'w') as file:
+        file.write(writable_json)
 
 def set_data_types_to_datetime(data_frame: DataFrame, date_type_cols: list):
     for col in date_type_cols:
