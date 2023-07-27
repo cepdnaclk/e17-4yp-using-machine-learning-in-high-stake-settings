@@ -78,7 +78,15 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
 
 
 # Function to observe PR to select the best k
-def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: int, k_gap: int, y_test, t_current, model_name):
+def prk_curve_for_top_k_projects(
+        proba_predictions: list,
+        k_start: int,
+        k_end: int,
+        k_gap: int,
+        y_test,
+        t_current,
+        fold: int,
+        model_name):
     # Temp: consider 1 for failing projects and 0 for projects getting fully funded in four months
     # Select the probabilities for label 1
     probabilities = proba_predictions[:, 1]
@@ -126,7 +134,7 @@ def prk_curve_for_top_k_projects(proba_predictions: list, k_start: int, k_end: i
     plt.xlabel('Value of k as a percentage (%)')
     plt.title("Model's Precision and Recall for Varying k")
     plt.legend()
-    plt.savefig(config.K_PROJECTS_DEST + model_name + f"prk_curve_for_{str(t_current)[:10]}")
+    plt.savefig(config.K_PROJECTS_DEST + model_name + f"prk_curve_for_fold_{fold}_{str(t_current)[:10]}")
     plt.show()
 
     prk_results = {
@@ -202,7 +210,6 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
     return best_threshold
 
 def get_precision_for_fixed_k(k, proba_predictions, y_test):
-
     # Select the probabilities for label 1
     probabilities = proba_predictions[:, 1]
     # Rank the probabilities in descending order
@@ -216,10 +223,12 @@ def get_precision_for_fixed_k(k, proba_predictions, y_test):
 
     return k_labels, k_precision
 
-def get_positive_percentage(y_train, y_test):
+def get_positive_percentage(y_train: DataFrame, y_test: DataFrame):
+    dp.export_data_frame(y_train, "./training_features.csv")
+    dp.export_data_frame(y_test, "./testing_features.csv")
 
-    train_pos = len(y_train[y_train==1])/len(y_train)
-    test_pos = len(y_test[y_test==1])/len(y_test)
+    train_pos = y_train["Label"].value_counts()[1] / len(y_train["Label"])
+    test_pos = y_test["Label"].value_counts()[1] / len(y_test["Label"])
 
     return train_pos, test_pos
 
@@ -273,8 +282,6 @@ def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
 
     return
 
-
-
 def cross_validate(data, model, model_name):
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
@@ -317,13 +324,14 @@ def cross_validate(data, model, model_name):
         
         # Observing the best threshold using different methods
         prk_results = prk_curve_for_top_k_projects(
-                        y_hat, 
-                        int(config.MAX_ROWS*0.01), 
-                        int(config.MAX_ROWS*0.3), 
-                        100, 
-                        y_test, 
-                        t_current, 
-                        model_name
+                        proba_predictions = y_hat, 
+                        k_start = int(config.MAX_ROWS*0.01), 
+                        k_end = int(config.MAX_ROWS*0.3), 
+                        k_gap = 100, 
+                        y_test = y_test, 
+                        t_current = start_date,
+                        fold=folds+1,
+                        model_name = model_name
                     )
         
         best_k = prk_results.get('best_k')
