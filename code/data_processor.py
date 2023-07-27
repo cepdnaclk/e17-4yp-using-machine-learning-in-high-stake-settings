@@ -4,6 +4,8 @@ import numpy as np
 from pandas.core.frame import DataFrame
 from datetime import timedelta
 import json
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 def load_data_to_df(path: str, rows: int=None):
     if rows:
@@ -16,7 +18,7 @@ def export_data_frame(data: DataFrame, path: str, columns: list=None):
     data.to_csv(path, columns=columns)
 
 def save_json(dict_obj: dict, path: str):
-    writable_json = json.dumps(dict_obj)
+    writable_json = json.dumps(dict_obj, indent=4)
     with open(path, 'w') as file:
         file.write(writable_json)
 
@@ -90,8 +92,8 @@ def split_temporal_train_test_data(
     train_set = data[
         (data["Project Posted Date"] > pd.to_datetime(train_start))
         ]
-    train_set = data[
-        (data["Project Posted Date"] < pd.to_datetime(train_end))
+    train_set = train_set[
+        (train_set["Project Posted Date"] < pd.to_datetime(train_end))
         ].drop(["Project ID", "Project Posted Date"], axis=1)
     
     x_train = train_set.loc[:, train_set.columns != "Label"]
@@ -99,8 +101,8 @@ def split_temporal_train_test_data(
     
     test_set = data[
         (data["Project Posted Date"] > pd.to_datetime(test_start))]
-    test_set = data[
-        (data["Project Posted Date"] < pd.to_datetime(test_end))
+    test_set = test_set[
+        (test_set["Project Posted Date"] < pd.to_datetime(test_end))
         ].drop(["Project ID", "Project Posted Date"], axis=1)
     
     x_test = test_set.loc[:, test_set.columns != "Label"]
@@ -114,11 +116,30 @@ def split_temporal_train_test_data(
     
 if __name__ == "__main__":
     print("Start data pre processing")
-    data = load_data_to_df(config.DATA_SOURCE, rows=10)
+    data = load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
+    print(data.shape)
 
     data = set_data_types_to_datetime(data, config.DATE_COLS)
+    print(data.shape)
 
-    data = impute_data(data)
+    # data = impute_data(data)
+    
+    data.set_index("Project Posted Date", inplace=True)
+    data_count_by_month = data.resample('M').size()
+    # Plot the data count distribution
+    plt.figure(figsize=(10, 6))
+    ax = data_count_by_month.plot(kind='bar')
 
+    # Remove the time part from the date labels
+    x_labels = [d.strftime('%Y-%b') for d in data_count_by_month.index]
+    
+    ax.set_xticklabels(x_labels, rotation=45, ha='right')
+
+    plt.xlabel('Month')
+    plt.ylabel('Projects Count')
+    plt.title('Projects Count Distribution by Month')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.show()
     
 
