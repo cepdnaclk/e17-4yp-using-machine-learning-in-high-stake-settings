@@ -1,12 +1,15 @@
-# import matplotlib
-# matplotlib.use('Agg')
+import matplotlib
+import matplotlib.pyplot as plt
+
+# Set the backend to a non-GUI backend (e.g., 'Agg' for PNG files)
+matplotlib.use('Agg')
+
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix
 from pandas.core.frame import DataFrame
 from datetime import timedelta
-import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_curve, roc_auc_score, precision_recall_curve
 
@@ -51,7 +54,7 @@ def label_data(data: DataFrame, threshold: float):
 
     # "Not get funded" is 1
     data["Label"] = data.apply(
-        lambda x : 1  if x["Fund Ratio"] < threshold  else 0, axis=1)
+        lambda x : 1 if x["Fund Ratio"] < threshold  else 0, axis=1)
 
     return data.drop_duplicates()
 
@@ -60,6 +63,7 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
     thresholds = list(np.arange(0.3, 0.7, 0.05).round(2))
     best_threshold = None
     best_f1_score = 0.0
+    best_precision = 0.0
     best_prediction = None
 
     for threshold in thresholds:
@@ -68,9 +72,14 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
 
         # Calculate F1 score
         f1 = f1_score(y_test, binary_predictions)
+        precision = precision_score(y_test, binary_predictions)
 
-        if f1 > best_f1_score:
-            best_f1_score = f1
+        # if f1 > best_f1_score:
+        #     best_f1_score = f1
+        #     best_threshold = threshold
+        #     best_prediction = binary_predictions
+        if precision > best_precision:
+            best_precision = precision
             best_threshold = threshold
             best_prediction = binary_predictions
     # print("best_f1_score = ", best_f1_score)
@@ -105,8 +114,10 @@ def prk_curve_for_top_k_projects(
     best_k = None
     best_k_perc = None
     best_labels = None
+    precision_for_best_k = None
 
-    for k in range(k_start, len(proba_predictions)+k_gap, k_gap):
+    print(f"k_start = {k_start}, len(proba_predictions) = {len(proba_predictions)}, k_gap = {k_gap}")
+    for k in range(k_start, len(proba_predictions), k_gap):
         k_labels = (ranks <= k).astype(int)
         new_labels.append(k_labels)
         k_value.append(k)
@@ -120,6 +131,7 @@ def prk_curve_for_top_k_projects(
         if precision_recall_smallest_gap >= difference:
             precision_recall_smallest_gap = difference
             best_k = k
+            precision_for_best_k = k_precision
             best_k_perc = k/total_probabilities
             best_labels = k_labels
 
@@ -132,10 +144,17 @@ def prk_curve_for_top_k_projects(
     plt.plot(k_value_perc, precision, label='precision')
     plt.plot(k_value_perc, recall, label='recall')
     plt.xlabel('Value of k as a percentage (%)')
-    plt.title("Model's Precision and Recall for Varying k")
+    plt.title(f"Model's Precision and Recall for Varying k ({len(proba_predictions)} test inputs)")
     plt.legend()
-    plt.savefig(config.K_PROJECTS_DEST + model_name + f"prk_curve_for_fold_{fold}_{str(t_current)[:10]}")
-    plt.show()
+    plt.savefig(config.K_PROJECTS_DEST + model_name + f"prk_curve_for_fold_{fold}_{str(t_current)[:10]}.png")
+    # plt.show()
+    plt.clf()
+
+    # print("temp = ", list(temp))
+    print("best k = ", best_k)
+    best_k_index = list(temp).index(best_k)
+    best_threshold = probabilities[best_k_index]
+    print("best_threshold = ",best_threshold)
 
     prk_results = {
         'k_value': k_value,
@@ -143,8 +162,10 @@ def prk_curve_for_top_k_projects(
         'recall': recall,
         # 'new_labels': new_labels,
         'best_k': best_k,
+        'best_threshold_for_best_k': best_threshold,
+        'precision_for_best_k': precision_for_best_k,
         # 'best_labels': best_labels,
-        'best_k_perc': best_k_perc
+        'best_k_percentage': best_k_perc
     }
 
     return prk_results
@@ -170,14 +191,16 @@ def plot_roc_curve(proba_predictions, y_test, t_current):
     # Find the AUC
     auc = round(roc_auc_score(y_test, probabilities), 4)
     # Plot the curve and save
+    plt.cla()
     plt.plot(fpr,tpr,label="AUC="+str(auc))
     plt.title("ROC curve")
     plt.axis("square")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.legend()
-    plt.savefig(config.ROC_CURVE_DEST+ f"roc_curve_for_{str(t_current)[: 10]}")
-    plt.show()
+    plt.savefig(config.ROC_CURVE_DEST+ f"roc_curve_for_{str(t_current)[: 10]}.png")
+    # plt.show()
+    plt.clf()
 
     return best_threshold
 
@@ -200,12 +223,14 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
     #print(f"Best Threshold: {best_threshold} for {t_current[: 10]}")
     
     # Plot the curve and save
+    plt.cla()
     plt.plot(recall, precision)
     plt.title("Precision vs Recall Curve")
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.savefig(config.P_VS_R_CURVE_DEST+ f"precision_vs_recall_curve_for_{str(t_current)[: 10]}")
-    plt.show()
+    # plt.savefig(config.P_VS_R_CURVE_DEST+ f"precision_vs_recall_curve_for_{str(t_current)[: 10]}")
+    # plt.show()
+    plt.clf()
 
     return best_threshold
 
@@ -224,9 +249,6 @@ def get_precision_for_fixed_k(k, proba_predictions, y_test):
     return k_labels, k_precision
 
 def get_positive_percentage(y_train: DataFrame, y_test: DataFrame):
-    dp.export_data_frame(y_train, "./training_features.csv")
-    dp.export_data_frame(y_test, "./testing_features.csv")
-
     train_pos = y_train["Label"].value_counts()[1] / len(y_train["Label"])
     test_pos = y_test["Label"].value_counts()[1] / len(y_test["Label"])
 
@@ -241,6 +263,8 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
     
     # Plot accuracy and f1 score for all the folds
     # print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
+    
+    plt.cla()
     plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
     plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
     
@@ -250,7 +274,8 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
     plt.xticks(x_positions, x_labels, rotation = 90)
     plt.legend()
     plt.savefig(config.IMAGE_DEST + model_name +'cross_validation_plot.png')
-    plt.show()
+    # plt.show()
+    plt.clf()
 
     # Plot the model accuracy for all the folds
     plt.cla()
@@ -261,7 +286,8 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
     plt.title("Model Score for each fold")
     plt.xticks(x_positions, x_labels, rotation = 90)
     plt.savefig(config.IMAGE_DEST + model_name +'model_score_plot.png')
-    plt.show()
+    # plt.show()
+    plt.clf()
 
 
 def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
@@ -278,7 +304,8 @@ def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
     plt.title("Precision for each fold for fixed k")
     plt.xticks(x_positions, x_labels, rotation = 90)
     plt.savefig(config.IMAGE_DEST + model_name +'k_fixed_precision_plot.png')
-    plt.show()
+    # plt.show()
+    plt.clf()
 
     return
 
@@ -325,17 +352,19 @@ def cross_validate(data, model, model_name):
         # Observing the best threshold using different methods
         prk_results = prk_curve_for_top_k_projects(
                         proba_predictions = y_hat, 
-                        k_start = int(config.MAX_ROWS*0.01), 
-                        k_end = int(config.MAX_ROWS*0.3), 
-                        k_gap = 100, 
+                        k_start = 1000, 
+                        k_end = int(y_hat.shape[0]*0.8), 
+                        k_gap = 500, 
                         y_test = y_test, 
                         t_current = start_date,
                         fold=folds+1,
                         model_name = model_name
                     )
         
+        
         best_k = prk_results.get('best_k')
-        best_k_perc = prk_results.get('best_k_perc')
+        best_k_perc = prk_results.get('best_k_percentage')
+        precision_for_best_k = prk_results.get('precision_for_best_k')
 
         # For a fixed value of k, find the precision for each fold
         k_fixed_labels, k_fixed_precision = get_precision_for_fixed_k(1000, y_hat, y_test)
@@ -361,7 +390,7 @@ def cross_validate(data, model, model_name):
         test_end = test_start + timedelta(config.TEST_SIZE)
 
         fold_info = {
-            'classifier': model_name,
+            'classifier': model_name[:-1],
             'fold_number': folds+1,
             'timeline': {
                 'train_start': str(start_date)[:10],
