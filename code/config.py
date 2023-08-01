@@ -11,6 +11,8 @@ K_PROJECTS_DEST=IMAGE_DEST + "k_projects/"
 ROC_CURVE_DEST=IMAGE_DEST + "roc_curve/"
 P_VS_R_CURVE_DEST=IMAGE_DEST + "pr_curve/"
 
+INFO_DEST=ROOT+"model_outputs/info/"
+
 MAX_ROWS=400000
 
 # To label data  

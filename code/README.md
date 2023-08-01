@@ -15,10 +15,19 @@ $ pipenv shell
 $ pip install -r requirements.txt
 ```
 
+### With pip and conda
+```
+$ conda env xai_venv
+$ conda activate xai_venv
+$ pip install -r requirements.txt
+```
+
 ### Run pipeline
 In the virtual env run,
 ```
 $ python main.py
+or
+$ python -W ignore main.py
 ```
 
 ## Program arch
