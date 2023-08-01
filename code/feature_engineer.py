@@ -1,3 +1,6 @@
+import os
+import pickle
+import time
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
@@ -12,11 +15,44 @@ import nltk
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
+import re
 import config
 import data_processor as dp
 
+
 lang_tool = language_tool_python.LanguageTool('en-US')
+
+
+def increment_path(path, exist_ok=False):
+    # If the folder already exists and `exist_ok` is True, return the original path
+    if exist_ok and os.path.exists(path):
+        return path
+
+    # If the folder does not exist or `exist_ok` is False, create a new folder with an incremented number
+    print(path.rstrip("/"))
+    
+    dirname, basename = os.path.split(path.rstrip("/"))
+    try:
+        names  = re.split(r'(\d+)', basename)
+        
+    except:
+        names = [basename, "1"]
+        
+        
+    name = names[0]
+    ext = names[1]
+    
+    
+    i = 1
+    while True:
+        new_name = f"{name}{i}"
+        new_path = os.path.join(dirname, new_name)
+        if not os.path.exists(new_path):
+            break
+        
+        i += 1
+        
+    return new_path
 
 
 def standardize_data(x_train, x_test, cols_list):
@@ -150,7 +186,8 @@ def get_best_proba_threshold_prediction(proba_predictions: list, y_test):
     return best_threshold, best_prediction
 
 
-def run_pipeline(data, model):
+def run_pipeline(data, model, dest: str ="./run"):
+    
     # Initiate lists to store data
     t_current_list = []
     t_current_accuracy = []
@@ -168,6 +205,16 @@ def run_pipeline(data, model):
     model_eval_metrics =  {"accuracy": [], "f1_score": []}
 
     folds = 0
+    
+    # Create a new folder for each experiment
+    experiment_number = 1
+    root_f = os.path.join(dest, f"exp{experiment_number}")
+
+    # Use the increment_path function to handle existing folders
+    root = increment_path(root_f)
+
+    # Create the experiment folder
+    os.makedirs(root, exist_ok=True)
 
     while(t_current < max_t - training_window):
 
@@ -234,7 +281,34 @@ def run_pipeline(data, model):
 
 
         # print(classification_report(y_test, y_hat, output_dict=True))
-        print("==============================================================================\n")
+        
+        
+        
+        current_root = f"{root}/Fold_{folds}"
+        os.makedirs(current_root)
+        pickle.dump(model, file=open(f"{current_root}/model.pkl", "wb"))
+        
+        
+        # Convert x_train and y_train to Pandas DataFrames
+        x_train_df = pd.DataFrame(x_train)
+        y_train_df = pd.DataFrame(y_train)
+
+        # Combine x_train and y_train into a single DataFrame
+        train_df = pd.concat([x_train_df, y_train_df], axis=1)
+
+        pd.DataFrame.to_csv(train_df, f"{current_root}/train.csv" )
+        
+        
+        # Convert TEST DATASET AND PREDICTIONS to a DataFrame
+        x_test_df = pd.DataFrame(x_test)
+        y_test_df = pd.DataFrame(y_test)
+        predicted_probabilities_df = pd.DataFrame(y_hat, columns=model.classes_, index=y_test_df.index)
+       
+        
+        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        test_df = pd.concat([x_test_df, y_test_df, predicted_probabilities_df], axis=1, ignore_index=True)
+        pd.DataFrame.to_csv(test_df, f"{current_root}/test.csv" )
+
         t_current = t_current + time_period
         folds += 1
     
@@ -288,4 +362,4 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
     plt.xticks(x_positions, x_labels, rotation = 90)
     plt.legend()
     plt.savefig(config.IMAGE_DEST+'cross_validation_plot.png')
-    plt.show()
+    # plt.show()

@@ -260,6 +260,7 @@ def run_pipeline(data, model, parameters, time_period_in_days, fund_ratio_thresh
     plt.xlabel('Predicted Value')
     plt.ylabel('Actual Value')
     plt.savefig(f"Confusion matrix for {str(t_current)[:10]}")
+    
     plt.clf()
     # plt.savefig("Confusion matrix for " + str(t_current))
 

@@ -1,3 +1,4 @@
+
 import pandas as pd
 import datetime
 import seaborn as sns
@@ -16,6 +17,8 @@ import config
 def save_model(file_name, model):
     file_path = config.MODEL_DEST + file_name
     pickle.dump(model, file=open(file_path, "wb"))
+    
+
 
 def load_model(model_file_path):
     return pickle.load(open(model_file_path, 'rb'))
@@ -59,6 +62,18 @@ classifier_2 = RandomForestClassifier()
 data = dp.encode_data(data, config.CATEGORICAL_COLS)
 print("encoded_data.shape = ", data.shape)
 
-trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data, classifier_2)
+trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data, classifier_1, f"./run/LogisticRegression")
 fe.plot_k_fold_evaluation_metrics(eval_metrics)
-save_model(file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+save_model(file_name=f'Logreg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+
+
+trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data, classifier_2, f"./run/RandomForestClassifier")
+fe.plot_k_fold_evaluation_metrics(eval_metrics)
+save_model(file_name=f'RandomForest_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+
+
+# test set
+# train set 
+# proba_predict (project id)
+# trained model
+# 
