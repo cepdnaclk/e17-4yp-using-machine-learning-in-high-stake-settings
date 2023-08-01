@@ -357,6 +357,8 @@ def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
 
     return
 
+
+
 def cross_validate(data, model, model_name, dest):
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
@@ -373,7 +375,6 @@ def cross_validate(data, model, model_name, dest):
     model_eval_metrics =  {"accuracy": [], "precision": [], "f1_score": [], "model_score": [], "k_fixed_precision": []}
 
     folds = 0
-    
     # Create a new folder for each experiment
     experiment_number = 1
     root_f = os.path.join(dest, f"exp{experiment_number}")
@@ -475,37 +476,6 @@ def cross_validate(data, model, model_name, dest):
         }
         file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+model_name+file_name)
-
-        print(f"Training  from {str(start_date)[:10]} to {str(train_end)[:10]}")
-        print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
-        print("Training set shape = ", x_train.shape)
-        print("Percentage of positive labels in training set: ", train_pos_perc)
-        print("Testing set shape = ", x_test.shape)
-        print("Percentage of positive labels in testing set: ", test_pos_perc)
-        print("Prediction evaluation scores for testing: ")
-        print("best_threshold = ", best_threshold)
-        print(f"K with the minimum difference between P and R: {best_k}; as a percentage {best_k_perc}")
-        print("F1 score = ", f1)
-        print("Accuracy = ", accuracy)
-        print("Precision = ", precision)
-        print("Model score = ", model_score)
-
-        # break
-        # y_pred = model.predict_proba(x_train)
-
-        # Evaluate
-        # cm = confusion_matrix(y_test, y_hat)
-        # sns.heatmap(cm, square=True, annot=True, cbar=False)
-        # plt.xlabel('Predicted Value')
-        # plt.ylabel('Actual Value')
-        # plt.savefig(config.IMAGE_DEST + f"Confusion matrix for {str(t_current)[:10]}")
-        # plt.clf()
-
-        # print("Prediction evaluation scores for training: ")
-        # print(classification_report(y_train, y_pred, output_dict=True))
-
-
-        # print(classification_report(y_test, y_hat, output_dict=True))
         
         
         
@@ -533,12 +503,29 @@ def cross_validate(data, model, model_name, dest):
         # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
         test_df = pd.concat([x_test_df, y_test_df, predicted_probabilities_df], axis=1, ignore_index=True)
         pd.DataFrame.to_csv(test_df, f"{current_root}/test.csv" )
+        
+        
 
-        t_current = t_current + time_period
+        print(f"Training  from {str(start_date)[:10]} to {str(train_end)[:10]}")
+        print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
+        print("Training set shape = ", x_train.shape)
+        print("Percentage of positive labels in training set: ", train_pos_perc)
+        print("Testing set shape = ", x_test.shape)
+        print("Percentage of positive labels in testing set: ", test_pos_perc)
+        print("Prediction evaluation scores for testing: ")
+        print("best_threshold = ", best_threshold)
+        print(f"K with the minimum difference between P and R: {best_k}; as a percentage {best_k_perc}")
+        print("F1 score = ", f1)
+        print("Accuracy = ", accuracy)
+        print("Precision = ", precision)
+        print("Model score = ", model_score)
+
         t_current -= shift_period
         folds += 1
     
     return model_eval_metrics, probability_thresholds
+
+
 
 
 # def run_pipeline(data, model, ):
@@ -548,7 +535,7 @@ def cross_validate(data, model, model_name, dest):
 #     t_current_accuracy = []
 def run_pipeline(data, model, model_name, dest: str ="./run"):
     
-    model_eval_metrics, probability_thresholds = cross_validate(data, model, model_name, dest)
+    model_eval_metrics, probability_thresholds = cross_validate(data, model, model_name,dest )
     print("")
     print("probability_thresholds = ", probability_thresholds)
     print("accuracies = ", model_eval_metrics["accuracy"])
@@ -569,26 +556,7 @@ def run_pipeline(data, model, model_name, dest: str ="./run"):
     print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
     print("Average precision for fixed k = ", avg_metrics["avg_fixed_k_precision"])
 
-    
-
-    # Filter rows for the relevant time period
-    data_window = data[
-        data["Project Posted Date"] < pd.to_datetime(max_t)]
-    data_window = data_window[
-        data_window["Project Posted Date"] > pd.to_datetime(min_t)]
-    t_filter = max_t - folds * time_period
-
-    x_train, y_train, x_test, y_test = dp.split_time_series_train_test_data(
-            data=data_window, filter_date=t_filter)
-    
-    # Scaling
-    x_train, x_test = standardize_data(x_train, x_test, config.VARIABLES_TO_SCALE)
-
-    # Model Training
-    model = model.fit(x_train, y_train.values.ravel())
-
     return model, model_eval_metrics, avg_metrics
-
 
 def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
     x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
