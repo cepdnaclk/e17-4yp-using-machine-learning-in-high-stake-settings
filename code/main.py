@@ -3,18 +3,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-import pickle
 
 import feature_engineer as fe
 import data_processor as dp
 import config
-
-def save_model(file_name, model):
-    file_path = config.MODEL_DEST + file_name
-    pickle.dump(model, file=open(file_path, "wb"))
-
-def load_model(model_file_path):
-    return pickle.load(open(model_file_path, 'rb'))
+from helper import save_model, load_model
 
 print("Start data pre processing")
 data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
@@ -58,28 +51,28 @@ data_2 = data_1.copy(deep=True)
 data_3 = data_1.copy(deep=True)
 data_4 = data_1.copy(deep=True)
 
-# print("Classifier: Random Forest")
-# trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_1, classifier_1, 'random_forest/')
-# fe.plot_k_fold_evaluation_metrics(eval_metrics, 'random_forest/')
-# fe.plot_precision_for_fixed_k(eval_metrics, 'random_forest/')
-# save_model(file_name=f'RandForest_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+print("Classifier: Random Forest")
+trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_1, classifier_1, 'random_forest/')
+fe.plot_k_fold_evaluation_metrics(eval_metrics, 'random_forest/')
+fe.plot_precision_for_fixed_k(eval_metrics, 'random_forest/')
+# save_model(config.MODEL_DEST, file_name=f'RandForest_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
 
 
-print("Classifier: Logistic Regression")
-trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_2, classifier_2, 'log_reg/')
-fe.plot_k_fold_evaluation_metrics(eval_metrics, 'log_reg/')
-fe.plot_precision_for_fixed_k(eval_metrics, 'log_reg/')
-save_model(file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+# print("Classifier: Logistic Regression")
+# trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_2, classifier_2, 'log_reg/')
+# fe.plot_k_fold_evaluation_metrics(eval_metrics, 'log_reg/')
+# fe.plot_precision_for_fixed_k(eval_metrics, 'log_reg/')
+# save_model(config.MODEL_DEST, file_name=f'LogReg_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
 
 
 # print("Classifier: Decision Tree")
 # trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_3, classifier_3, 'decision_tree/')
 # fe.plot_k_fold_evaluation_metrics(eval_metrics, 'decision_tree/')
 # fe.plot_precision_for_fixed_k(eval_metrics, 'decision_tree/')
-# save_model(file_name=f'DecTree_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+# save_model(config.MODEL_DEST, file_name=f'DecTree_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
 
 # print("Classifier: SVM")
 # trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_4, classifier_4, 'svm/')
 # fe.plot_k_fold_evaluation_metrics(eval_metrics, 'svm/')
 # fe.plot_precision_for_fixed_k(eval_metrics, 'svm/')
-# save_model(file_name=f'SVM_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
+# save_model(config.MODEL_DEST, file_name=f'SVM_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
