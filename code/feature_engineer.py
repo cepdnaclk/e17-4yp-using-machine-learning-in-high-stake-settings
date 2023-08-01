@@ -1,5 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
+import os
 
 # Set the backend to a non-GUI backend (e.g., 'Agg' for PNG files)
 matplotlib.use('Agg')
@@ -15,6 +16,7 @@ from sklearn.metrics import classification_report, f1_score, accuracy_score, pre
 
 import config
 import data_processor as dp
+from helper import save_model
 
 
 def standardize_data(x_train, x_test, cols_list):
@@ -111,10 +113,12 @@ def prk_curve_for_top_k_projects(
     k_value = []
     new_labels = []
     precision_recall_smallest_gap = 1.0
-    best_k = None
+    best_k_for_min_dif = None
+    best_k_for_max_f1 = None
     best_k_perc = None
     best_labels = None
     precision_for_best_k = None
+    max_f1 = 0
 
     print(f"k_start = {k_start}, len(proba_predictions) = {len(proba_predictions)}, k_gap = {k_gap}")
     for k in range(k_start, len(proba_predictions), k_gap):
@@ -130,10 +134,16 @@ def prk_curve_for_top_k_projects(
         difference = abs(k_precision - k_recall)
         if precision_recall_smallest_gap >= difference:
             precision_recall_smallest_gap = difference
-            best_k = k
+            best_k_for_min_dif = k
             precision_for_best_k = k_precision
             best_k_perc = k/total_probabilities
             best_labels = k_labels
+        
+        f1 = f1_score(y_test, k_labels)
+
+        if max_f1 < f1:
+            best_k_for_max_f1 = k
+            max_f1 = f1
 
     # Print the k with the minimum difference between P and R 
     #print(f"K with the minimum difference between P and R: {best_k}")
@@ -141,28 +151,34 @@ def prk_curve_for_top_k_projects(
 
     # Plot the prk curve
     plt.cla()
-    plt.plot(k_value_perc, precision, label='precision')
+    plt.plot(k_value_perc, precision, marker='o', label='precision')
     plt.plot(k_value_perc, recall, label='recall')
     plt.xlabel('Value of k as a percentage (%)')
     plt.title(f"Model's Precision and Recall for Varying k ({len(proba_predictions)} test inputs)")
     plt.legend()
     plt.savefig(config.K_PROJECTS_DEST + model_name + f"prk_curve_for_fold_{fold}_{str(t_current)[:10]}.png")
-    # plt.show()
+    plt.show()
     plt.clf()
 
     # print("temp = ", list(temp))
-    print("best k = ", best_k)
-    best_k_index = list(temp).index(best_k)
-    best_threshold = probabilities[best_k_index]
-    print("best_threshold = ",best_threshold)
+    print("best_k_for_min_dif = ", best_k_for_min_dif)
+    print("best_k_for_max_f1 = ", best_k_for_max_f1)
+    best_k_index = list(temp).index(best_k_for_min_dif)
+    best_threshold_by_diff = probabilities[best_k_index]
+    best_k_index = list(temp).index(best_k_for_max_f1)
+    best_threshold_by_f1 = probabilities[best_k_index]
+    print("best_threshold_by_diff = ",best_threshold_by_diff)
+    print("best_threshold_by_f1 = ",best_threshold_by_f1)
 
     prk_results = {
         'k_value': k_value,
         'precision': precision,
         'recall': recall,
         # 'new_labels': new_labels,
-        'best_k': best_k,
-        'best_threshold_for_best_k': best_threshold,
+        'best_k_for_min_dif': best_k_for_min_dif,
+        'best_k_for_max_f1': best_k_for_max_f1,
+        'best_threshold_by_diff': best_threshold_by_diff,
+        'best_threshold_by_f1': best_threshold_by_f1,
         'precision_for_best_k': precision_for_best_k,
         # 'best_labels': best_labels,
         'best_k_percentage': best_k_perc
@@ -352,9 +368,9 @@ def cross_validate(data, model, model_name):
         # Observing the best threshold using different methods
         prk_results = prk_curve_for_top_k_projects(
                         proba_predictions = y_hat, 
-                        k_start = 1000, 
+                        k_start = 100, 
                         k_end = int(y_hat.shape[0]*0.8), 
-                        k_gap = 500, 
+                        k_gap = 100, 
                         y_test = y_test, 
                         t_current = start_date,
                         fold=folds+1,
@@ -362,9 +378,9 @@ def cross_validate(data, model, model_name):
                     )
         
         
-        best_k = prk_results.get('best_k')
+        best_k = prk_results.get('best_k_for_max_f1')
         best_k_perc = prk_results.get('best_k_percentage')
-        precision_for_best_k = prk_results.get('precision_for_best_k')
+        best_threshold_by_f1 = prk_results.get('best_threshold_by_f1')
 
         # For a fixed value of k, find the precision for each fold
         k_fixed_labels, k_fixed_precision = get_precision_for_fixed_k(1000, y_hat, y_test)
@@ -418,19 +434,43 @@ def cross_validate(data, model, model_name):
         file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+model_name+file_name)
 
-        print(f"Training  from {str(start_date)[:10]} to {str(train_end)[:10]}")
-        print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
-        print("Training set shape = ", x_train.shape)
-        print("Percentage of positive labels in training set: ", train_pos_perc)
-        print("Testing set shape = ", x_test.shape)
-        print("Percentage of positive labels in testing set: ", test_pos_perc)
-        print("Prediction evaluation scores for testing: ")
-        print("best_threshold = ", best_threshold)
-        print(f"K with the minimum difference between P and R: {best_k}; as a percentage {best_k_perc}")
-        print("F1 score = ", f1)
-        print("Accuracy = ", accuracy)
-        print("Precision = ", precision)
-        print("Model score = ", model_score)
+        art_path = config.ARTIFACTS_PATH+model_name
+        if not os.path.exists(art_path):
+            os.makedirs(art_path)
+
+        save_model(
+            art_path,
+            file_name=f'{model_name[:-1]}_fold_{folds+1}_{str(start_date)[:10]}.pkl',
+            model=model
+        )
+        # Combine x_train and y_train into a single DataFrame
+        train_df = pd.concat([x_train, y_train], axis=1)
+        predicted_probabilities_df = pd.DataFrame(y_hat, columns=model.classes_, index=y_test.index)
+        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        test_df = pd.concat([x_test, predicted_probabilities_df], axis=1, ignore_index=True)
+
+        dp.export_data_frame(
+            train_df,
+            art_path+f'train_fold_{folds+1}_{str(start_date)[:10]}.csv'
+        )
+        dp.export_data_frame(
+            test_df,
+            art_path+f'test_fold_{folds+1}_{str(start_date)[:10]}.csv'
+        )
+        
+        # print(f"Training  from {str(start_date)[:10]} to {str(train_end)[:10]}")
+        # print(f"Testing from {str(test_start)[:10]} to {str(test_end)[:10]}")
+        # print("Training set shape = ", x_train.shape)
+        # print("Percentage of positive labels in training set: ", train_pos_perc)
+        # print("Testing set shape = ", x_test.shape)
+        # print("Percentage of positive labels in testing set: ", test_pos_perc)
+        # print("Prediction evaluation scores for testing: ")
+        # print("best_threshold = ", best_threshold)
+        # print(f"K with the minimum difference between P and R: {best_k}; as a percentage {best_k_perc}")
+        # print("F1 score = ", f1)
+        # print("Accuracy = ", accuracy)
+        # print("Precision = ", precision)
+        # print("Model score = ", model_score)
 
         t_current -= shift_period
         folds += 1
@@ -440,12 +480,12 @@ def cross_validate(data, model, model_name):
 
 def run_pipeline(data, model, model_name):
     model_eval_metrics, probability_thresholds = cross_validate(data, model, model_name)
-    print("")
-    print("probability_thresholds = ", probability_thresholds)
-    print("accuracies = ", model_eval_metrics["accuracy"])
-    print("f1_scores = ", model_eval_metrics["f1_score"])
-    print("model_scores = ", model_eval_metrics["model_score"])
-    print("precision for fixed k values = ", model_eval_metrics["k_fixed_precision"])
+    # print("")
+    # print("probability_thresholds = ", probability_thresholds)
+    # print("accuracies = ", model_eval_metrics["accuracy"])
+    # print("f1_scores = ", model_eval_metrics["f1_score"])
+    # print("model_scores = ", model_eval_metrics["model_score"])
+    # print("precision for fixed k values = ", model_eval_metrics["k_fixed_precision"])
 
     avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
                    "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
@@ -453,11 +493,11 @@ def run_pipeline(data, model, model_name):
                    "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds), 
                    "avg_fixed_k_precision": sum(model_eval_metrics["k_fixed_precision"])/len(model_eval_metrics["k_fixed_precision"])}
 
-    print("")
-    print("Average accuracy = ", avg_metrics["avg_accuracy"])
-    print("Average f1_score = ", avg_metrics["avg_f1_score"])
-    print("Average model score = ", avg_metrics["avg_model_score"])
-    print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
-    print("Average precision for fixed k = ", avg_metrics["avg_fixed_k_precision"])
+    # print("")
+    # print("Average accuracy = ", avg_metrics["avg_accuracy"])
+    # print("Average f1_score = ", avg_metrics["avg_f1_score"])
+    # print("Average model score = ", avg_metrics["avg_model_score"])
+    # print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
+    # print("Average precision for fixed k = ", avg_metrics["avg_fixed_k_precision"])
 
     return model, model_eval_metrics, avg_metrics
