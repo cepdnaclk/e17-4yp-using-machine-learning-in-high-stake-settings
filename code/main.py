@@ -7,7 +7,7 @@ from sklearn.svm import SVC
 import feature_engineer as fe
 import data_processor as dp
 import config
-from helper import save_model, load_model
+from helper import save_model, load_model, create_dirs
 
 print("Start data pre processing")
 data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
@@ -26,8 +26,8 @@ print("Filtered training Features, shape = ", data.shape)
 
 # export labelled data to csv
 time = datetime.datetime.now()
-file_path = config.DATA_DEST + f"labelled_data - {str(time.strftime('%Y-%m-%d %H:%M:%S'))[:10]}.csv"
-dp.export_data_frame(data=data, path=file_path)
+# file_path = config.DATA_DEST + f"labelled_data - {str(time.strftime('%Y-%m-%d %H:%M:%S'))[:10]}.csv"
+# dp.export_data_frame(data=data, path=file_path)
 
 # Define models and parameters
 classifier_1 = RandomForestClassifier(n_estimators=500)
@@ -50,6 +50,9 @@ print("encoded_data.shape = ", data_1.shape)
 data_2 = data_1.copy(deep=True)
 data_3 = data_1.copy(deep=True)
 data_4 = data_1.copy(deep=True)
+
+# create dirs that not exist
+create_dirs() # can pass a list of specific model names
 
 print("Classifier: Random Forest")
 trained_model, eval_metrics, avg_metrics = fe.run_pipeline(data_1, classifier_1, 'random_forest/')

@@ -12,7 +12,15 @@ from sklearn.metrics import confusion_matrix
 from pandas.core.frame import DataFrame
 from datetime import timedelta
 import seaborn as sns
-from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_curve, roc_auc_score, precision_recall_curve
+from sklearn.metrics import (
+    classification_report, 
+    f1_score, 
+    accuracy_score, 
+    precision_score, 
+    recall_score, 
+    roc_curve, 
+    roc_auc_score, 
+    precision_recall_curve)
 
 import config
 import data_processor as dp
