@@ -1,0 +1,60 @@
+{
+    "classifier": "random_forest",
+    "fold_number": 2,
+    "timeline": {
+        "train_start": "2016-09-08",
+        "train_end": "2017-03-07",
+        "test_start": "2017-07-05",
+        "test_end": "2017-08-04"
+    },
+    "shape": {
+        "training_shape": "(3275, 1232)",
+        "test_shape": "(706, 1232)"
+    },
+    "data_distribution": {
+        "train_positive_ratio": 0.3102290076335878,
+        "test_positive_ratio": 0.2818696883852691
+    },
+    "predict_proba_clas_threshold": 0.65,
+    "evaluation_metrics": {
+        "accuracy": 0.6912181303116147,
+        "precision": 0.45739910313901344,
+        "f1_score": 0.4834123222748815,
+        "model_score": 0.6515580736543909
+    },
+    "prk_results": {
+        "k_value": [
+            100,
+            200,
+            300,
+            400,
+            500,
+            600,
+            700
+        ],
+        "precision": [
+            0.6336633663366337,
+            0.48258706467661694,
+            0.4119601328903654,
+            0.3765586034912718,
+            0.3013972055888224,
+            0.2911813643926789,
+            0.2838801711840228
+        ],
+        "recall": [
+            0.32160804020100503,
+            0.48743718592964824,
+            0.6231155778894473,
+            0.7587939698492462,
+            0.7587939698492462,
+            0.8793969849246231,
+            1.0
+        ],
+        "best_k_for_min_dif": 200,
+        "best_k_for_max_f1": 400,
+        "best_threshold_by_diff": 0.48,
+        "best_threshold_by_f1": 0.132,
+        "precision_for_best_k": 0.48258706467661694,
+        "best_k_percentage": 0.28328611898017
+    }
+}

@@ -444,11 +444,19 @@ def cross_validate(data, model, model_name):
             model=model
         )
         # Combine x_train and y_train into a single DataFrame
-        train_df = pd.concat([x_train, y_train], axis=1)
-        predicted_probabilities_df = pd.DataFrame(y_hat, columns=model.classes_, index=y_test.index)
+        train_df_tmp = pd.concat([x_train, y_train], axis=1)
+        train_df = pd.concat([data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
+        predicted_probabilities_df = pd.DataFrame( y_hat, columns=model.classes_, index=y_test.index)
         # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
-        test_df = pd.concat([x_test, predicted_probabilities_df], axis=1, ignore_index=True)
+        test_df_tmp = pd.concat([ x_test, y_test], axis=1)
+        test_df = pd.concat([data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
+        
+        test_prediction = pd.concat([ data.loc[y_test.index]["Project ID"], y_test, predicted_probabilities_df], axis=1)
 
+        
+        
+        
+        
         dp.export_data_frame(
             train_df,
             art_path+f'train_fold_{folds+1}_{str(start_date)[:10]}.csv'
@@ -456,6 +464,11 @@ def cross_validate(data, model, model_name):
         dp.export_data_frame(
             test_df,
             art_path+f'test_fold_{folds+1}_{str(start_date)[:10]}.csv'
+        )
+        
+        dp.export_data_frame(
+            test_prediction,
+            art_path+f'test_prediction_fold_{folds+1}_{str(start_date)[:10]}.csv'
         )
         
         # print(f"Training  from {str(start_date)[:10]} to {str(train_end)[:10]}")

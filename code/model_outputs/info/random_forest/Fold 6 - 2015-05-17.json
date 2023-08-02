@@ -1,0 +1,48 @@
+{
+    "classifier": "random_forest",
+    "fold_number": 6,
+    "timeline": {
+        "train_start": "2015-05-17",
+        "train_end": "2015-11-13",
+        "test_start": "2016-03-12",
+        "test_end": "2016-04-11"
+    },
+    "shape": {
+        "training_shape": "(2057, 1232)",
+        "test_shape": "(383, 1232)"
+    },
+    "data_distribution": {
+        "train_positive_ratio": 0.34807972775887214,
+        "test_positive_ratio": 0.37597911227154046
+    },
+    "predict_proba_clas_threshold": 0.65,
+    "evaluation_metrics": {
+        "accuracy": 0.6814621409921671,
+        "precision": 0.72,
+        "f1_score": 0.3711340206185567,
+        "model_score": 0.5900783289817232
+    },
+    "prk_results": {
+        "k_value": [
+            100,
+            200,
+            300
+        ],
+        "precision": [
+            0.504950495049505,
+            0.43283582089552236,
+            0.3521594684385382
+        ],
+        "recall": [
+            0.3541666666666667,
+            0.6041666666666666,
+            0.7361111111111112
+        ],
+        "best_k_for_min_dif": 100,
+        "best_k_for_max_f1": 200,
+        "best_threshold_by_diff": 0.512,
+        "best_threshold_by_f1": 0.19,
+        "precision_for_best_k": 0.504950495049505,
+        "best_k_percentage": 0.26109660574412535
+    }
+}
