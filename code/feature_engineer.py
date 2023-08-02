@@ -451,8 +451,8 @@ def cross_validate(data, model, model_name):
         test_df_tmp = pd.concat([ x_test, y_test], axis=1)
         test_df = pd.concat([data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
         
-        test_prediction = pd.concat([ data.loc[y_test.index]["Project ID"], y_test, predicted_probabilities_df], axis=1)
-
+        test_prediction = pd.concat([ data.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
+        test_prediction["Start Date"] =  start_date
         
         
         
