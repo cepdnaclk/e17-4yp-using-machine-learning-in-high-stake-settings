@@ -151,7 +151,7 @@ def prk_curve_for_top_k_projects(
 
     # Plot the prk curve
     plt.cla()
-    plt.plot(k_value_perc, precision, marker='o', label='precision')
+    plt.plot(k_value_perc, precision, label='precision')
     plt.plot(k_value_perc, recall, label='recall')
     plt.xlabel('Value of k as a percentage (%)')
     plt.title(f"Model's Precision and Recall for Varying k ({len(proba_predictions)} test inputs)")
