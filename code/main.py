@@ -8,6 +8,7 @@ import feature_engineer as fe
 import data_processor as dp
 import config
 from helper import save_model, load_model, create_dirs
+import temporal_features as tmpf
 
 print("Start data pre processing")
 data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
@@ -23,6 +24,9 @@ print("Complete labelling, shape = ", data.shape)
 # filter training features
 data = data[config.TRAINING_FEATURES + ["Label"]]
 print("Filtered training Features, shape = ", data.shape)
+
+# Adding new features
+data = tmpf.add_new_features(data)
 
 # export labelled data to csv
 time = datetime.datetime.now()
