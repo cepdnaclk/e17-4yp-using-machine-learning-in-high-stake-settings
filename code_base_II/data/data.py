@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 import seaborn as sns
 
 from sklearn import config_context
+from data_utils import find_feature_types
 
 from preprocessors import  TypePreprocessor
 
@@ -53,7 +54,10 @@ class Data:
     
     
     
-    def set_feature_types(self, type_of_features):
+    def set_feature_types(self):
+        
+        
+        type_of_features = find_feature_types(self._preprocessed_data)
         
         """
         Sets the feature types for the data.
@@ -69,9 +73,10 @@ class Data:
             }
             data.set_feature_types(type_of_features)
         """
+        self.feature_types = type_of_features
         self._categorical_features = type_of_features[type_of_features["Type"]=="categorical"]["Feature"].values
-        self._numerical_features = type_of_features[type_of_features["Type"]=="date"]["Feature"].values
-        self._date_features = type_of_features[type_of_features["Type"]=="numerical"]["Feature"].values
+        self._date_features = type_of_features[type_of_features["Type"]=="date"]["Feature"].values
+        self._numerical_features = type_of_features[type_of_features["Type"]=="numerical"]["Feature"].values
         ##print(self._categorical_features)
         return
     
@@ -106,78 +111,33 @@ class Data:
         
         
         for preprocessor in self._preprocessors:
-            if(preprocessor.__name__ == "FeatureFilter"):
-                ##print(preprocessor)
-                self._preprocessed_data = preprocessor().preprocess(self._preprocessed_data, self._clean_features)
-            elif(preprocessor.__name__ == "TypePreprocessor"):
-                #! if this run again there will be an issue
-                self.set_feature_types()
-                ##print("hello",self._categorical_features)
-                self._preprocessed_data = preprocessor().preprocess(self._preprocessed_data, self.get_feature_types())
+            
+            # if(type(preprocessor).__name__ == "FeatureFilter"):
+            #     self._preprocessed_data = preprocessor.preprocess(self._preprocessed_data)
+            # elif(type(preprocessor).__name__ == "TypePreprocessor"):
+            #     #! if this run again there will be an issue
+            #     # self.set_feature_types()
+            #     ##print("hello",self._categorical_features)
+            self._preprocessed_data = preprocessor.preprocess(self._preprocessed_data)
             # self._preprocessed_data = preprocessor.preprocess(self._preprocessed_data, self._clean_features)
             # self._preprocessed_data = preprocessor.preprocess(self._preprocessed_data, self._clean_features)
        
         # self._preprocessed_data = self._preprocessor.fit_transform(self._preprocessed_data)
         
-    def set_feature_types(self):
-        """
-        Identifies the feature types in the raw data and sets them in the Data object.
-
-        Returns:
-            self: Returns the instance of the Data object with the feature types set.
-        Raises:
-            ValueError: Raised when the raw data is not set.
-            Exception: Raised when a feature has an unsupported data type.
-
-        This method identifies the feature types (numerical, categorical, or date) in the raw data and sets them in the Data object.
-        It first checks if the raw data is set; if not, a ValueError is raised.
-        The feature types are stored in a pandas DataFrame with columns for 'Feature', 'Type', and 'Format'.
-        The method iterates over each column in the raw data and determines its data type.
-        - If the column's data type is 'float64' or 'int64', it is considered a numerical feature.
-        - If the column's data type is 'object', it attempts to parse the column as a date using the 'MM/DD/YYYY' format.
-        If the parsing is successful, the column is considered a date feature; otherwise, it is considered a categorical feature.
-        - If a column has any other data type, an exception is raised.
-        The method sets the feature types in the Data object using the 'set_feature_types' method.
-        The Data object should have a 'set_feature_types' method to receive and store the feature types.
-        The method returns the updated Data object.
-
-        Example:
-            data.add_feature_types()
-        """
+   
         
-        if self._preprocessed_data is None:
-            raise ValueError("raw data must be set")
-        
-
-        records = []
-        for column in self._preprocessed_data.columns:
-            column_type = self._preprocessed_data[column].dtype
-            
-            if column_type in ['float64', 'int64']:
-                record = {'Feature': column, 'Type': 'numerical', 'Format': ''}
-            
-            elif column_type == 'datetime64[ns]':
-                record = {'Feature': column, 'Type': 'date', 'Format': 'MM/DD/YYYY'}
-                
-                
-            elif column_type == 'object':
-                try:
-                    # Attempt to parse the column as a date
-                    parse(self._preprocessed_data[column].iloc[0], dayfirst=True)
-                    record = {'Feature': column, 'Type': 'date', 'Format': 'MM/DD/YYYY'}
-                except ValueError:
-                    record = {'Feature': column, 'Type': 'categorical', 'Format': ''}
-            else:
-                raise Exception(f"Feature ({column} : {self._preprocessed_data[column].iloc[0]}) is not among float64|int64|string|datetime", )
-            records.append( record )
-            
-        feature_types = pd.DataFrame.from_records(records,columns=['Feature', 'Type', 'Format'])
-        
-        self.feature_types = feature_types
-        return feature_types 
-    
     def get_feature_types(self):
         return self.feature_types 
+    
+    def get_numerical_features(self):
+        return self._numerical_features 
+    
+    def get_date_features(self):
+        return self._date_features 
+    
+    def get_categorical_features(self):
+        return self._categorical_features 
+      
       
     def get_data(self):
         """
@@ -235,24 +195,9 @@ class DataBuilder:
         if self._raw_data is None or not self.preprocessors:
             raise ValueError("raw data and preprocessor must be set")
         
-        
-        
         data = Data(self._raw_data.copy())
-        
-        
-        # ##print(self._raw_data.columns)
-       
-        # preprocessor = ColumnTransformer(transformers=[(str(type(preprocessor).__name__), preprocessor, []) for i, preprocessor in enumerate(self.preprocessors)], remainder= "passthrough")
-
-        
-        
         data.set_preprocessors(self.preprocessors)
-        
- 
-        # data.set_feature_types(self.feature_types)
-        
         data.set_clean_features(self.clean_features)
-        
         return data
     
 
@@ -265,35 +210,26 @@ if __name__ == "__main__":
     
     raw_data = pd.read_csv("./test.csv")
     
-    
-    
-    
-    # preprocessor = data.with_feature_filter(("feture_detect",FeatureFilter(["Project ID"]))).build()
-    
     data = DataBuilder()\
         .load_data("./test.csv",1000)\
-        .add_clean_features(['ID',"Unnamed:"])\
-        .add_preprocessor(FeatureFilter)\
-        .add_preprocessor(TypePreprocessor)\
+        .add_preprocessor(FeatureFilter(['ID',"Unnamed:"]))\
+        .add_preprocessor(TypePreprocessor())\
         .build()
         
         
     data.preprocess_data()
+    data.set_feature_types() 
     
-    
-    print("........................")
-    
-    print(data.get_preprocessed_data().head())
-    
-    print(data.get_feature_types())
-    
-    feature_type = data.get_feature_types()[data.get_feature_types()["Type"]=="categorical"]
+    print(data.get_preprocessed_data())   
+    feature_type = data.get_categorical_features()
     print(feature_type)
     
-    feature_type = data.get_feature_types()[data.get_feature_types()["Type"]=="date"]
+    feature_type = data.get_date_features()
     print(feature_type)
     
-    num_feature_type = data.get_feature_types()[data.get_feature_types()["Type"]=="numerical"]["Feature"]
+    
+    
+    num_feature_type = data.get_numerical_features()
     print(num_feature_type)
     numeric_features = ['Donation Amount', 'Donor Cart Sequence', 'Donor Zip', 'Teacher Project Posted Sequence']
     numeric_data = data.get_data()[num_feature_type]

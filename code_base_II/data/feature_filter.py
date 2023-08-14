@@ -9,9 +9,10 @@ class Preprocessor(ABC):
 #! what if i want to remove not exact features to be removed
 
 class FeatureFilter(Preprocessor):
-    def __init__(self):
-        
+    def __init__(self, x):
+        self.features = x
         self._remove_features = None
+        
         
 
     def _set_features(self, data, features):
@@ -27,11 +28,10 @@ class FeatureFilter(Preprocessor):
         return
         
     
-    def preprocess(self, data, features):
-        
-        if(features is None):
+    def preprocess(self, data):
+        if(self.features is None):
             raise ValueError("features is a must")
-        self._set_features(data, features)
+        self._set_features(data, self.features)
         return data.drop(columns=self._remove_features, axis=1)
     
     
