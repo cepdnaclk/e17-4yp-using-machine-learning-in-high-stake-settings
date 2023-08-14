@@ -12,7 +12,16 @@ from sklearn.metrics import confusion_matrix
 from pandas.core.frame import DataFrame
 from datetime import timedelta
 import seaborn as sns
-from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_curve, roc_auc_score, precision_recall_curve
+import random
+from sklearn.metrics import (
+    classification_report, 
+    f1_score, 
+    accuracy_score, 
+    precision_score, 
+    recall_score, 
+    roc_curve, 
+    roc_auc_score, 
+    precision_recall_curve)
 
 import config
 import data_processor as dp
@@ -151,7 +160,7 @@ def prk_curve_for_top_k_projects(
 
     # Plot the prk curve
     plt.cla()
-    plt.plot(k_value_perc, precision, marker='o', label='precision')
+    plt.plot(k_value_perc, precision, label='precision')
     plt.plot(k_value_perc, recall, label='recall')
     plt.xlabel('Value of k as a percentage (%)')
     plt.title(f"Model's Precision and Recall for Varying k ({len(proba_predictions)} test inputs)")
@@ -250,17 +259,35 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
 
     return best_threshold
 
-def get_precision_for_fixed_k(k, proba_predictions, y_test):
+def get_precision_for_fixed_k(k, proba_predictions, y_test, cost_test=None, mode="default"):
+    '''mode = default, random, '''
     # Select the probabilities for label 1
     probabilities = proba_predictions[:, 1]
-    # Rank the probabilities in descending order
-    temp = (-1 * probabilities).argsort()
-    ranks = np.empty_like(temp)
-    ranks[temp] = np.arange(len(probabilities))
+    if mode == "default":
+        # Rank the probabilities in descending order
+        temp = (-1 * probabilities).argsort()
+        ranks = np.empty_like(temp)
+        ranks[temp] = np.arange(len(probabilities))
 
-    # Create new labels based on the k value
-    k_labels = (ranks <= k).astype(int)
-    k_precision = precision_score(y_test, k_labels)
+        # Create new labels based on the k value
+        k_labels = (ranks <= k).astype(int)
+        k_precision = precision_score(y_test, k_labels)
+    elif mode == "random":
+        ones = [1] * k
+        zeros = [0] * (len(probabilities) - k)
+        k_labels = ones + zeros
+        random.shuffle(k_labels)
+        k_precision = precision_score(y_test, k_labels)
+    elif mode == "cost_sorted":
+        # Rank the probabilities in descending order
+        temp = (-1 * cost_test).argsort()
+        ranks = np.empty_like(temp)
+        ranks[temp] = np.arange(len(cost_test))
+        
+        # Create new labels based on the k value
+        k_labels = (ranks <= k).astype(int)
+        k_precision = precision_score(y_test, k_labels)
+
 
     return k_labels, k_precision
 
@@ -325,6 +352,46 @@ def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
 
     return
 
+def plot_precision_for_fixed_k_for_multiple_models(model_eval_metrics: dict):
+    ''' A dict of evaluation metrics of each model should be passed.
+        fixed_k_plot_data = {
+            "fixed_k_value": fixed_k_value,
+            "fold_no": folds+1,
+            "start_date": start_date,
+            "k_fixed_precision": k_fixed_precision
+        }
+    '''
+    random_forest = model_eval_metrics.get("random_forest").get("fixed_k_plot_data")
+    random_forest_cost_k = model_eval_metrics.get("random_forest_cost_k").get("fixed_k_plot_data")
+    random_forest_rand_k = model_eval_metrics.get("random_forest_rand_k").get("fixed_k_plot_data")
+    log_reg = model_eval_metrics.get("log_reg").get("fixed_k_plot_data")
+    decision_tree = model_eval_metrics.get("decision_tree").get("fixed_k_plot_data")
+
+    x_labels = [str(entry["start_date"])[:10] for entry in random_forest][::-1]
+    x_positions = np.arange(len(x_labels))
+    print("x_labels = ", x_labels)
+    random_forest_prec = [entry["k_fixed_precision"] for entry in random_forest][::-1]
+    random_forest_cost_k_prec = [entry["k_fixed_precision"] for entry in random_forest_cost_k][::-1]
+    random_forest_rand_k_prec = [entry["k_fixed_precision"] for entry in random_forest_rand_k][::-1]
+    log_reg_prec = [entry["k_fixed_precision"] for entry in log_reg][::-1]
+    decision_tree_prec = [entry["k_fixed_precision"] for entry in decision_tree][::-1]
+    # print("random_forest_prec = ", random_forest_prec)
+    # print("log_reg_prec = ", log_reg_prec)
+    # print("decision_tree_prec = ", decision_tree_prec)
+
+    plt.plot(x_labels, random_forest_prec, label="Random Forest")
+    plt.plot(x_labels, random_forest_cost_k_prec, label="Random Forest Cost Sorted")
+    plt.plot(x_labels, random_forest_rand_k_prec, label="Random Forest Random labeled")
+    plt.plot(x_labels, log_reg_prec, label="Logistic Regression")
+    plt.plot(x_labels, decision_tree_prec, label="Decision Tree")
+    plt.xlabel('Fold Start Dates')
+    plt.ylabel(f'Precision for fixed k (k = {random_forest[0].get("fixed_k_value")})')
+    plt.title("Precision for each fold for fixed k")
+    plt.xticks(x_positions, x_labels, rotation = 20, fontsize=10)
+    plt.legend()
+    # plt.show()
+    plt.savefig(config.IMAGE_DEST +'k_fixed_precision_plot_for_all_models.png')
+
 def cross_validate(data, model, model_name):
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
@@ -338,7 +405,14 @@ def cross_validate(data, model, model_name):
     # print("================\n", t_current, max_t, training_window)
 
     probability_thresholds = []
-    model_eval_metrics =  {"accuracy": [], "precision": [], "f1_score": [], "model_score": [], "k_fixed_precision": []}
+    model_eval_metrics =  {
+        "accuracy": [],
+        "precision": [],
+        "f1_score": [],
+        "model_score": [],
+        "k_fixed_precision": [],
+        "fixed_k_plot_data": []
+    }
 
     folds = 0
 
@@ -349,6 +423,8 @@ def cross_validate(data, model, model_name):
             data=data,
             start_date=start_date
         )
+
+        cost_test = x_test["Project Cost"]
 
         # Count the positive labeled percentage in the training set and the test set
         train_pos_perc, test_pos_perc = get_positive_percentage(y_train, y_test)
@@ -368,9 +444,9 @@ def cross_validate(data, model, model_name):
         # Observing the best threshold using different methods
         prk_results = prk_curve_for_top_k_projects(
                         proba_predictions = y_hat, 
-                        k_start = 100, 
+                        k_start = 10, 
                         k_end = int(y_hat.shape[0]*0.8), 
-                        k_gap = 100, 
+                        k_gap = 50, 
                         y_test = y_test, 
                         t_current = start_date,
                         fold=folds+1,
@@ -383,7 +459,16 @@ def cross_validate(data, model, model_name):
         best_threshold_by_f1 = prk_results.get('best_threshold_by_f1')
 
         # For a fixed value of k, find the precision for each fold
-        k_fixed_labels, k_fixed_precision = get_precision_for_fixed_k(1000, y_hat, y_test)
+        fixed_k_value = 1000
+        if model_name[:-1] != "random_forest_rand_k" and model_name[:-1] != "random_forest_cost_k":
+            k_fixed_labels, k_fixed_precision = get_precision_for_fixed_k(fixed_k_value, y_hat, y_test)
+        else:
+            if model_name[:-1] == "random_forest_rand_k":
+                print("random_forest_rand_k--------------")
+                _, k_fixed_precision = get_precision_for_fixed_k(fixed_k_value, y_hat, y_test, mode="random")
+            else:
+                print("random_forest_cost_sorted---------")
+                _, k_fixed_precision = get_precision_for_fixed_k(fixed_k_value, y_hat, y_test, mode="cost_sorted", cost_test=cost_test)
 
         # Evaluate the model
         f1 = f1_score(y_test, best_prediction)
@@ -396,6 +481,13 @@ def cross_validate(data, model, model_name):
         model_eval_metrics["f1_score"].append(f1)
         model_eval_metrics["precision"].append(precision)
         model_eval_metrics["model_score"].append(model_score)
+        fixed_k_plot_data = {
+            "fixed_k_value": fixed_k_value,
+            "fold_no": folds+1,
+            "start_date": start_date,
+            "k_fixed_precision": k_fixed_precision
+        }
+        model_eval_metrics["fixed_k_plot_data"].append(fixed_k_plot_data)
         model_eval_metrics["k_fixed_precision"].append(k_fixed_precision)
 
         
@@ -453,9 +545,9 @@ def cross_validate(data, model, model_name):
         
         test_prediction = pd.concat([ data.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
         test_prediction["Start Date"] =  start_date
-        
-        
-        
+
+
+
         
         dp.export_data_frame(
             train_df,
@@ -503,8 +595,8 @@ def run_pipeline(data, model, model_name):
     avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
                    "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
                    "avg_model_score": sum(model_eval_metrics["model_score"])/len(model_eval_metrics["model_score"]),
-                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds), 
-                   "avg_fixed_k_precision": sum(model_eval_metrics["k_fixed_precision"])/len(model_eval_metrics["k_fixed_precision"])}
+                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds), }
+                #    "avg_fixed_k_precision": sum(model_eval_metrics["fixed_k_plot_data"]["k_fixed_precision"])/len(model_eval_metrics["fixed_k_plot_data"]["k_fixed_precision"])}
 
     # print("")
     # print("Average accuracy = ", avg_metrics["avg_accuracy"])

@@ -7,6 +7,7 @@ MODEL_DEST=ROOT + "trained_models/"
 IMAGE_DEST=ROOT + "model_outputs/figures/"
 LIME_DEST=ROOT + "model_outputs/lime/"
 SHAP_DEST=ROOT + "model_outputs/shap/"
+TREESHAP_DEST=ROOT + "model_outputs/treeshap/"
 K_PROJECTS_DEST=IMAGE_DEST + "k_projects/"
 ROC_CURVE_DEST=IMAGE_DEST + "roc_curve/"
 P_VS_R_CURVE_DEST=IMAGE_DEST + "pr_curve/"
@@ -14,7 +15,7 @@ ARTIFACTS_PATH=ROOT + "model_outputs/artifacts/"
 
 INFO_DEST=ROOT+"model_outputs/info/"
 
-MAX_ROWS=40000
+MAX_ROWS=20000
 
 # To label data  
 DONATION_PERIOD=30
@@ -22,8 +23,8 @@ THRESHOLD_RATIO=0.4
 
 TRAINING_WINDOW = DONATION_PERIOD * 4
 
-MAX_TIME="2018-04-01 00:00:00"
-MIN_TIME="2015-05-01 00:00:00"
+MAX_TIME="2016-04-01 00:00:00"
+MIN_TIME="2013-05-01 00:00:00"
 
 TEST_SIZE=30
 TRAIN_SIZE=TEST_SIZE*6
