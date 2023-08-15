@@ -31,6 +31,7 @@ TRAIN_SIZE=TEST_SIZE*6
 LEAK_OFFSET=TEST_SIZE*4
 WINDOW = TEST_SIZE + TRAIN_SIZE + 2*LEAK_OFFSET
 
+FIXED_KVAL = 1000
 
 DATE_COLS=["Teacher First Project Posted Date", "Project Fully Funded Date", "Project Expiration Date",
             "Project Posted Date", "Donation Received Date"]
@@ -45,5 +46,7 @@ TRAINING_FEATURES=["Project ID", "Project Posted Date", "Project Type", "Project
                   "Teacher Prefix", "Teacher Project Posted Sequence"]
                 #   "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
 
-VARIABLES_TO_SCALE=["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost"]
+VARIABLES_TO_SCALE=["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost",
+                    'Teacher Success Rate', 'School City Success Rate', 'School Success Rate',
+                    'School County Success Rate', 'Project Count in State']
                     # "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
