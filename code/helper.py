@@ -1,6 +1,9 @@
 import pickle
 import config
 import os
+import json
+from typing import Union
+from datetime import datetime as dt
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -15,6 +18,13 @@ def save_model(path, file_name, model):
 
 def load_model(model_file_path):
     return pickle.load(open(model_file_path, 'rb'))
+
+def log_intermediate_output_to_file(path, file_name, log_info: Union[list, dict, str]):
+    file_path = path + file_name
+    json_data = json.dumps(log_info, indent=2)
+    time = dt.now()
+    with open(file_path, 'a') as file:
+        file.write(f"\nlog {str(time.strftime('%Y-%m-%d %H:%M:%S'))}\n{json_data}\n")
 
 
 def create_dirs(models=None):
