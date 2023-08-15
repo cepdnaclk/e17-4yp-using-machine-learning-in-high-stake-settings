@@ -14,7 +14,8 @@ from helper import (
     create_dirs,
     create_classification_models,
     create_logistic_regression_parameters,
-    create_random_forest_parameters)
+    create_random_forest_parameters,
+    log_intermediate_output_to_file)
 import temporal_features as tmpf
 
 
@@ -81,8 +82,15 @@ for model_item in models:
     perf_row = {
         "model": model_item.get("model_name"),
         "hyper_paramaters": model_item.get("parameters"),
-        "avg_precision": sum(eval_metrics.get("k_fixed_precision")) / len(eval_metrics.get("k_fixed_precision"))
+        "avg_precision": sum(
+            eval_metrics.get("k_fixed_precision")
+        ) / len(eval_metrics.get("k_fixed_precision"))
     }
+    log_intermediate_output_to_file(
+        path=config.INFO_DEST,
+        file_name="model_run_log.log",
+        log_info=perf_row
+    )
     hyper_parameter_performance_table.append(perf_row)
 
 file_path = config.INFO_DEST + "hyper_parameter_performance_table.json"
