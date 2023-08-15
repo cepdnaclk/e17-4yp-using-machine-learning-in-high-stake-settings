@@ -18,6 +18,9 @@ from helper import (
 import temporal_features as tmpf
 
 
+data_file_path = config.PROCESSED_DATA_PATH
+load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
+
 # create classifiers including baseline models
 rand_for_params = create_random_forest_parameters()
 log_reg_params = create_logistic_regression_parameters()
@@ -29,42 +32,42 @@ models = create_classification_models(
 model_names = [model.get("model_name") for model in models]
 create_dirs(models=model_names)  # can pass a list of specific model names
 
-print("Start data pre processing")
-data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
+if load_processed_data:
+    print("Loading already processed data")
+    data = dp.load_data_to_df(path=data_file_path)
+    data = dp.set_data_types_to_datetime(data, ["Project Posted Date"])
+else:
+    print("Start data pre processing")
+    data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
 
-data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
+    data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
 
-data = dp.impute_data(data)
-print("Complete imputing = ", data.shape)
+    data = dp.impute_data(data)
+    print("Complete imputing = ", data.shape)
 
-data = fe.label_data(data, config.THRESHOLD_RATIO)
-print("Complete labelling, shape = ", data.shape)
+    data = fe.label_data(data, config.THRESHOLD_RATIO)
+    print("Complete labelling, shape = ", data.shape)
 
-# filter training features
-extra_features_required = ["Teacher ID", "School ID"]
-data = data[config.TRAINING_FEATURES + ["Label"] + extra_features_required]
-print("Filtered training Features, shape = ", data.shape)
+    # filter training features
+    extra_features_required = ["Teacher ID", "School ID"]
+    data = data[config.TRAINING_FEATURES + ["Label"] + extra_features_required]
+    print("Filtered training Features, shape = ", data.shape)
 
-# Adding new features
-data = tmpf.add_new_features(data)
-print(data.columns)
-data = data.drop(extra_features_required, axis=1)
-print("After adding new Features, shape = ", data.shape)
-print(data.columns)
+    # Adding new features
+    data = tmpf.add_new_features(data)
+    print(data.columns)
+    data = data.drop(extra_features_required, axis=1)
+    print("After adding new Features, shape = ", data.shape)
+    print(data.columns)
 
-# export labelled data to csv
-time = datetime.datetime.now()
-file_path = config.DATA_DEST + \
-    f"labelled_data - {str(time.strftime('%Y-%m-%d %H:%M:%S'))[:10]}.csv"
-dp.export_data_frame(data=data, path=file_path)
+    # export labelled data to csv
+    dp.export_data_frame(data=data, path=data_file_path)
 
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 print("encoded_data.shape = ", data_1.shape)
 
-# load_processed_data = True
-# if loa
-
 model_eval_metrics = {}
+hyper_parameter_performance_table = []
 
 for model_item in models:
     print(f"Classifier -> {model_item.get('model_name')}")
@@ -75,6 +78,15 @@ for model_item in models:
     fe.plot_precision_for_fixed_k(
         eval_metrics, model_item.get("model_name")+"/")
     model_eval_metrics.update({model_item.get("model_name"): eval_metrics})
+    perf_row = {
+        "model": model_item.get("model_name"),
+        "hyper_paramaters": model_item.get("parameters"),
+        "avg_precision": sum(eval_metrics.get("k_fixed_precision")) / len(eval_metrics.get("k_fixed_precision"))
+    }
+    hyper_parameter_performance_table.append(perf_row)
+
+file_path = config.INFO_DEST + "hyper_parameter_performance_table.json"
+dp.save_json(hyper_parameter_performance_table, path=file_path)
 
 # fe.plot_k_fold_evaluation_metrics(eval_metrics, 'random_forest/')
 # # save_model(config.MODEL_DEST, file_name=f'RandForest_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
