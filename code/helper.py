@@ -63,7 +63,7 @@ def create_random_forest_parameters(
 def create_logistic_regression_parameters(
         solver="saga",
         max_iters=[100, 200],
-        penalties=["l1", "l2", "elasticnet"]
+        penalties=["l1", "l2"]
 ) -> list:
     parameters_list = []
     for penalty in penalties:
@@ -89,19 +89,21 @@ def create_classification_models(
         models_list.append({
             'model_name': f'random_forest_{i}',
             'model': new_model,
-            'type': 'non-linear'
+            'type': 'non-linear',
+            'parameters': parameters
         })
         i += 1
 
-    # i = 1
-    # for parameters in logistic_regression_parameters_list:
-    #     new_model = LogisticRegression(**parameters)
-    #     models_list.append({
-    #         'model_name': f'logistic_regression_{i}',
-    #         'model': new_model,
-    #         'type': 'linear'
-    #     })
-    #     i += 1
+    i = 1
+    for parameters in logistic_regression_parameters_list:
+        new_model = LogisticRegression(**parameters)
+        models_list.append({
+            'model_name': f'logistic_regression_{i}',
+            'model': new_model,
+            'type': 'linear',
+            'parameters': parameters
+        })
+        i += 1
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
         'model': None,
