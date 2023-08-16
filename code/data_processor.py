@@ -6,6 +6,7 @@ from datetime import timedelta
 import json
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from typing import Union
 
 def load_data_to_df(path: str, rows: int=None):
     if rows:
@@ -17,7 +18,7 @@ def load_data_to_df(path: str, rows: int=None):
 def export_data_frame(data: DataFrame, path: str, columns: list=None):
     data.to_csv(path, columns=columns)
 
-def save_json(dict_obj: dict, path: str):
+def save_json(dict_obj: Union[dict, list], path: str):
     writable_json = json.dumps(dict_obj, indent=4)
     with open(path, 'w') as file:
         file.write(writable_json)

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-    
-
+from data_utils import find_feature_types
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 import pandas as pd
 
@@ -15,10 +14,16 @@ class TypePreprocessor(Preprocessor):
         # self.categorical_features = 
         self.encoder = OneHotEncoder()
         self.scaler = StandardScaler()
+        
+    def _set_feature_types(self, data):
+        
+        return find_feature_types(data)
+        
        
     # data should be 
-    def preprocess(self, data: pd.DataFrame, feature_types):
+    def preprocess(self, data: pd.DataFrame):
         
+        feature_types = self._set_feature_types(data)
         
         numeric_data = data[feature_types[feature_types["Type"]=="numerical"]["Feature"]]
         scaled_data = self.scaler.fit_transform(numeric_data)
@@ -36,10 +41,10 @@ class TypePreprocessor(Preprocessor):
         for column in date_data.columns:
             date_data[column] = pd.to_datetime(date_data[column])
         
-        categorical_data = data[feature_types[feature_types["Type"]=="categorical"]["Feature"]]
+        categorical_data = data[feature_types[feature_types["Type"]=="categorical"]["Feature"]].astype("category")
         encoded_data = self.encoder.fit_transform(categorical_data).toarray()
         encoded_columns = self.encoder.get_feature_names_out(categorical_data.columns)
-        encoded_data = pd.DataFrame(encoded_data, columns=encoded_columns)
+        encoded_data = pd.DataFrame(encoded_data, columns=encoded_columns).astype("category")
         
         preprocessed_data = pd.concat([date_data, scaled_data,encoded_data],axis=1)
     
