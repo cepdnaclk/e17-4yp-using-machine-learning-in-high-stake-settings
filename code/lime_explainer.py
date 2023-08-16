@@ -25,11 +25,15 @@ def get_lime_explanation(x_train, x_test, top_instance_loc_list, bottom_instance
     # LIME: define the explainer
     # Ex: mode = 'classification' or 'regression'
     #     class_names = ['0', '1']
+
+    categorical_feature_names = x_train.dtypes[x_train.dtypes==bool].index.to_list()
+    categorical_feature_index = [x_train.columns.get_loc(col) for col in categorical_feature_names]
     
     
     explainer_lime = lime_tabular.LimeTabularExplainer(
         training_data=np.array(x_train),
         feature_names=x_train.columns,
+        categorical_features = categorical_feature_index,
         class_names=class_names,
         mode=mode
     )
