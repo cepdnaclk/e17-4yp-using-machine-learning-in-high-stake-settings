@@ -1,9 +1,7 @@
 import shap
 import config
 
-def get_treeshap_explanation(x_train, x_test,  top_instance_loc_list, bottom_instance_loc_list, model, model_name):
-
-    #shap.initjs()
+def get_treeshap_explanation(x_train, x_test, top_instance_loc_list, bottom_instance_loc_list, model, model_name):
     
     # Define the KernelSHAP explainer
     explainer_tree = shap.TreeExplainer(model=model, data=x_train, model_output="raw")
@@ -22,7 +20,6 @@ def get_treeshap_explanation(x_train, x_test,  top_instance_loc_list, bottom_ins
                     matplotlib=True, 
                     text_rotation=45).savefig(filepath, format = "png", dpi = 150, bbox_inches = 'tight')
         
-        # return treeshap_values
     
     for instance_loc in bottom_instance_loc_list:
         # Explain for the selected instance
@@ -38,4 +35,4 @@ def get_treeshap_explanation(x_train, x_test,  top_instance_loc_list, bottom_ins
                     matplotlib=True, 
                     text_rotation=45).savefig(filepath, format = "png", dpi = 150, bbox_inches = 'tight')
         
-        # return treeshap_values
+        

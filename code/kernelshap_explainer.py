@@ -2,8 +2,6 @@ import shap
 import config
 
 def get_shap_explanation(x_train, x_test, top_instance_loc_list, bottom_instance_loc_list, model, model_name):
-
-    #shap.initjs()
     
     # Define the KernelSHAP explainer
     explainer_shap = shap.KernelExplainer(model=model.predict_proba, data=x_train)
@@ -24,6 +22,7 @@ def get_shap_explanation(x_train, x_test, top_instance_loc_list, bottom_instance
                         show=False, 
                         matplotlib=True, 
                         text_rotation=45).savefig(filepath, format = "png", dpi = 150, bbox_inches = 'tight') 
+        
     for instance_loc in bottom_instance_loc_list:
         # Explain for the selected instance
         instance = x_test.iloc[instance_loc]
@@ -40,4 +39,4 @@ def get_shap_explanation(x_train, x_test, top_instance_loc_list, bottom_instance
                         matplotlib=True, 
                         text_rotation=45).savefig(filepath, format = "png", dpi = 150, bbox_inches = 'tight') 
 
-    # return shap_values
+    

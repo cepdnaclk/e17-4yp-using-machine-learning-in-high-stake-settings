@@ -21,7 +21,7 @@ def save_lime_explanation(exp, instance_loc, model_name, position):
 
 def get_lime_explanation(x_train, x_test, top_instance_loc_list, bottom_instance_loc_list, class_names, mode, model, model_name):
 
-    #! take the list of instances and save the explaination of each instance.
+    # take the list of instances and save the explaination of each instance.
     # LIME: define the explainer
     # Ex: mode = 'classification' or 'regression'
     #     class_names = ['0', '1']
