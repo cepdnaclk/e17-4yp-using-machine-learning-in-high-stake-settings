@@ -1,0 +1,115 @@
+[W 17:05:38.916 NotebookApp] Loading JupyterLab as a classic notebook (v6) extension.
+[W 2023-08-08 17:05:38.917 LabApp] 'port' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[W 2023-08-08 17:05:38.917 LabApp] 'port' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
+[I 2023-08-08 17:05:38.918 LabApp] JupyterLab extension loaded from /storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/jupyterlab
+[I 2023-08-08 17:05:38.918 LabApp] JupyterLab application directory is /storage/scratch/e17-4yp-xai/anaconda/share/jupyter/lab
+[I 17:05:40.097 NotebookApp] Serving notebooks from local directory: /home/e17342/e17-4yp-using-machine-learning-in-high-stake-settings
+[I 17:05:40.097 NotebookApp] Jupyter Notebook 6.5.2 is running at:
+[I 17:05:40.097 NotebookApp] http://localhost:8081/?token=816b182e1b80df4f9fa1a925c5c5de288c978551938d4a07
+[I 17:05:40.097 NotebookApp]  or http://127.0.0.1:8081/?token=816b182e1b80df4f9fa1a925c5c5de288c978551938d4a07
+[I 17:05:40.097 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[W 17:05:40.176 NotebookApp] No web browser found: could not locate runnable browser.
+[C 17:05:40.176 NotebookApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/e17342/.local/share/jupyter/runtime/nbserver-1712654-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8081/?token=816b182e1b80df4f9fa1a925c5c5de288c978551938d4a07
+     or http://127.0.0.1:8081/?token=816b182e1b80df4f9fa1a925c5c5de288c978551938d4a07
+[I 17:05:54.083 NotebookApp] 302 GET /?token=816b182e1b80df4f9fa1a925c5c5de288c978551938d4a07 (127.0.0.1) 0.340000ms
+[W 17:05:58.748 NotebookApp] Notebook Sanity_checks.ipynb is not trusted
+[I 17:05:59.112 NotebookApp] Kernel started: b9bd0610-26a0-4d27-9b38-43fb0af0b0a4, name: python3
+[I 17:07:59.270 NotebookApp] Saving file at /Sanity_checks.ipynb
+[W 17:07:59.292 NotebookApp] Notebook Sanity_checks.ipynb is not trusted
+[I 17:09:59.209 NotebookApp] Saving file at /Sanity_checks.ipynb
+[W 17:09:59.210 NotebookApp] Notebook Sanity_checks.ipynb is not trusted
+[I 17:11:59.166 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:13:59.241 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:15:59.224 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:19:59.259 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:21:59.461 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:23:59.229 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:25:59.225 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:27:59.193 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:29:59.710 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:31:59.302 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:33:59.261 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:35:59.270 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:37:59.575 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:39:59.406 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:43:59.206 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:49:59.238 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:55:59.243 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:57:59.309 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 17:59:59.327 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:01:59.319 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:07:59.257 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:09:59.843 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:11:59.278 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:13:59.248 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:15:59.327 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:17:59.231 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:21:59.270 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:23:59.328 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:25:59.277 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:27:59.339 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:29:59.453 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:31:59.207 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:33:59.302 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:35:59.470 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:37:59.338 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:41:22.963 NotebookApp] Kernel interrupted: b9bd0610-26a0-4d27-9b38-43fb0af0b0a4
+[I 18:41:45.722 NotebookApp] Kernel interrupted: b9bd0610-26a0-4d27-9b38-43fb0af0b0a4
+[I 18:41:59.311 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:43:59.333 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:44:22.475 NotebookApp] Kernel interrupted: b9bd0610-26a0-4d27-9b38-43fb0af0b0a4
+[I 18:45:59.370 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:47:59.333 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:49:59.259 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 18:51:59.559 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 19:15:59.365 NotebookApp] Saving file at /Sanity_checks.ipynb
+[I 19:17:59.232 NotebookApp] Saving file at /Sanity_checks.ipynb
+[C 19:19:55.540 NotebookApp] received signal 15, stopping
+[I 19:19:55.557 NotebookApp] Shutting down 1 kernel
+[I 19:19:55.558 NotebookApp] Kernel shutdown: b9bd0610-26a0-4d27-9b38-43fb0af0b0a4
+[I 19:19:55.665 NotebookApp] Starting buffering for b9bd0610-26a0-4d27-9b38-43fb0af0b0a4:4ee0cd7a550344fa81f0cab66500dbff
+[I 19:19:55.670 NotebookApp] Kernel shutdown: b9bd0610-26a0-4d27-9b38-43fb0af0b0a4
+[E 19:19:55.671 NotebookApp] Uncaught exception DELETE /api/sessions/85849ff2-dad0-4782-9363-88e56c20a138 (127.0.0.1)
+    HTTPServerRequest(protocol='http', host='localhost:8081', method='DELETE', uri='/api/sessions/85849ff2-dad0-4782-9363-88e56c20a138', version='HTTP/1.1', remote_ip='127.0.0.1')
+    Traceback (most recent call last):
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/tornado/web.py", line 1704, in _execute
+        result = await result
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/tornado/gen.py", line 769, in run
+        yielded = self.gen.throw(*exc_info)  # type: ignore
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/notebook/services/sessions/handlers.py", line 164, in delete
+        yield maybe_future(sm.delete_session(session_id))
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/tornado/gen.py", line 762, in run
+        value = future.result()
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/tornado/gen.py", line 775, in run
+        yielded = self.gen.send(value)
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/notebook/services/sessions/sessionmanager.py", line 287, in delete_session
+        yield maybe_future(self.kernel_manager.shutdown_kernel(session['kernel']['id']))
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/notebook/services/kernels/kernelmanager.py", line 304, in shutdown_kernel
+        self.pinned_superclass.shutdown_kernel(self, kernel_id, now=now, restart=restart)
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/jupyter_client/utils.py", line 30, in wrapped
+        raise e
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/jupyter_client/utils.py", line 27, in wrapped
+        return loop.run_until_complete(future)
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/nest_asyncio.py", line 90, in run_until_complete
+        return f.result()
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/asyncio/futures.py", line 201, in result
+        raise self._exception.with_traceback(self._exception_tb)
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/asyncio/tasks.py", line 232, in __step
+        result = coro.send(None)
+      File "/storage/scratch/e17-4yp-xai/anaconda/lib/python3.10/site-packages/jupyter_client/multikernelmanager.py", line 264, in _async_shutdown_kernel
+        if not km.ready.cancelled() and km.ready.exception():
+    asyncio.exceptions.InvalidStateError: Exception is not set.
+[W 19:19:55.676 NotebookApp] Unhandled error
+[E 19:19:55.676 NotebookApp] {
+      "Host": "localhost:8081",
+      "Accept": "application/json, text/javascript, */*; q=0.01",
+      "Referer": "http://localhost:8081/notebooks/Sanity_checks.ipynb",
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0"
+    }
+[E 19:19:55.676 NotebookApp] 500 DELETE /api/sessions/85849ff2-dad0-4782-9363-88e56c20a138 (127.0.0.1) 7.960000ms referer=http://localhost:8081/notebooks/Sanity_checks.ipynb
+[I 19:19:58.802 NotebookApp] Shutting down 0 terminals
