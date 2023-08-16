@@ -19,13 +19,23 @@ def load_model(pkl_model_path):
     return model
 
 #! new pipeline for ruinning the explainations
-def explanations_pipeline(root, fold_paths, model_paths, train_paths, test_paths, pred_paths):
-    
+def explanations_pipeline(root, model_paths, train_paths, test_paths, pred_paths):
+    """this pipeline will generate explanations for the give model paths
+
+    Args:
+        root (_type_): This is the root path of the model artifacts
+        model_paths (_type_): these are the paths to the model artifacts
+        train_paths (_type_): these are the paths to the train artifacts
+        test_paths (_type_): these are the paths to the test artifacts
+        pred_paths (_type_): these are the paths to the prediction artifacts
+        
+        all the artifacts should be a list of files and should be in a same order
+    """
     assert len(train_paths) == len(test_paths), "There should be same number of train paths and test paths"
     assert len(test_paths) == len(test_paths), "There should be same number of predictions paths and test paths"
     assert len(model_paths) == len(test_paths), "There should be same number of model_paths paths and test paths"
     
-    for i in len(fold_paths):
+    for i in len(train_paths):
         x_train = pd.read_csv(os.path.join(root, train_paths[i]))
         x_train_cleaned = x_train.drop(["Unnamed: 0", "Project ID", "Label"], axis=1)
         
