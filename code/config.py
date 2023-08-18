@@ -1,7 +1,8 @@
 
 # ROOT = "/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/"
 ROOT = "./"
-DATA_SOURCE = ROOT + "data/DsDnsPrScTch.csv"
+# DATA_SOURCE = ROOT + "data/DsDnsPrScTch.csv"
+DATA_SOURCE = ROOT + "data/Dataset.csv"
 DATA_DEST = ROOT + "processed_data/"
 MODEL_DEST = ROOT + "trained_models/"
 IMAGE_DEST = ROOT + "model_outputs/figures/"
@@ -18,7 +19,7 @@ INFO_DEST = ROOT+"model_outputs/info/"
 PROCESSED_DATA_PATH = DATA_DEST + "labelled_final_data.csv"
 
 LOAD_PROCESSED_DATA_FLAG = False
-MAX_ROWS = 400000  # if you change this, updating LOAD_PROCESSED_DATA_FLAG to False is required
+MAX_ROWS = 300000  # not in use now (18/08/2023)
 
 FIXED_KVAL = 1000
 
@@ -37,18 +38,19 @@ LEAK_OFFSET = TEST_SIZE*4
 WINDOW = TEST_SIZE + TRAIN_SIZE + 2*LEAK_OFFSET
 
 
-DATE_COLS = ["Teacher First Project Posted Date", "Project Fully Funded Date", "Project Expiration Date",
-             "Project Posted Date", "Donation Received Date"]
+DATE_COLS = ["Teacher First Project Posted Date", "Project Expiration Date",
+             "Project Posted Date"]
 CATEGORICAL_COLS = ["Project Type", "Project Subject Category Tree", "Project Subject Subcategory Tree",
                     "Project Grade Level Category", "Project Resource Category", "School Metro Type",
-                    "School State", "School County", "Teacher Prefix", "School Name", "School City", "School District"]
+                    "School State", "School County", "Teacher Prefix", "School Name", "School City", "School District",
+                    "Resource Vendor Name"]
 
 TRAINING_FEATURES = ["Project ID", "Project Posted Date", "Project Type", "Project Subject Category Tree", "Project Cost",
                      "Project Subject Subcategory Tree", "Project Grade Level Category", "Project Resource Category",
                      "School Metro Type", "School Percentage Free Lunch", "School State", "School County",
                      "School Name", "School City", "School District",
-                     "Teacher Prefix", "Teacher Project Posted Sequence"]
-#   "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
+                     "Teacher Prefix", "Teacher Project Posted Sequence",
+                     "Resource Vendor Name"]
 
 VARIABLES_TO_SCALE = ["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost",
                       'Teacher Success Rate', 'School City Success Rate', 'School Success Rate',
