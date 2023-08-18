@@ -23,8 +23,10 @@ data_file_path = config.PROCESSED_DATA_PATH
 load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
 # create classifiers including baseline models
-rand_for_params = create_random_forest_parameters()
-log_reg_params = create_logistic_regression_parameters()
+rand_for_params = create_random_forest_parameters(
+    max_depths=[3, 4], n_estimators=[100, 500])
+log_reg_params = create_logistic_regression_parameters(
+    max_iters=[100], penalties=["l1"])
 models = create_classification_models(
     random_forest_parameters_list=rand_for_params,
     logistic_regression_parameters_list=log_reg_params
@@ -39,15 +41,15 @@ if load_processed_data:
     data = dp.set_data_types_to_datetime(data, ["Project Posted Date"])
 else:
     print("Start data pre processing")
-    data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
+    data = dp.load_data_to_df(config.DATA_SOURCE)
 
     data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
 
     data = dp.impute_data(data)
     print("Complete imputing = ", data.shape)
 
-    data = fe.label_data(data, config.THRESHOLD_RATIO)
-    print("Complete labelling, shape = ", data.shape)
+    # data = fe.label_data(data, config.THRESHOLD_RATIO)
+    # print("Complete labelling, shape = ", data.shape)
 
     # filter training features
     extra_features_required = ["Teacher ID", "School ID"]
@@ -63,6 +65,7 @@ else:
 
     # export labelled data to csv
     dp.export_data_frame(data=data, path=data_file_path)
+    print(f"Saved data as csv at {data_file_path}")
 
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 print("encoded_data.shape = ", data_1.shape)
@@ -95,11 +98,6 @@ for model_item in models:
 
 file_path = config.INFO_DEST + "hyper_parameter_performance_table.json"
 dp.save_json(hyper_parameter_performance_table, path=file_path)
-
-# fe.plot_k_fold_evaluation_metrics(eval_metrics, 'random_forest/')
-# # save_model(config.MODEL_DEST, file_name=f'RandForest_{str(time.strftime("%Y-%m-%d %H:%M:%S"))[:10]}.sav', model=trained_model)
-
-# print(model_eval_metrics)
 
 fe.plot_precision_for_fixed_k_for_multiple_models(
     model_names, model_eval_metrics)
