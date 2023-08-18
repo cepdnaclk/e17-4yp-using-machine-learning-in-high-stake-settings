@@ -306,7 +306,7 @@ def get_k_labels(model_name, model_type, x_test, y_test, y_hat, k=config.FIXED_K
         k_labels = create_proba_sorted_k_labels(
             k=k, proba_predictions=y_hat)
     else:
-        if model_name[:-1] == "random_forest_rand_k":
+        if model_name[:-1] == "base_line_rand_k":
             print("base_line_rand_k--------------")
             k_labels = create_random_k_labels(
                 k=k, test_size=len(y_test))
