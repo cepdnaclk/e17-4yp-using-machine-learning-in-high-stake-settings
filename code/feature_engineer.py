@@ -301,7 +301,8 @@ def create_random_k_labels(k: int, test_size: int):
 
 def get_k_labels(model_name, model_type, x_test, y_test, y_hat, k=config.FIXED_KVAL) -> list:
     # For a fixed value of k, find the precision for each fold
-    print(f"get k labels ==============={model_type}===============================")
+    print(
+        f"get k labels ==============={model_type}===============================")
     if model_type != "baseline":
         k_labels = create_proba_sorted_k_labels(
             k=k, proba_predictions=y_hat)
@@ -397,12 +398,14 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
             "k_fixed_precision": k_fixed_precision
         }
     '''
-    sample_plot_data = model_eval_metrics.get(model_names[0]).get("fixed_k_plot_data")
-    x_labels = [str(entry["start_date"])[:10] for entry in sample_plot_data][::-1]
+    sample_plot_data = model_eval_metrics.get(
+        model_names[0]).get("fixed_k_plot_data")
+    x_labels = [str(entry["start_date"])[:10]
+                for entry in sample_plot_data][::-1]
     x_positions = np.arange(len(x_labels))
     print("x_labels = ", x_labels)
 
-    plt.figure(figsize=(18,10))
+    plt.figure(figsize=(18, 10))
 
     for model_name in model_names:
         plot_data = model_eval_metrics.get(model_name).get("fixed_k_plot_data")
@@ -410,7 +413,7 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
                           for entry in plot_data][::-1]
 
         plt.plot(x_labels, precision_data, label=model_name)
-    
+
     plt.ylabel(
         f'Precision for fixed k (k = {config.FIXED_KVAL})')
     plt.xlabel('Fold Start Dates')
@@ -466,7 +469,6 @@ def cross_validate(data, model_item):
         x_train, x_test = standardize_data(
             x_train, x_test, config.VARIABLES_TO_SCALE)
 
-
         # Model Training
         if model_type != "baseline":
             model = model.fit(x_train, y_train.values.ravel())
@@ -477,9 +479,9 @@ def cross_validate(data, model_item):
             # Observing the best threshold using different methods
             prk_results = prk_curve_for_top_k_projects(
                 proba_predictions=y_hat,
-                k_start=10,
+                k_start=1000,
                 k_end=int(y_hat.shape[0]*0.8),
-                k_gap=50,
+                k_gap=500,
                 y_test=y_test,
                 t_current=start_date,
                 fold=folds+1,
