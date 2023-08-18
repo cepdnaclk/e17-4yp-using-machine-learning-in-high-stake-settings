@@ -8,77 +8,87 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from typing import Union
 
-def load_data_to_df(path: str, rows: int=None):
+
+def load_data_to_df(path: str, rows: int = None):
     if rows:
         data = pd.read_csv(path, nrows=rows)
     else:
         data = pd.read_csv(path)
     return data
 
-def export_data_frame(data: DataFrame, path: str, columns: list=None):
+
+def export_data_frame(data: DataFrame, path: str, columns: list = None):
     data.to_csv(path, columns=columns)
+
 
 def save_json(dict_obj: Union[dict, list], path: str):
     writable_json = json.dumps(dict_obj, indent=4)
     with open(path, 'w') as file:
         file.write(writable_json)
 
+
 def set_data_types_to_datetime(data_frame: DataFrame, date_type_cols: list):
     for col in date_type_cols:
         data_frame[col] = pd.to_datetime(data_frame[col])
     return data_frame
 
+
 def impute_data(data: DataFrame):
-    data["Donor City"] = data["Donor City"].fillna("Unknown")
-    data["Donor Zip"] = data["Donor Zip"].fillna("Unknown")
     data["School City"] = data["School City"].fillna("Unknown")
-
-    data["School Percentage Free Lunch"]=data["School Percentage Free Lunch"]\
+    data["School Percentage Free Lunch"] = data["School Percentage Free Lunch"]\
         .replace(np.NaN, data["School Percentage Free Lunch"].median())
-
-    data["School County"] = data["School County"] \
-        .fillna(data["School County"].mode()[0])
-    
+    # data["School County"] = data["School County"] \
+    #     .fillna(data["School County"].mode()[0])
+    data["School County"] = data["School County"].fillna("Unknown")
     data["School Name"] = data["School Name"].fillna("Unknown")
     data["School District"] = data["School District"].fillna("Unknown")
     data["School State"] = data["School State"].fillna("Unknown")
+    data["School Metro Type"] = data["School Metro Type"].fillna("Unknown")
 
     data["Teacher Prefix"] = data["Teacher Prefix"] \
         .fillna(data["Teacher Prefix"].mode()[0])
-    
-    data["Project Title"] = data["Project Title"].fillna("No Title")
-    data["Project Essay"] = data["Project Essay"].fillna("None")
-    data["Project Short Description"] = data["Project Short Description"].fillna("No Description")
-    data["Project Need Statement"] = data["Project Need Statement"].fillna("None")
-    
+
+    data["Project Subject Category Tree"] = data["Project Subject Category Tree"].fillna(
+        "Unknown")
+    data["Project Subject Subcategory Tree"] = data["Project Subject Subcategory Tree"].fillna(
+        "Unknown")
+    data["Project Resource Category"] = data["Project Resource Category"].fillna(
+        "Unknown")
+
+    data["Resource Vendor Name"] = data["Resource Vendor Name"].fillna(
+        "Unknown")
+
     return data
+
 
 def encode_data(data: DataFrame, categorical_cols: list):
     """One hot encodes data."""
     return pd.get_dummies(data, columns=categorical_cols)
 
+
 def split_time_series_train_test_data(data: DataFrame, filter_date: str):
     train_set = data[
         data["Project Posted Date"] < pd.to_datetime(filter_date)
-        ].drop(["Project ID", "Project Posted Date"], axis=1)
+    ].drop(["Project ID", "Project Posted Date"], axis=1)
     x_train = train_set.loc[:, train_set.columns != "Label"]
     y_train = train_set.loc[:, ["Label"]]
 
     test_set = data[
         data["Project Posted Date"] >= pd.to_datetime(filter_date)
-        ].drop(["Project ID", "Project Posted Date"], axis=1)
+    ].drop(["Project ID", "Project Posted Date"], axis=1)
     x_test = test_set.loc[:, test_set.columns != "Label"]
     y_test = test_set.loc[:, ["Label"]]
 
     return x_train, y_train, x_test, y_test
 
+
 def split_temporal_train_test_data(
         data: DataFrame,
         start_date: str,
-        train_months: int = 6, 
-        test_months: int = 1, 
+        train_months: int = 6,
+        test_months: int = 1,
         leak_offset: int = 4) -> DataFrame:
-    
+
     # data split format = train - offset - validate - offset - test
     # validation period = test period
     train_start = pd.Timestamp(start_date)
@@ -92,29 +102,30 @@ def split_temporal_train_test_data(
 
     train_set = data[
         (data["Project Posted Date"] > pd.to_datetime(train_start))
-        ]
+    ]
     train_set = train_set[
         (train_set["Project Posted Date"] < pd.to_datetime(train_end))
-        ].drop(["Project ID", "Project Posted Date"], axis=1)
-    
+    ].drop(["Project ID", "Project Posted Date"], axis=1)
+
     x_train = train_set.loc[:, train_set.columns != "Label"]
     y_train = train_set.loc[:, ["Label"]]
-    
+
     test_set = data[
         (data["Project Posted Date"] > pd.to_datetime(test_start))]
     test_set = test_set[
         (test_set["Project Posted Date"] < pd.to_datetime(test_end))
-        ].drop(["Project ID", "Project Posted Date"], axis=1)
-    
+    ].drop(["Project ID", "Project Posted Date"], axis=1)
+
     x_test = test_set.loc[:, test_set.columns != "Label"]
     y_test = test_set.loc[:, ["Label"]]
 
     print("Training set shape = ", x_train.shape)
     print("Testing set shape = ", x_test.shape)
     print("-----")
-    
+
     return x_train, y_train, x_test, y_test
-    
+
+
 if __name__ == "__main__":
     print("Start data pre processing")
     data = load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
@@ -124,7 +135,7 @@ if __name__ == "__main__":
     print(data.shape)
 
     # data = impute_data(data)
-    
+
     data.set_index("Project Posted Date", inplace=True)
     data_count_by_month = data.resample('M').size()
     # Plot the data count distribution
@@ -133,7 +144,7 @@ if __name__ == "__main__":
 
     # Remove the time part from the date labels
     x_labels = [d.strftime('%Y-%b') for d in data_count_by_month.index]
-    
+
     ax.set_xticklabels(x_labels, rotation=45, ha='right')
 
     plt.xlabel('Month')
@@ -142,5 +153,3 @@ if __name__ == "__main__":
     plt.xticks(rotation=90)
     plt.tight_layout()
     plt.show()
-    
-
