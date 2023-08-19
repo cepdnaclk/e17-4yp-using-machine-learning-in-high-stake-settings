@@ -21,6 +21,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib
 import matplotlib.pyplot as plt
 import os
+from helper import (log_intermediate_output_to_file)
 
 # Set the backend to a non-GUI backend (e.g., 'Agg' for PNG files)
 matplotlib.use('Agg')
@@ -304,15 +305,18 @@ def get_k_labels(model_name, model_type, x_test, y_test, y_hat, k=config.FIXED_K
     print(
         f"get k labels ==============={model_type}===============================")
     if model_type != "baseline":
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating labels for trained model output.')
         k_labels = create_proba_sorted_k_labels(
             k=k, proba_predictions=y_hat)
     else:
         if model_name[:-1] == "base_line_rand_k":
             print("base_line_rand_k--------------")
+            log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating labels for baseline model; random.')
             k_labels = create_random_k_labels(
                 k=k, test_size=len(y_test))
         else:
             print("base_line_cost_sorted---------")
+            log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating labels for baseline model; cost-sorted.')
             k_labels = create_cost_sorted_k_labels(
                 k=k, x_test=x_test)
     return k_labels
@@ -426,9 +430,13 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
 
 
 def cross_validate(data, model_item):
+
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Starting cross_validate function.')
     model = model_item.get("model")
     model_name = model_item.get("model_name")+"/"
     model_type = model_item.get("type")
+
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Initiating time variables.')
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
     min_t = pd.Timestamp(config.MIN_TIME)
@@ -451,8 +459,12 @@ def cross_validate(data, model_item):
 
     folds = 0
 
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Starting the loop for folds.')
     while t_current > min_t + fold_period:
+
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, f"======================================FOLD==== {folds+1}")
         start_date = t_current - fold_period
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Starting fold for {start_date}.')
 
         x_train, y_train, x_test, y_test = dp.split_temporal_train_test_data(
             data=data,
@@ -462,21 +474,26 @@ def cross_validate(data, model_item):
         cost_test = x_test["Project Cost"]
 
         # Count the positive labeled percentage in the training set and the test set
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get positive percentage.')
         train_pos_perc, test_pos_perc = get_positive_percentage(
             y_train, y_test)
 
         # Scaling
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
         x_train, x_test = standardize_data(
             x_train, x_test, config.VARIABLES_TO_SCALE)
 
         # Model Training
         if model_type != "baseline":
+            log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Training model.')
             model = model.fit(x_train, y_train.values.ravel())
 
             # Predicting
+            log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Predicting after training.')
             y_hat = model.predict_proba(x_test)
 
             # Observing the best threshold using different methods
+            log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Plotting PRK curves for varying k.')
             prk_results = prk_curve_for_top_k_projects(
                 proba_predictions=y_hat,
                 k_start=1000,
@@ -496,6 +513,7 @@ def cross_validate(data, model_item):
             prk_results = None
 
         # k value is by default set in configuration file, can override here.
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating binary labels based on the model type.')
         k_labels = get_k_labels(
             model_name=model_name,
             model_type=model_type,
@@ -504,11 +522,13 @@ def cross_validate(data, model_item):
             y_hat=y_hat
         )
 
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Find the precision score.')
         k_fixed_precision = get_precision_for_fixed_k(
             k_labels=k_labels, y_test=y_test)
 
         # Evaluate the model
         if model_type != "baseline":
+            log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
             model_score = model.score(x_test, y_test)
         else:
             model_score = 0
@@ -551,10 +571,13 @@ def cross_validate(data, model_item):
             },
             'prk_results': prk_results
         }
+
+        log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saving fold info.')
         file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+model_name+file_name)
 
         if model_type != "baseline":
+            log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saving model artefacts.')
             art_path = config.ARTIFACTS_PATH+model_name
             if not os.path.exists(art_path):
                 os.makedirs(art_path)
@@ -596,6 +619,9 @@ def cross_validate(data, model_item):
 
         t_current -= shift_period
         folds += 1
+
+
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Exiting fold creation and model training.')
 
     return model_eval_metrics
 
