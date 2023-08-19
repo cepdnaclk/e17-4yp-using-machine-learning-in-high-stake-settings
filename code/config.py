@@ -17,6 +17,7 @@ ARTIFACTS_PATH = ROOT + "model_outputs/artifacts/"
 INFO_DEST = ROOT+"model_outputs/info/"
 # MODEL_RUN_LOG_PATH = INFO_DEST + "model_run_log.py"
 PROCESSED_DATA_PATH = DATA_DEST + "labelled_final_data.csv"
+PROGRAM_LOG_FILE = "program_log.log"
 
 LOAD_PROCESSED_DATA_FLAG = False
 MAX_ROWS = 300000  # not in use now (18/08/2023)
