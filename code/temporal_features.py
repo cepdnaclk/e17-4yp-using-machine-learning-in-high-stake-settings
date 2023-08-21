@@ -1,6 +1,8 @@
 # Inmporting libraries
 import pandas as pd
 from pandas.tseries.offsets import DateOffset
+from helper import (log_intermediate_output_to_file)
+import config
 
 
 # Function to calculate the teacher success rate 
@@ -208,19 +210,26 @@ def create_projects_in_a_state_feature(df, x):
 def add_new_features(df):
 
     # Add the teacher success rate column
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Adding teacher success rate column.')
     modified_df_tsr = create_teacher_success_rate_feature(df, 4)
     print("done modified_df_tsr")
     # Add the school city success rate
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Adding school city success rate column.')
     modified_df_scr = create_school_city_success_rate_feature(modified_df_tsr, 4)
     print("done modified_df_scr")
     # Add the school id sucess rate
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Adding school success rate column.')
     modified_df_ssr = create_school_success_rate_feature(modified_df_scr, 4)
     print("done modified_df_ssr")
     # Add the school county success rate
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Adding school county success rate column.')
     modified_df_sctr = create_school_county_success_rate_feature(modified_df_ssr, 4)
     print("done modified_df_sctr")
     # Add the number of projects in a state for a selected period of time
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Adding number of projects in a state for a selected period of time.')
     modified_df_project_count = create_projects_in_a_state_feature(modified_df_sctr, 4)
     print("done modified_df_project_count")
+
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Done adding new features.')
 
     return modified_df_project_count
