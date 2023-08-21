@@ -209,13 +209,18 @@ def add_new_features(df):
 
     # Add the teacher success rate column
     modified_df_tsr = create_teacher_success_rate_feature(df, 4)
+    print("done modified_df_tsr")
     # Add the school city success rate
     modified_df_scr = create_school_city_success_rate_feature(modified_df_tsr, 4)
+    print("done modified_df_scr")
     # Add the school id sucess rate
     modified_df_ssr = create_school_success_rate_feature(modified_df_scr, 4)
+    print("done modified_df_ssr")
     # Add the school county success rate
     modified_df_sctr = create_school_county_success_rate_feature(modified_df_ssr, 4)
+    print("done modified_df_sctr")
     # Add the number of projects in a state for a selected period of time
     modified_df_project_count = create_projects_in_a_state_feature(modified_df_sctr, 4)
+    print("done modified_df_project_count")
 
     return modified_df_project_count
