@@ -16,13 +16,16 @@ ARTIFACTS_PATH = ROOT + "model_outputs/artifacts/"
 
 INFO_DEST = ROOT+"model_outputs/info/"
 # MODEL_RUN_LOG_PATH = INFO_DEST + "model_run_log.py"
-PROCESSED_DATA_PATH = DATA_DEST + "labelled_final_data.csv"
+PROCESSED_DATA_PATH = DATA_DEST + "labelled_final_data_shuffled.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
-LOAD_PROCESSED_DATA_FLAG = False
+LOAD_PROCESSED_DATA_FLAG = True
 MAX_ROWS = 300000  # not in use now (18/08/2023)
 
 FIXED_KVAL = 1000
+
+K_START = 1000
+K_STEP = 500
 
 # To label data
 DONATION_PERIOD = 30
