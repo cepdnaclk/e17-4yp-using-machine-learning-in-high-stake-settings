@@ -89,31 +89,35 @@ def create_logistic_regression_parameters(
 
 
 def create_classification_models(
-        random_forest_parameters_list: list,
-        logistic_regression_parameters_list: list
+        random_forest_parameters_list: list = None,
+        logistic_regression_parameters_list: list = None,
+        baseline: bool = True
 ) -> list:
     models_list = []
     i = 1
-    for parameters in random_forest_parameters_list:
-        new_model = RandomForestClassifier(**parameters)
-        models_list.append({
-            'model_name': f'random_forest_{i}',
-            'model': new_model,
-            'type': 'non-linear',
-            'parameters': parameters
-        })
-        i += 1
 
-    i = 1
-    for parameters in logistic_regression_parameters_list:
-        new_model = LogisticRegression(**parameters)
-        models_list.append({
-            'model_name': f'logistic_regression_{i}',
-            'model': new_model,
-            'type': 'linear',
-            'parameters': parameters
-        })
-        i += 1
+    if random_forest_parameters_list != None:
+        for parameters in random_forest_parameters_list:
+            new_model = RandomForestClassifier(**parameters)
+            models_list.append({
+                'model_name': f'random_forest_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}',
+                'model': new_model,
+                'type': 'non-linear',
+                'parameters': parameters
+            })
+            i += 1
+
+    if logistic_regression_parameters_list != None:
+        i = 1
+        for parameters in logistic_regression_parameters_list:
+            new_model = LogisticRegression(**parameters)
+            models_list.append({
+                'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
+                'model': new_model,
+                'type': 'linear',
+                'parameters': parameters
+            })
+            i += 1
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
         'model': None,
@@ -124,7 +128,8 @@ def create_classification_models(
         'model': None,
         'type': 'baseline'
     }
-    models_list.append(cost_sorted_k_baseline_model)
-    models_list.append(random_k_baseline_model)
+    if baseline:
+        models_list.append(cost_sorted_k_baseline_model)
+        models_list.append(random_k_baseline_model)
 
     return models_list
