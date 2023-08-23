@@ -8,16 +8,18 @@ import config
 # Function to calculate the teacher success rate 
 def calculate_teacher_sucess_rate(row_number, df, x):
 
+    success_rate = 0
+    success_rate_imputed = 1
     # Store teacher ID and posted date
     row = df.iloc[row_number, :]
-    posted_date = row["Project Posted Date"]
+    posted_date_minus_one = row["Project Posted Date"] - DateOffset(months=1)
     teacher_id = row["Teacher ID"]
-    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x)
+    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x+1)
     # print(posted_date, posted_date_minus_x)
 
     # Filter the df
     df_filtered = df[(df["Teacher ID"] == teacher_id) & 
-                    (df["Project Posted Date"] <= posted_date) & 
+                    (df["Project Posted Date"] < posted_date_minus_one) & 
                     (df["Project Posted Date"] >= posted_date_minus_x)]
     df_filtered_row_count = df_filtered.shape[0]
     # print(df_filtered)
@@ -26,7 +28,11 @@ def calculate_teacher_sucess_rate(row_number, df, x):
 
     success_filtered_count = df_filtered[df_filtered["Label"] == 0].shape[0]
 
-    return success_filtered_count/df_filtered_row_count
+    if df_filtered_row_count > 0:
+        success_rate = success_filtered_count/df_filtered_row_count
+        success_rate_imputed = 0
+
+    return success_rate,success_rate_imputed
 
 # Function to create the teacher success rate for the past 4 months
 def create_teacher_success_rate_feature(df, x):
@@ -34,30 +40,35 @@ def create_teacher_success_rate_feature(df, x):
   # Get length of dataframe
     df_len = df.shape[0]
     teacher_success_rate_values = []
+    teacher_success_rate_imputed_values = []
     for row in range(df_len):
         # print(f'Row number = {row} --------------------------------------------------------')
-        success_rate = calculate_teacher_sucess_rate(row, df, x)
+        success_rate, success_rate_imputed = calculate_teacher_sucess_rate(row, df, x)
         # print(f'Teacher success rate = {success_rate}')
         teacher_success_rate_values.append(success_rate)
+        teacher_success_rate_imputed_values.append(success_rate_imputed)
 
 
     df["Teacher Success Rate"] = teacher_success_rate_values
+    df["Teacher Success Rate Imputed"] = teacher_success_rate_imputed_values
 
     return df
 
 
 def calculate_school_city_sucess_rate(row_number, df, x):
 
+    success_rate = 0
+    success_rate_imputed = 1
     # Store School City and posted date
     row = df.iloc[row_number, :]
-    posted_date = row["Project Posted Date"]
+    posted_date_minus_one = row["Project Posted Date"] - DateOffset(months=1)
     school_city = row["School City"]
-    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x)
+    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x+1)
     # print(posted_date, posted_date_minus_x)
 
     # Filter the df
     df_filtered = df[(df["School City"] == school_city) & 
-                    (df["Project Posted Date"] <= posted_date) & 
+                    (df["Project Posted Date"] < posted_date_minus_one) & 
                     (df["Project Posted Date"] >= posted_date_minus_x)]
     df_filtered_row_count = df_filtered.shape[0]
     # print(df_filtered)
@@ -66,7 +77,11 @@ def calculate_school_city_sucess_rate(row_number, df, x):
 
     success_filtered_count = df_filtered[df_filtered["Label"] == 0].shape[0]
 
-    return success_filtered_count/df_filtered_row_count
+    if df_filtered_row_count > 0:
+        success_rate = success_filtered_count/df_filtered_row_count
+        success_rate_imputed = 0
+
+    return success_rate, success_rate_imputed
 
 
 def create_school_city_success_rate_feature(df, x):
@@ -74,30 +89,35 @@ def create_school_city_success_rate_feature(df, x):
     # Get length of dataframe
     df_len = df.shape[0]
     school_success_rate_values = []
+    school_success_rate_imputed_values = []
     for row in range(df_len):
         # print(f'Row number = {row} --------------------------------------------------------')
-        success_rate = calculate_school_city_sucess_rate(row, df, x)
+        success_rate, success_rate_imputed = calculate_school_city_sucess_rate(row, df, x)
         # print(f'School city success rate = {success_rate}')
         school_success_rate_values.append(success_rate)
+        school_success_rate_imputed_values.append(success_rate_imputed)
 
 
     df["School City Success Rate"] = school_success_rate_values
+    df["School City Success Rate Imputed"] = school_success_rate_imputed_values
 
     return df
 
 
 def calculate_school_success_rate(row_number, df, x):
 
+    success_rate = 0
+    success_rate_imputed = 1
     # Store school ID and posted date
     row = df.iloc[row_number, :]
-    posted_date = row["Project Posted Date"]
+    posted_date_minus_one = row["Project Posted Date"] - DateOffset(months=1)
     school_id = row["School ID"]
-    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x)
+    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x+1)
     # print(posted_date, posted_date_minus_x)
 
     # Filter the df
     df_filtered = df[(df["School ID"] == school_id) & 
-                    (df["Project Posted Date"] <= posted_date) & 
+                    (df["Project Posted Date"] < posted_date_minus_one) & 
                     (df["Project Posted Date"] >= posted_date_minus_x)]
     df_filtered_row_count = df_filtered.shape[0]
     # print(df_filtered)
@@ -106,7 +126,11 @@ def calculate_school_success_rate(row_number, df, x):
 
     success_filtered_count = df_filtered[df_filtered["Label"] == 0].shape[0]
 
-    return success_filtered_count/df_filtered_row_count
+    if df_filtered_row_count > 0:
+        success_rate = success_filtered_count/df_filtered_row_count
+        success_rate_imputed = 0
+
+    return success_rate, success_rate_imputed
 
 
 
@@ -115,30 +139,35 @@ def create_school_success_rate_feature(df, x):
     # Get length of dataframe
     df_len = df.shape[0]
     school_success_rate_values = []
+    school_success_rate_imputed_values = []
     for row in range(df_len):
         # print(f'Row number = {row} --------------------------------------------------------')
-        success_rate = calculate_school_success_rate(row, df, x)
+        success_rate, success_rate_imputed = calculate_school_success_rate(row, df, x)
         # print(f'School success rate = {success_rate}')
         school_success_rate_values.append(success_rate)
+        school_success_rate_imputed_values.append(success_rate_imputed)
 
 
     df["School Success Rate"] = school_success_rate_values
+    df["School Success Rate Imputed"] = school_success_rate_imputed_values
 
     return df
 
 
 def calculate_school_county_sucess_rate(row_number, df, x):
 
+    success_rate = 0
+    success_rate_imputed = 1
     # Store School County and posted date
     row = df.iloc[row_number, :]
-    posted_date = row["Project Posted Date"]
+    posted_date_minus_one = row["Project Posted Date"] - DateOffset(months=1)
     school_county = row["School County"]
-    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x)
+    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x+1)
     # print(posted_date, posted_date_minus_x)
 
     # Filter the df
     df_filtered = df[(df["School County"] == school_county) & 
-                    (df["Project Posted Date"] <= posted_date) & 
+                    (df["Project Posted Date"] < posted_date_minus_one) & 
                     (df["Project Posted Date"] >= posted_date_minus_x)]
     df_filtered_row_count = df_filtered.shape[0]
     # print(df_filtered)
@@ -147,7 +176,11 @@ def calculate_school_county_sucess_rate(row_number, df, x):
 
     success_filtered_count = df_filtered[df_filtered["Label"] == 0].shape[0]
 
-    return success_filtered_count/df_filtered_row_count
+    if df_filtered_row_count > 0:
+        success_rate = success_filtered_count/df_filtered_row_count
+        success_rate_imputed = 0
+
+    return success_rate, success_rate_imputed
 
 
 def create_school_county_success_rate_feature(df, x):
@@ -155,14 +188,17 @@ def create_school_county_success_rate_feature(df, x):
     # Get length of dataframe
     df_len = df.shape[0]
     school_success_rate_values = []
+    school_success_rate_imputed_values = []
     for row in range(df_len):
         # print(f'Row number = {row} --------------------------------------------------------')
-        success_rate = calculate_school_county_sucess_rate(row, df, x)
+        success_rate, success_rate_imputed = calculate_school_county_sucess_rate(row, df, x)
         # print(f'School county success rate = {success_rate}')
         school_success_rate_values.append(success_rate)
+        school_success_rate_imputed_values.append(success_rate_imputed)
 
 
     df["School County Success Rate"] = school_success_rate_values
+    df["School County Success Rate Imputed"] = school_success_rate_imputed_values
 
     return df
 
@@ -171,14 +207,14 @@ def create_school_county_success_rate_feature(df, x):
 def calculate_project_count(row_number, df, x):
 
     row = df.iloc[row_number, :]
-    posted_date = row["Project Posted Date"]
+    posted_date_minus_one = row["Project Posted Date"] - DateOffset(months=1)
     school_state = row["School State"]
-    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x)
+    posted_date_minus_x = row["Project Posted Date"] - DateOffset(months=x+1)
     # print(posted_date, posted_date_minus_x)
 
     # Filter the df
     df_filtered = df[(df["School State"] == school_state) &
-                    (df["Project Posted Date"] <= posted_date) &
+                    (df["Project Posted Date"] < posted_date_minus_one) &
                     (df["Project Posted Date"] >= posted_date_minus_x)]
 
     # Find the number of projects from that state
