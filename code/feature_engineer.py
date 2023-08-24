@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+import os
+import pickle
+import time
+=======
 from helper import save_model
 import data_processor as dp
 import config
@@ -18,6 +23,7 @@ from sklearn.metrics import confusion_matrix
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+>>>>>>> ab46694316f48873726b55e2a68f77dd50e029df
 import matplotlib
 import matplotlib.pyplot as plt
 import os
@@ -25,6 +31,66 @@ from helper import (log_intermediate_output_to_file)
 
 # Set the backend to a non-GUI backend (e.g., 'Agg' for PNG files)
 matplotlib.use('Agg')
+
+<<<<<<< HEAD
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
+from sklearn.metrics import confusion_matrix
+from pandas.core.frame import DataFrame
+from datetime import timedelta
+import seaborn as sns
+from sklearn.metrics import classification_report, f1_score, accuracy_score
+import language_tool_python
+import nltk
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+import config
+import data_processor as dp
+
+
+lang_tool = language_tool_python.LanguageTool('en-US')
+
+from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_curve, roc_auc_score, precision_recall_curve
+
+import config
+import data_processor as dp
+
+=======
+>>>>>>> ab46694316f48873726b55e2a68f77dd50e029df
+
+def increment_path(path, exist_ok=False):
+    # If the folder already exists and `exist_ok` is True, return the original path
+    if exist_ok and os.path.exists(path):
+        return path
+
+    # If the folder does not exist or `exist_ok` is False, create a new folder with an incremented number
+    print(path.rstrip("/"))
+    
+    dirname, basename = os.path.split(path.rstrip("/"))
+    try:
+        names  = re.split(r'(\d+)', basename)
+        
+    except:
+        names = [basename, "1"]
+        
+        
+    name = names[0]
+    ext = names[1]
+    
+    
+    i = 1
+    while True:
+        new_name = f"{name}{i}"
+        new_path = os.path.join(dirname, new_name)
+        if not os.path.exists(new_path):
+            break
+        
+        i += 1
+        
+    return new_path
 
 
 def standardize_data(x_train, x_test, cols_list):
@@ -398,6 +464,10 @@ def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
     return
 
 
+<<<<<<< HEAD
+
+def cross_validate(data, model, model_name, dest):
+=======
 def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval_metrics: dict):
     ''' A dict of evaluation metrics of each model should be passed.
         fixed_k_plot_data = {
@@ -444,6 +514,7 @@ def cross_validate(data, model_item):
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Initiating time variables.')
+>>>>>>> ab46694316f48873726b55e2a68f77dd50e029df
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
     min_t = pd.Timestamp(config.MIN_TIME)
@@ -465,6 +536,15 @@ def cross_validate(data, model_item):
     }
 
     folds = 0
+    # Create a new folder for each experiment
+    experiment_number = 1
+    root_f = os.path.join(dest, f"exp{experiment_number}")
+
+    # Use the increment_path function to handle existing folders
+    root = increment_path(root_f)
+
+    # Create the experiment folder
+    os.makedirs(root, exist_ok=True)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Starting the loop for folds.')
@@ -597,6 +677,35 @@ def cross_validate(data, model_item):
             config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saving fold info.')
         file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+model_name+file_name)
+        
+        
+        
+        current_root = f"{root}/Fold_{folds}"
+        os.makedirs(current_root)
+        pickle.dump(model, file=open(f"{current_root}/model.pkl", "wb"))
+        
+        dp.save_json(fold_info, f"{current_root}/{file_name}")
+        # Convert x_train and y_train to Pandas DataFrames
+        x_train_df = pd.DataFrame(x_train)
+        y_train_df = pd.DataFrame(y_train)
+
+        # Combine x_train and y_train into a single DataFrame
+        train_df = pd.concat([x_train_df, y_train_df], axis=1)
+
+        pd.DataFrame.to_csv(train_df, f"{current_root}/train.csv" )
+        
+        
+        # Convert TEST DATASET AND PREDICTIONS to a DataFrame
+        x_test_df = pd.DataFrame(x_test)
+        y_test_df = pd.DataFrame(y_test)
+        predicted_probabilities_df = pd.DataFrame(y_hat, columns=model.classes_, index=y_test_df.index)
+       
+        
+        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        test_df = pd.concat([x_test_df, y_test_df, predicted_probabilities_df], axis=1, ignore_index=True)
+        pd.DataFrame.to_csv(test_df, f"{current_root}/test.csv" )
+        
+        
 
         if model_type != "baseline":
             log_intermediate_output_to_file(
@@ -642,6 +751,61 @@ def cross_validate(data, model_item):
 
         t_current -= shift_period
         folds += 1
+<<<<<<< HEAD
+    
+    return model_eval_metrics, probability_thresholds
+
+
+
+
+# def run_pipeline(data, model, ):
+    
+#     # Initiate lists to store data
+#     t_current_list = []
+#     t_current_accuracy = []
+def run_pipeline(data, model, model_name, dest: str ="./run"):
+    
+    model_eval_metrics, probability_thresholds = cross_validate(data, model, model_name,dest )
+    print("")
+    print("probability_thresholds = ", probability_thresholds)
+    print("accuracies = ", model_eval_metrics["accuracy"])
+    print("f1_scores = ", model_eval_metrics["f1_score"])
+    print("model_scores = ", model_eval_metrics["model_score"])
+    print("precision for fixed k values = ", model_eval_metrics["k_fixed_precision"])
+
+    avg_metrics = {"avg_accuracy": sum(model_eval_metrics["accuracy"])/len(model_eval_metrics["accuracy"]),
+                   "avg_f1_score": sum(model_eval_metrics["f1_score"])/len(model_eval_metrics["f1_score"]),
+                   "avg_model_score": sum(model_eval_metrics["model_score"])/len(model_eval_metrics["model_score"]),
+                   "avg_proba_thresh": sum(probability_thresholds)/len(probability_thresholds), 
+                   "avg_fixed_k_precision": sum(model_eval_metrics["k_fixed_precision"])/len(model_eval_metrics["k_fixed_precision"])}
+
+    print("")
+    print("Average accuracy = ", avg_metrics["avg_accuracy"])
+    print("Average f1_score = ", avg_metrics["avg_f1_score"])
+    print("Average model score = ", avg_metrics["avg_model_score"])
+    print("Average probability_threshold = ", avg_metrics["avg_proba_thresh"])
+    print("Average precision for fixed k = ", avg_metrics["avg_fixed_k_precision"])
+
+    return model, model_eval_metrics, avg_metrics
+
+def plot_k_fold_evaluation_metrics(model_eval_metrics: dict):
+    x_labels = [f"Fold {i+1}" for i in range(len(model_eval_metrics.get("accuracy", 0)))]
+    x_positions = np.arange(len(x_labels))
+    bar_width = 0.2
+    
+    print( x_positions, bar_width, len(model_eval_metrics["accuracy"]), len(model_eval_metrics["f1_score"]))
+    plt.bar(x_positions - bar_width, model_eval_metrics["accuracy"], width=bar_width, label='Accuracy')
+    plt.bar(x_positions, model_eval_metrics["f1_score"], width=bar_width, label='F1 Score')
+    
+    plt.xlabel('Evaluation Metrics')
+    plt.ylabel('Values')
+    plt.title("Model's Accuracy and F1 Score for Each validation fold")
+    plt.xticks(x_positions, x_labels, rotation = 90)
+    plt.legend()
+    plt.savefig(config.IMAGE_DEST+'cross_validation_plot.png')
+    # plt.show()
+    return model, model_eval_metrics, avg_metrics
+=======
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Exiting fold creation and model training.')
@@ -653,3 +817,4 @@ def run_pipeline(data, model):
     model_eval_metrics = cross_validate(data, model)
 
     return model, model_eval_metrics
+>>>>>>> ab46694316f48873726b55e2a68f77dd50e029df
