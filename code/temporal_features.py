@@ -289,3 +289,4 @@ def add_new_features(df):
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Done adding new features.')
 
     return modified_df_project_count
+
