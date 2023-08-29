@@ -3,6 +3,8 @@
 # /code/model_outputs/figures/*
 /code/data/*
 /code/__pycache__
+*.csv
+*.pyc
 
 ### VisualStudioCode ###
 .vscode
