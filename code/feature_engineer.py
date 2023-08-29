@@ -434,7 +434,219 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
                 'k_fixed_precision_plot_for_all_models.png')
 
 
+def split_data_folds(data: DataFrame) -> list:
+    # Initiate timing variables
+    max_t = pd.Timestamp(config.MAX_TIME)
+    min_t = pd.Timestamp(config.MIN_TIME)
+    shift_period = timedelta(days=config.LEAK_OFFSET)   # 4 months
+    fold_period = timedelta(days=config.WINDOW)    # 15 months
+
+    t_current = max_t
+    folds = 1
+
+    folded_dataset = []
+
+    while t_current > min_t + fold_period:
+        start_date = t_current - fold_period
+
+        x_train, y_train, x_test, y_test = dp.split_temporal_train_test_data(
+            data=data,
+            start_date=start_date
+        )
+
+        # Count the positive labeled percentage in the training set and the test set
+        train_pos_perc, test_pos_perc = get_positive_percentage(
+            y_train, y_test)
+
+        fold_dataset = {
+            "fold_no": folds,
+            "start_date": start_date,
+            "x_train": x_train,
+            "y_train": y_train,
+            "x_test": x_test,
+            "y_test": y_test,
+            "train_pos_perc": train_pos_perc,
+            "test_pos_perc": test_pos_perc
+        }
+        folded_dataset.append(fold_dataset)
+
+        train_end = start_date + timedelta(config.TRAIN_SIZE)
+        test_start = train_end + timedelta(config.LEAK_OFFSET)
+        test_end = test_start + timedelta(config.TEST_SIZE)
+
+        fold_info = {
+            'fold_number': folds,
+            'timeline': {
+                'train_start': str(start_date)[:10],
+                'train_end': str(train_end)[:10],
+                'test_start': str(test_start)[:10],
+                'test_end': str(test_end)[:10]
+            },
+            'shape': {
+                'training_shape': str(x_train.shape),
+                'test_shape': str(x_test.shape),
+            },
+            'data_distribution': {
+                'train_positive_ratio': train_pos_perc,
+                'test_positive_ratio': test_pos_perc
+            }
+        }
+        file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
+        dp.save_json(fold_info, config.INFO_DEST+file_name)
+
+        t_current -= shift_period
+        folds += 1
+
+    return folded_dataset
+
+
+def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
+    if model_type == "linear":
+        # Scaling
+        x_train, x_test = standardize_data(
+            x_train, x_test, config.VARIABLES_TO_SCALE)
+
+    # Model Training
+    model = model.fit(x_train, y_train.values.ravel())
+
+    # Predicting
+    y_hat = model.predict_proba(x_test)
+
+    return model, y_hat
+
+
 def cross_validate(data, model_item):
+    # create a splitted & folded dataset once and pass to each model
+    folded_dataset = split_data_folds(data)
+
+    model = model_item.get("model")
+    model_name = model_item.get("model_name")+"/"
+    model_type = model_item.get("type")
+
+    model_eval_metrics = {
+        "accuracy": [],
+        "f1_score": [],
+        "recall": [],
+        "model_score": [],
+        "fixed_k_plot_data": []
+    }
+
+    # cross validate on each fold
+    for fold_data in folded_dataset:
+        x_train = fold_data.get("x_train")
+        y_train = fold_data.get("x_train")
+        x_test = fold_data.get("x_test")
+        y_test = fold_data.get("y_test")
+
+        # handle empty dataset situation
+        if x_train.shape[0] == 0 or x_test.shape[0] == 0 or y_train.shape[0] == 0 or y_test.shape[0] == 0:
+            continue
+
+        if model_type == "linear":
+            log_intermediate_output_to_file(
+                config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
+            x_train, x_test = standardize_data(
+                x_train, x_test, config.VARIABLES_TO_SCALE)
+
+        if model_type != "baseline":
+            # train the model
+            model, y_hat = train_eval_classifier(
+                model=model,
+                model_type=model_type,
+                x_train=x_train,
+                y_train=y_train,
+                x_test=x_test,
+                y_test=y_test,
+            )
+
+            # Observing the best threshold using different methods
+            prk_results = prk_curve_for_top_k_projects(
+                proba_predictions=y_hat,
+                k_start=10,
+                k_end=int(y_hat.shape[0]*0.8),
+                k_gap=50,
+                y_test=fold_data.get("x_test"),
+                t_current=fold_data.get("start_date"),
+                fold=fold_data.get("fold_no"),
+                model_name=model_name
+            )
+        else:
+            y_hat = None
+            prk_results = None
+
+        # k value is by default set in configuration file, can override here.
+        log_intermediate_output_to_file(
+            config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating binary k labels based on the model type.')
+
+        # get custom labels for a fixed k value
+        k_labels = get_k_labels(
+            model_name=model_name,
+            model_type=model_type,
+            x_test=x_test,
+            y_test=y_test,
+            y_hat=y_hat
+        )
+
+        log_intermediate_output_to_file(
+            config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Find the precision score.')
+
+        k_fixed_precision = get_precision_for_fixed_k(
+            k_labels=k_labels, y_test=y_test)
+
+        fixed_k_plot_data = {
+            "fixed_k_value": config.FIXED_KVAL,
+            "fold_no": fold_data.get("fold_no"),
+            "start_date": fold_data.get("start_date"),
+            "k_fixed_precision": k_fixed_precision
+        }
+        model_eval_metrics["fixed_k_plot_data"].append(
+            fixed_k_plot_data)
+
+        # Evaluate the model
+        if model_type != "baseline":
+            log_intermediate_output_to_file(
+                config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
+            model_score = model.score(x_test, y_test)
+            accuracy = accuracy_score(y_test, y_hat)
+            f1 = f1_score(y_test, y_hat)
+            recall = recall_score(y_test, y_hat)
+            model_eval_metrics["accuracy"].append(accuracy)
+            model_eval_metrics["f1_score"].append(f1)
+            model_eval_metrics["recall"].append(recall)
+            model_eval_metrics["model_score"].append(model_score)
+
+            log_intermediate_output_to_file(
+                config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saving model artefacts.')
+            art_path = config.ARTIFACTS_PATH+model_name
+            if not os.path.exists(art_path):
+                os.makedirs(art_path)
+
+            save_model(
+                art_path,
+                file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.pkl',
+                model=model
+            )
+
+            predicted_probabilities_df = pd.DataFrame(
+                y_hat, columns=model.classes_, index=y_test.index)
+
+            test_prediction = pd.concat(
+                [data.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
+            test_prediction["Start Date"] = fold_data.get("start_date")
+
+            dp.export_data_frame(
+                test_prediction,
+                art_path +
+                f'test_prediction_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.csv'
+            )
+
+    log_intermediate_output_to_file(
+        config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Exiting fold creation and model training.')
+
+    return model_eval_metrics
+
+
+def cross_validate_old(data, model_item):
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Starting cross_validate function.')
