@@ -1,23 +1,6 @@
-from helper import save_model
-import data_processor as dp
-import config
-from sklearn.metrics import (
-    classification_report,
-    f1_score,
-    accuracy_score,
-    precision_score,
-    recall_score,
-    roc_curve,
-    roc_auc_score,
-    precision_recall_curve)
-import random
-import seaborn as sns
-from datetime import timedelta
-from pandas.core.frame import DataFrame
-from sklearn.metrics import confusion_matrix
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
+import os
+import pickle
+import time
 import matplotlib
 import matplotlib.pyplot as plt
 import os
@@ -25,6 +8,63 @@ from helper import (log_intermediate_output_to_file)
 
 # Set the backend to a non-GUI backend (e.g., 'Agg' for PNG files)
 matplotlib.use('Agg')
+
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
+from sklearn.metrics import confusion_matrix
+from pandas.core.frame import DataFrame
+from datetime import timedelta
+import seaborn as sns
+from sklearn.metrics import classification_report, f1_score, accuracy_score
+import language_tool_python
+import nltk
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+import config
+import data_processor as dp
+
+
+lang_tool = language_tool_python.LanguageTool('en-US')
+
+from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_curve, roc_auc_score, precision_recall_curve
+
+import config
+import data_processor as dp
+
+
+def increment_path(path, exist_ok=False):
+    # If the folder already exists and `exist_ok` is True, return the original path
+    if exist_ok and os.path.exists(path):
+        return path
+
+    # If the folder does not exist or `exist_ok` is False, create a new folder with an incremented number
+    print(path.rstrip("/"))
+    
+    dirname, basename = os.path.split(path.rstrip("/"))
+    try:
+        names  = re.split(r'(\d+)', basename)
+        
+    except:
+        names = [basename, "1"]
+        
+        
+    name = names[0]
+    ext = names[1]
+    
+    
+    i = 1
+    while True:
+        new_name = f"{name}{i}"
+        new_path = os.path.join(dirname, new_name)
+        if not os.path.exists(new_path):
+            break
+        
+        i += 1
+        
+    return new_path
 
 
 def standardize_data(x_train, x_test, cols_list):
@@ -398,264 +438,8 @@ def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
     return
 
 
-def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval_metrics: dict):
-    ''' A dict of evaluation metrics of each model should be passed.
-        fixed_k_plot_data = {
-            "fixed_k_value": fixed_k_value,
-            "fold_no": folds+1,
-            "start_date": start_date,
-            "k_fixed_precision": k_fixed_precision
-        }
-    '''
-    sample_plot_data = model_eval_metrics.get(
-        model_names[0]).get("fixed_k_plot_data")
-    x_labels = [str(entry["start_date"])[:10]
-                for entry in sample_plot_data][::-1]
-    x_positions = np.arange(len(x_labels))
-    print("x_labels = ", x_labels)
 
-    plt.figure(figsize=(18, 10))
-
-    for model_name in model_names:
-        plot_data = model_eval_metrics.get(model_name).get("fixed_k_plot_data")
-        precision_data = [entry["k_fixed_precision"]
-                          for entry in plot_data][::-1]
-
-        plt.plot(x_labels, precision_data, label=model_name)
-
-    plt.ylabel(
-        f'Precision for fixed k (k = {config.FIXED_KVAL})')
-    plt.xlabel('Fold Start Dates')
-    plt.title("Precision for each fold for fixed k for each model")
-    plt.xticks(x_positions, x_labels, rotation=20, fontsize=10)
-    plt.legend()
-    # plt.show()
-    plt.savefig(config.IMAGE_DEST +
-                'k_fixed_precision_plot_for_all_models.png')
-
-
-def split_data_folds(data: DataFrame) -> list:
-    # Initiate timing variables
-    max_t = pd.Timestamp(config.MAX_TIME)
-    min_t = pd.Timestamp(config.MIN_TIME)
-    shift_period = timedelta(days=config.LEAK_OFFSET)   # 4 months
-    fold_period = timedelta(days=config.WINDOW)    # 15 months
-
-    t_current = max_t
-    folds = 1
-
-    folded_dataset = []
-
-    while t_current > min_t + fold_period:
-        start_date = t_current - fold_period
-
-        x_train, y_train, x_test, y_test = dp.split_temporal_train_test_data(
-            data=data,
-            start_date=start_date
-        )
-
-        # Count the positive labeled percentage in the training set and the test set
-        train_pos_perc, test_pos_perc = get_positive_percentage(
-            y_train, y_test)
-
-        fold_dataset = {
-            "fold_no": folds,
-            "start_date": start_date,
-            "x_train": x_train,
-            "y_train": y_train,
-            "x_test": x_test,
-            "y_test": y_test,
-            "train_pos_perc": train_pos_perc,
-            "test_pos_perc": test_pos_perc
-        }
-        folded_dataset.append(fold_dataset)
-
-        train_end = start_date + timedelta(config.TRAIN_SIZE)
-        test_start = train_end + timedelta(config.LEAK_OFFSET)
-        test_end = test_start + timedelta(config.TEST_SIZE)
-
-        fold_info = {
-            'fold_number': folds,
-            'timeline': {
-                'train_start': str(start_date)[:10],
-                'train_end': str(train_end)[:10],
-                'test_start': str(test_start)[:10],
-                'test_end': str(test_end)[:10]
-            },
-            'shape': {
-                'training_shape': str(x_train.shape),
-                'test_shape': str(x_test.shape),
-            },
-            'data_distribution': {
-                'train_positive_ratio': train_pos_perc,
-                'test_positive_ratio': test_pos_perc
-            }
-        }
-        file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
-        dp.save_json(fold_info, config.INFO_DEST+file_name)
-
-        t_current -= shift_period
-        folds += 1
-
-    return folded_dataset
-
-
-def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
-    if model_type == "linear":
-        # Scaling
-        x_train, x_test = standardize_data(
-            x_train, x_test, config.VARIABLES_TO_SCALE)
-
-    # Model Training
-    model = model.fit(x_train, y_train.values.ravel())
-
-    # Predicting
-    y_hat = model.predict_proba(x_test)
-
-    return model, y_hat
-
-
-def cross_validate(data, model_item):
-    # create a splitted & folded dataset once and pass to each model
-    folded_dataset = split_data_folds(data)
-
-    model = model_item.get("model")
-    model_name = model_item.get("model_name")+"/"
-    model_type = model_item.get("type")
-
-    model_eval_metrics = {
-        "accuracy": [],
-        "f1_score": [],
-        "recall": [],
-        "model_score": [],
-        "fixed_k_plot_data": []
-    }
-
-    # cross validate on each fold
-    for fold_data in folded_dataset:
-        x_train = fold_data.get("x_train")
-        y_train = fold_data.get("x_train")
-        x_test = fold_data.get("x_test")
-        y_test = fold_data.get("y_test")
-
-        # handle empty dataset situation
-        if x_train.shape[0] == 0 or x_test.shape[0] == 0 or y_train.shape[0] == 0 or y_test.shape[0] == 0:
-            continue
-
-        if model_type == "linear":
-            log_intermediate_output_to_file(
-                config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
-            x_train, x_test = standardize_data(
-                x_train, x_test, config.VARIABLES_TO_SCALE)
-
-        if model_type != "baseline":
-            # train the model
-            model, y_hat = train_eval_classifier(
-                model=model,
-                model_type=model_type,
-                x_train=x_train,
-                y_train=y_train,
-                x_test=x_test,
-                y_test=y_test,
-            )
-
-            # Observing the best threshold using different methods
-            prk_results = prk_curve_for_top_k_projects(
-                proba_predictions=y_hat,
-                k_start=10,
-                k_end=int(y_hat.shape[0]*0.8),
-                k_gap=50,
-                y_test=fold_data.get("x_test"),
-                t_current=fold_data.get("start_date"),
-                fold=fold_data.get("fold_no"),
-                model_name=model_name
-            )
-        else:
-            y_hat = None
-            prk_results = None
-
-        # k value is by default set in configuration file, can override here.
-        log_intermediate_output_to_file(
-            config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating binary k labels based on the model type.')
-
-        # get custom labels for a fixed k value
-        k_labels = get_k_labels(
-            model_name=model_name,
-            model_type=model_type,
-            x_test=x_test,
-            y_test=y_test,
-            y_hat=y_hat
-        )
-
-        log_intermediate_output_to_file(
-            config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Find the precision score.')
-
-        k_fixed_precision = get_precision_for_fixed_k(
-            k_labels=k_labels, y_test=y_test)
-
-        fixed_k_plot_data = {
-            "fixed_k_value": config.FIXED_KVAL,
-            "fold_no": fold_data.get("fold_no"),
-            "start_date": fold_data.get("start_date"),
-            "k_fixed_precision": k_fixed_precision
-        }
-        model_eval_metrics["fixed_k_plot_data"].append(
-            fixed_k_plot_data)
-
-        # Evaluate the model
-        if model_type != "baseline":
-            log_intermediate_output_to_file(
-                config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
-            model_score = model.score(x_test, y_test)
-            accuracy = accuracy_score(y_test, y_hat)
-            f1 = f1_score(y_test, y_hat)
-            recall = recall_score(y_test, y_hat)
-            model_eval_metrics["accuracy"].append(accuracy)
-            model_eval_metrics["f1_score"].append(f1)
-            model_eval_metrics["recall"].append(recall)
-            model_eval_metrics["model_score"].append(model_score)
-
-            log_intermediate_output_to_file(
-                config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saving model artefacts.')
-            art_path = config.ARTIFACTS_PATH+model_name
-            if not os.path.exists(art_path):
-                os.makedirs(art_path)
-
-            save_model(
-                art_path,
-                file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.pkl',
-                model=model
-            )
-
-            predicted_probabilities_df = pd.DataFrame(
-                y_hat, columns=model.classes_, index=y_test.index)
-
-            test_prediction = pd.concat(
-                [data.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
-            test_prediction["Start Date"] = fold_data.get("start_date")
-
-            dp.export_data_frame(
-                test_prediction,
-                art_path +
-                f'test_prediction_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.csv'
-            )
-
-    log_intermediate_output_to_file(
-        config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Exiting fold creation and model training.')
-
-    return model_eval_metrics
-
-
-def cross_validate_old(data, model_item):
-
-    log_intermediate_output_to_file(
-        config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Starting cross_validate function.')
-    model = model_item.get("model")
-    model_name = model_item.get("model_name")+"/"
-    model_type = model_item.get("type")
-
-    log_intermediate_output_to_file(
-        config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Initiating time variables.')
+def cross_validate(data, model, model_name, dest):
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
     min_t = pd.Timestamp(config.MIN_TIME)
@@ -677,6 +461,15 @@ def cross_validate_old(data, model_item):
     }
 
     folds = 0
+    # Create a new folder for each experiment
+    experiment_number = 1
+    root_f = os.path.join(dest, f"exp{experiment_number}")
+
+    # Use the increment_path function to handle existing folders
+    root = increment_path(root_f)
+
+    # Create the experiment folder
+    os.makedirs(root, exist_ok=True)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Starting the loop for folds.')
@@ -809,6 +602,35 @@ def cross_validate_old(data, model_item):
             config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saving fold info.')
         file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+model_name+file_name)
+        
+        
+        
+        current_root = f"{root}/Fold_{folds}"
+        os.makedirs(current_root)
+        pickle.dump(model, file=open(f"{current_root}/model.pkl", "wb"))
+        
+        dp.save_json(fold_info, f"{current_root}/{file_name}")
+        # Convert x_train and y_train to Pandas DataFrames
+        x_train_df = pd.DataFrame(x_train)
+        y_train_df = pd.DataFrame(y_train)
+
+        # Combine x_train and y_train into a single DataFrame
+        train_df = pd.concat([x_train_df, y_train_df], axis=1)
+
+        pd.DataFrame.to_csv(train_df, f"{current_root}/train.csv" )
+        
+        
+        # Convert TEST DATASET AND PREDICTIONS to a DataFrame
+        x_test_df = pd.DataFrame(x_test)
+        y_test_df = pd.DataFrame(y_test)
+        predicted_probabilities_df = pd.DataFrame(y_hat, columns=model.classes_, index=y_test_df.index)
+       
+        
+        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        test_df = pd.concat([x_test_df, y_test_df, predicted_probabilities_df], axis=1, ignore_index=True)
+        pd.DataFrame.to_csv(test_df, f"{current_root}/test.csv" )
+        
+        
 
         if model_type != "baseline":
             log_intermediate_output_to_file(

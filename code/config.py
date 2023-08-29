@@ -19,17 +19,18 @@ INFO_DEST = ROOT+"model_outputs/info/"
 PROCESSED_DATA_PATH = DATA_DEST + "labelled_final_data_shuffled.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
-LOAD_PROCESSED_DATA_FLAG = True
-MAX_ROWS = 300000  # not in use now (18/08/2023)
+LOAD_PROCESSED_DATA_FLAG = False
+MAX_ROWS = 10000  # not in use now (18/08/2023)
 
-FIXED_KVAL = 1000
+FIXED_KVAL = 100
 
-K_START = 1000
-K_STEP = 500
+K_START = 100
+K_STEP = 100
 
 # To label data
 DONATION_PERIOD = 30
 THRESHOLD_RATIO = 0.4
+LABEL_PERIOD = 4    # months
 
 TRAINING_WINDOW = DONATION_PERIOD * 4
 
