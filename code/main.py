@@ -1,3 +1,5 @@
+
+import pandas as pd
 import datetime
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -93,6 +95,10 @@ log_intermediate_output_to_file(
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 print("encoded_data.shape = ", data_1.shape)
 
+
+data_folds = fe.split_data_folds(data_1)
+
+
 model_eval_metrics = {}
 hyper_parameter_performance_table = []
 
@@ -108,7 +114,7 @@ for model_item in models:
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Start pipeline for model.')
 
     trained_model, eval_metrics = fe.run_pipeline(
-        data=data_1, model=model_item
+        data=data_folds, model=model_item
     )
 
     log_intermediate_output_to_file(
