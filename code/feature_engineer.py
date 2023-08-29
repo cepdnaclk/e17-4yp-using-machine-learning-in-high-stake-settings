@@ -522,6 +522,7 @@ def cross_validate(data, model_item):
     model = model_item.get("model")
     model_name = model_item.get("model_name")+"/"
     model_type = model_item.get("type")
+    model_library = model_item.get("library")
 
     model_eval_metrics = {
         "accuracy": [],
@@ -606,6 +607,7 @@ def cross_validate(data, model_item):
         if model_type != "baseline":
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
+            
             model_score = model.score(x_test, y_test)
             accuracy = accuracy_score(y_test, y_hat)
             f1 = f1_score(y_test, y_hat)
@@ -627,6 +629,7 @@ def cross_validate(data, model_item):
                 model=model
             )
 
+            
             predicted_probabilities_df = pd.DataFrame(
                 y_hat, columns=model.classes_, index=y_test.index)
 

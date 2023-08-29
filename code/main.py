@@ -17,6 +17,7 @@ from helper import (
     create_classification_models,
     create_logistic_regression_parameters,
     create_random_forest_parameters,
+    create_xgb_classifier_parameters,
     log_intermediate_output_to_file)
 import temporal_features as tmpf
 
@@ -28,6 +29,7 @@ rand_for_params = create_random_forest_parameters(
     max_depths=[3, 4], n_estimators=[100, 200])
 log_reg_params = create_logistic_regression_parameters(
     max_iters=[100], penalties=["l1"])
+xgb_classifier_params = create_xgb_classifier_parameters()
 models = create_classification_models(
     random_forest_parameters_list=rand_for_params)
 

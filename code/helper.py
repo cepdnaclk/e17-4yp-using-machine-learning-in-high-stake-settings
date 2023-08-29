@@ -4,11 +4,13 @@ import os
 import json
 from typing import Union
 from datetime import datetime as dt
+import xgboost
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+from xgboost import XGBClassifier
 
 
 def save_model(path, file_name, model):
@@ -88,9 +90,29 @@ def create_logistic_regression_parameters(
     return parameters_list
 
 
+def create_xgb_classifier_parameters(
+        n_estimators=[100, 200],
+        max_depths=[3, 4],
+        learning_rates=[0.1, 0.2]
+) -> list:
+    parameters_list = []
+    for lr in learning_rates:
+        for max_depth in max_depths:
+            for n in n_estimators:
+                parameters = {
+                    'learning_rate': lr,
+                    'max_depth': max_depth,
+                    'n_estimators': n
+                }
+                parameters_list.append(parameters)
+
+    return parameters_list
+
+
 def create_classification_models(
         random_forest_parameters_list: list = None,
         logistic_regression_parameters_list: list = None,
+        xgb_classifier_parameters_list: list = None,
         baseline: bool = True
 ) -> list:
     models_list = []
@@ -103,7 +125,8 @@ def create_classification_models(
                 'model_name': f'random_forest_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}',
                 'model': new_model,
                 'type': 'non-linear',
-                'parameters': parameters
+                'parameters': parameters,
+                'library': 'sklearn'
             })
             i += 1
 
@@ -115,9 +138,25 @@ def create_classification_models(
                 'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
                 'model': new_model,
                 'type': 'linear',
-                'parameters': parameters
+                'parameters': parameters,
+                'library': 'sklearn'
             })
             i += 1
+
+    if xgb_classifier_parameters_list != None:
+        i = 1
+        for parameters in xgb_classifier_parameters_list:
+            new_model = XGBClassifier(**parameters)
+            models_list.append({
+                'model_name': f'xgb_classifier_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}_lr_{parameters["learning_rate"]}',
+                'model': new_model,
+                'type': 'non-linear',
+                'parameters': parameters,
+                'library': 'xgboost'
+            })
+            i += 1
+
+
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
         'model': None,
