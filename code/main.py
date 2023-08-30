@@ -1,12 +1,3 @@
-
-import pandas as pd
-import datetime
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-import sys
-
 import feature_engineer as fe
 import data_processor as dp
 import config
@@ -26,16 +17,17 @@ load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
 # create classifiers including baseline models
 rand_for_params = create_random_forest_parameters(
-    max_depths=[3, 4], n_estimators=[100, 200])
-log_reg_params = create_logistic_regression_parameters(
-    max_iters=[100], penalties=["l1"])
-xgb_classifier_params = create_xgb_classifier_parameters()
+    max_depths=[4], n_estimators=[250])
+# log_reg_params = create_logistic_regression_parameters(
+#     max_iters=[100], penalties=["l1"])
+# xgb_classifier_params = create_xgb_classifier_parameters()
 models = create_classification_models(
     random_forest_parameters_list=rand_for_params)
 
 
 # create dirs that not exist
 model_names = [model.get("model_name") for model in models]
+print(model_names)
 create_dirs(models=model_names)  # can pass a list of specific model names
 
 log_intermediate_output_to_file(
@@ -54,7 +46,7 @@ else:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Laoding data and preprocessing.')
     print("Start data pre processing")
-    data = dp.load_data_to_df(config.DATA_SOURCE)
+    data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Casting datetime datatype.')
@@ -126,9 +118,9 @@ for model_item in models:
         config.INFO_DEST, config.PROGRAM_LOG_FILE,
         'Plotting precision curves and saving hyperparameters.')
 
-    print("k_fixed_precisions = ", eval_metrics.get("k_fixed_precision"))
+    k_fixed_precisions = [x.get("k_fixed_precision", 0) for x in eval_metrics.get("fixed_k_plot_data", [])]
     log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE,
-                                    f'k_fixed_precisions = {eval_metrics.get("k_fixed_precision")}')
+                                    f'k_fixed_precisions = {k_fixed_precisions}')
 
     fe.plot_precision_for_fixed_k(
         eval_metrics, model_item.get("model_name")+"/")
@@ -136,9 +128,7 @@ for model_item in models:
     perf_row = {
         "model": model_item.get("model_name"),
         "hyper_paramaters": model_item.get("parameters"),
-        "avg_precision": sum(
-            eval_metrics.get("k_fixed_precision")
-        ) / len(eval_metrics.get("k_fixed_precision"))
+        "avg_precision": sum(k_fixed_precisions) / len(k_fixed_precisions)
     }
     log_intermediate_output_to_file(
         path=config.INFO_DEST,
@@ -157,4 +147,3 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Plot precision curves for all models.')
 fe.plot_precision_for_fixed_k_for_multiple_models(
     model_names, model_eval_metrics)
-

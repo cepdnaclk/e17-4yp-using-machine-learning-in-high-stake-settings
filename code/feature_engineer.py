@@ -134,6 +134,8 @@ def prk_curve_for_top_k_projects(
         k_labels = (ranks <= k).astype(int)
         new_labels.append(k_labels)
         k_value.append(k)
+        # print("ytest = ", y_test)
+        # print("klabels = ", k_labels)
         k_precision = precision_score(y_test, k_labels)
         k_recall = recall_score(y_test, k_labels)
         precision.append(k_precision)
@@ -378,14 +380,15 @@ def plot_k_fold_evaluation_metrics(model_eval_metrics: dict, model_name: str):
 
 
 def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
-
+    # print("model_eval_metrics = ", model_eval_metrics)
     x_labels = [
-        f"Fold {i+1}" for i in range(len(model_eval_metrics.get("k_fixed_precision", 0)))]
+        f"Fold {i+1}" for i in range(len(model_eval_metrics.get("fixed_k_plot_data", [])))]
     x_positions = np.arange(len(x_labels))
 
     # Plot the model precision for all the folds for a fixed value of k
     plt.cla()
-    plt.plot(x_labels, model_eval_metrics["k_fixed_precision"])
+    k_fixed_precisions = [x.get("k_fixed_precision", 0) for x in model_eval_metrics.get("fixed_k_plot_data", [])]
+    plt.plot(x_labels, k_fixed_precisions)
 
     plt.xlabel('Fold')
     plt.ylabel('Precision for fixed k')
@@ -412,7 +415,7 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
     x_labels = [str(entry["start_date"])[:10]
                 for entry in sample_plot_data][::-1]
     x_positions = np.arange(len(x_labels))
-    print("x_labels = ", x_labels)
+    # print("x_labels = ", x_labels)
 
     plt.figure(figsize=(18, 10))
 
@@ -445,6 +448,7 @@ def split_data_folds(data: DataFrame) -> list:
     folds = 1
 
     folded_dataset = []
+    # print(data.columns)
 
     while t_current > min_t + fold_period:
         start_date = t_current - fold_period
@@ -494,6 +498,26 @@ def split_data_folds(data: DataFrame) -> list:
         file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+file_name)
 
+        # Combine x_train and y_train into a single DataFrame
+        train_df_tmp = pd.concat([x_train, y_train], axis=1)
+        train_df = pd.concat(
+            [data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
+
+        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        test_df_tmp = pd.concat([x_test, y_test], axis=1)
+        test_df = pd.concat(
+            [data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
+        
+        art_path = config.ARTIFACTS_PATH
+        dp.export_data_frame(
+            train_df,
+            art_path+f'train_fold_{folds+1}_{str(start_date)[:10]}.csv'
+        )
+        dp.export_data_frame(
+            test_df,
+            art_path+f'test_fold_{folds+1}_{str(start_date)[:10]}.csv'
+        )
+
         t_current -= shift_period
         folds += 1
 
@@ -501,24 +525,24 @@ def split_data_folds(data: DataFrame) -> list:
 
 
 def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
+    x_train_ = x_train.drop(["Project ID"], axis=1)
+    x_test_ = x_test.drop(["Project ID"], axis=1)
+
     if model_type == "linear":
         # Scaling
-        x_train, x_test = standardize_data(
-            x_train, x_test, config.VARIABLES_TO_SCALE)
+        x_train_, x_test_ = standardize_data(
+            x_train_, x_test_, config.VARIABLES_TO_SCALE)
 
     # Model Training
-    model = model.fit(x_train, y_train.values.ravel())
+    model = model.fit(x_train_, y_train.values.ravel())
 
     # Predicting
-    y_hat = model.predict_proba(x_test)
+    y_hat = model.predict_proba(x_test_)
 
     return model, y_hat
 
 
-def cross_validate(data, model_item):
-    # create a splitted & folded dataset once and pass to each model
-    folded_dataset = split_data_folds(data)
-
+def cross_validate(folded_dataset, model_item):
     model = model_item.get("model")
     model_name = model_item.get("model_name")+"/"
     model_type = model_item.get("type")
@@ -535,7 +559,7 @@ def cross_validate(data, model_item):
     # cross validate on each fold
     for fold_data in folded_dataset:
         x_train = fold_data.get("x_train")
-        y_train = fold_data.get("x_train")
+        y_train = fold_data.get("y_train")
         x_test = fold_data.get("x_test")
         y_test = fold_data.get("y_test")
 
@@ -566,7 +590,7 @@ def cross_validate(data, model_item):
                 k_start=10,
                 k_end=int(y_hat.shape[0]*0.8),
                 k_gap=50,
-                y_test=fold_data.get("x_test"),
+                y_test=y_test,
                 t_current=fold_data.get("start_date"),
                 fold=fold_data.get("fold_no"),
                 model_name=model_name
@@ -607,14 +631,14 @@ def cross_validate(data, model_item):
         if model_type != "baseline":
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
-            
-            model_score = model.score(x_test, y_test)
-            accuracy = accuracy_score(y_test, y_hat)
-            f1 = f1_score(y_test, y_hat)
-            recall = recall_score(y_test, y_hat)
-            model_eval_metrics["accuracy"].append(accuracy)
-            model_eval_metrics["f1_score"].append(f1)
-            model_eval_metrics["recall"].append(recall)
+
+            model_score = model.score(x_test.drop(["Project ID"], axis=1), y_test)
+            # accuracy = accuracy_score(y_test, y_hat)
+            # f1 = f1_score(y_test, y_hat)
+            # recall = recall_score(y_test, y_hat)
+            # model_eval_metrics["accuracy"].append(accuracy)
+            # model_eval_metrics["f1_score"].append(f1)
+            # model_eval_metrics["recall"].append(recall)
             model_eval_metrics["model_score"].append(model_score)
 
             log_intermediate_output_to_file(
@@ -629,12 +653,11 @@ def cross_validate(data, model_item):
                 model=model
             )
 
-            
             predicted_probabilities_df = pd.DataFrame(
                 y_hat, columns=model.classes_, index=y_test.index)
 
             test_prediction = pd.concat(
-                [data.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
+                [x_test.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
             test_prediction["Start Date"] = fold_data.get("start_date")
 
             dp.export_data_frame(
@@ -868,4 +891,3 @@ def run_pipeline(data, model):
     model_eval_metrics = cross_validate(data, model)
 
     return model, model_eval_metrics
-

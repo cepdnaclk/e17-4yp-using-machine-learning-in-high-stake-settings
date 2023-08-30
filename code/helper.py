@@ -4,13 +4,13 @@ import os
 import json
 from typing import Union
 from datetime import datetime as dt
-import xgboost
+# import xgboost
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-from xgboost import XGBClassifier
+# from xgboost import XGBClassifier
 
 
 def save_model(path, file_name, model):
@@ -21,12 +21,14 @@ def save_model(path, file_name, model):
 def load_model(model_file_path):
     return pickle.load(open(model_file_path, 'rb'))
 
+
 def log_intermediate_output_to_file(path, file_name, log_info: Union[list, dict, str]):
     file_path = path + file_name
     json_data = json.dumps(log_info, indent=2)
     time = dt.now()
     with open(file_path, 'a') as file:
-        file.write(f"\nlog {str(time.strftime('%Y-%m-%d %H:%M:%S'))}\n{json_data}\n")
+        file.write(
+            f"\nlog {str(time.strftime('%Y-%m-%d %H:%M:%S'))}\n{json_data}\n")
 
 
 def create_dirs(models=None):
@@ -130,45 +132,45 @@ def create_classification_models(
             })
             i += 1
 
-    if logistic_regression_parameters_list != None:
-        i = 1
-        for parameters in logistic_regression_parameters_list:
-            new_model = LogisticRegression(**parameters)
-            models_list.append({
-                'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
-                'model': new_model,
-                'type': 'linear',
-                'parameters': parameters,
-                'library': 'sklearn'
-            })
-            i += 1
+    # if logistic_regression_parameters_list != None:
+    #     i = 1
+    #     for parameters in logistic_regression_parameters_list:
+    #         new_model = LogisticRegression(**parameters)
+    #         models_list.append({
+    #             'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
+    #             'model': new_model,
+    #             'type': 'linear',
+    #             'parameters': parameters,
+    #             'library': 'sklearn'
+    #         })
+    #         i += 1
 
-    if xgb_classifier_parameters_list != None:
-        i = 1
-        for parameters in xgb_classifier_parameters_list:
-            new_model = XGBClassifier(**parameters)
-            models_list.append({
-                'model_name': f'xgb_classifier_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}_lr_{parameters["learning_rate"]}',
-                'model': new_model,
-                'type': 'non-linear',
-                'parameters': parameters,
-                'library': 'xgboost'
-            })
-            i += 1
+    # if xgb_classifier_parameters_list != None:
+    #     i = 1
+    #     for parameters in xgb_classifier_parameters_list:
+    #         new_model = XGBClassifier(**parameters)
+    #         models_list.append({
+    #             'model_name': f'xgb_classifier_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}_lr_{parameters["learning_rate"]}',
+    #             'model': new_model,
+    #             'type': 'non-linear',
+    #             'parameters': parameters,
+    #             'library': 'xgboost'
+    #         })
+    #         i += 1
 
+    # cost_sorted_k_baseline_model = {
+    #     'model_name': 'cost_sorted_k_baseline_model',
+    #     'model': None,
+    #     'type': 'baseline'
+    # }
+    # random_k_baseline_model = {
+    #     'model_name': 'random_k_baseline_model',
+    #     'model': None,
+    #     'type': 'baseline'
+    # }
 
-    cost_sorted_k_baseline_model = {
-        'model_name': 'cost_sorted_k_baseline_model',
-        'model': None,
-        'type': 'baseline'
-    }
-    random_k_baseline_model = {
-        'model_name': 'random_k_baseline_model',
-        'model': None,
-        'type': 'baseline'
-    }
-    if baseline:
-        models_list.append(cost_sorted_k_baseline_model)
-        models_list.append(random_k_baseline_model)
+    # if baseline:
+    #     models_list.append(cost_sorted_k_baseline_model)
+    #     models_list.append(random_k_baseline_model)
 
     return models_list

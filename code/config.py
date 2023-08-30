@@ -2,7 +2,8 @@
 # ROOT = "/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/"
 ROOT = "./"
 # DATA_SOURCE = ROOT + "data/DsDnsPrScTch.csv"
-DATA_SOURCE = ROOT + "data/Dataset.csv"
+# DATA_SOURCE = ROOT + "data/Dataset.csv"
+DATA_SOURCE = ROOT + "data/Dataset_labelled_by_ffd.csv"
 DATA_DEST = ROOT + "processed_data/"
 MODEL_DEST = ROOT + "trained_models/"
 IMAGE_DEST = ROOT + "model_outputs/figures/"
@@ -20,12 +21,12 @@ PROCESSED_DATA_PATH = DATA_DEST + "labelled_final_data_shuffled.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
 LOAD_PROCESSED_DATA_FLAG = False
-MAX_ROWS = 10000  # not in use now (18/08/2023)
+MAX_ROWS = 500000  # not in use now (18/08/2023)
 
-FIXED_KVAL = 100
+FIXED_KVAL = 1000
 
-K_START = 100
-K_STEP = 100
+K_START = 1000
+K_STEP = 500
 
 # To label data
 DONATION_PERIOD = 30
@@ -43,8 +44,8 @@ LEAK_OFFSET = TEST_SIZE*4
 WINDOW = TEST_SIZE + TRAIN_SIZE + 2*LEAK_OFFSET
 
 
-DATE_COLS = ["Teacher First Project Posted Date", "Project Expiration Date",
-             "Project Posted Date"]
+DATE_COLS = ["Project Posted Date"]
+
 CATEGORICAL_COLS = ["Project Type", "Project Subject Category Tree", "Project Subject Subcategory Tree",
                     "Project Grade Level Category", "Project Resource Category", "School Metro Type",
                     "School State", "School County", "Teacher Prefix", "School Name", "School City", "School District",
