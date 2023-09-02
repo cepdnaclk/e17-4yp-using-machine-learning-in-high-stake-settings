@@ -4,6 +4,9 @@ import os
 import json
 from typing import Union
 from datetime import datetime as dt
+import pandas as pd
+from datetime import timedelta
+
 # import xgboost
 
 from sklearn.ensemble import RandomForestClassifier
@@ -174,3 +177,13 @@ def create_classification_models(
     #     models_list.append(random_k_baseline_model)
 
     return models_list
+
+def filter_dataset_by_date(data, start_date=config.MIN_TIME, end_date=config.MAX_TIME):
+
+    data = data[
+        (data["Project Posted Date"] >= pd.to_datetime(pd.Timestamp(start_date) - timedelta(days=config.LEAK_OFFSET)))
+    ]
+    data = data[
+        (data["Project Posted Date"] <= pd.to_datetime(pd.Timestamp(end_date) - timedelta(days=100)))
+    ]
+    return data
