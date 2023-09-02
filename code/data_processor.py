@@ -37,8 +37,6 @@ def impute_data(data: DataFrame):
     data["School City"] = data["School City"].fillna("Unknown")
     data["School Percentage Free Lunch"] = data["School Percentage Free Lunch"]\
         .replace(np.NaN, data["School Percentage Free Lunch"].median())
-    # data["School County"] = data["School County"] \
-    #     .fillna(data["School County"].mode()[0])
     data["School County"] = data["School County"].fillna("Unknown")
     data["School Name"] = data["School Name"].fillna("Unknown")
     data["School District"] = data["School District"].fillna("Unknown")
@@ -53,9 +51,6 @@ def impute_data(data: DataFrame):
     data["Project Subject Subcategory Tree"] = data["Project Subject Subcategory Tree"].fillna(
         "Unknown")
     data["Project Resource Category"] = data["Project Resource Category"].fillna(
-        "Unknown")
-
-    data["Resource Vendor Name"] = data["Resource Vendor Name"].fillna(
         "Unknown")
 
     return data
@@ -105,7 +100,7 @@ def split_temporal_train_test_data(
     ]
     train_set = train_set[
         (train_set["Project Posted Date"] < pd.to_datetime(train_end))
-    ].drop(["Project ID", "Project Posted Date"], axis=1)
+    ].drop(["Project Posted Date"], axis=1)
 
     x_train = train_set.loc[:, train_set.columns != "Label"]
     y_train = train_set.loc[:, ["Label"]]
@@ -114,7 +109,7 @@ def split_temporal_train_test_data(
         (data["Project Posted Date"] > pd.to_datetime(test_start))]
     test_set = test_set[
         (test_set["Project Posted Date"] < pd.to_datetime(test_end))
-    ].drop(["Project ID", "Project Posted Date"], axis=1)
+    ].drop(["Project Posted Date"], axis=1)
 
     x_test = test_set.loc[:, test_set.columns != "Label"]
     y_test = test_set.loc[:, ["Label"]]
