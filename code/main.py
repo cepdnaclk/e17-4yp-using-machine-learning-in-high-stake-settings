@@ -9,7 +9,8 @@ from helper import (
     create_logistic_regression_parameters,
     create_random_forest_parameters,
     create_xgb_classifier_parameters,
-    log_intermediate_output_to_file)
+    log_intermediate_output_to_file,
+    filter_dataset_by_date)
 import temporal_features as tmpf
 
 data_file_path = config.PROCESSED_DATA_PATH
@@ -17,7 +18,7 @@ load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
 # create classifiers including baseline models
 rand_for_params = create_random_forest_parameters(
-    max_depths=[4], n_estimators=[250])
+    max_depths=[2], n_estimators=[10])
 # log_reg_params = create_logistic_regression_parameters(
 #     max_iters=[100], penalties=["l1"])
 # xgb_classifier_params = create_xgb_classifier_parameters()
@@ -40,17 +41,19 @@ if load_processed_data:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Loading preprocessed data.')
     print("Loading already processed data")
-    data = dp.load_data_to_df(path=data_file_path, rows=config.MAX_ROWS)
+    data = dp.load_data_to_df(path=data_file_path)
     data = dp.set_data_types_to_datetime(data, ["Project Posted Date"])
+    data = filter_dataset_by_date(data)
 else:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Laoding data and preprocessing.')
     print("Start data pre processing")
-    data = dp.load_data_to_df(config.DATA_SOURCE, rows=config.MAX_ROWS)
+    data = dp.load_data_to_df(config.DATA_SOURCE)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Casting datetime datatype.')
     data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
+    data = filter_dataset_by_date(data)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Imputing data.')
@@ -89,6 +92,10 @@ log_intermediate_output_to_file(
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 print("encoded_data.shape = ", data_1.shape)
 
+dp.export_data_frame(data=data_1, path="./processed_data/encoded_data.csv")
+print("_______saved encoded data________")
+log_intermediate_output_to_file(
+    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saved encoded data.')
 
 data_folds = fe.split_data_folds(data_1)
 
@@ -118,7 +125,8 @@ for model_item in models:
         config.INFO_DEST, config.PROGRAM_LOG_FILE,
         'Plotting precision curves and saving hyperparameters.')
 
-    k_fixed_precisions = [x.get("k_fixed_precision", 0) for x in eval_metrics.get("fixed_k_plot_data", [])]
+    k_fixed_precisions = [x.get("k_fixed_precision", 0)
+                          for x in eval_metrics.get("fixed_k_plot_data", [])]
     log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE,
                                     f'k_fixed_precisions = {k_fixed_precisions}')
 
