@@ -3,7 +3,7 @@
 ROOT = "./"
 # DATA_SOURCE = ROOT + "data/DsDnsPrScTch.csv"
 # DATA_SOURCE = ROOT + "data/Dataset.csv"
-DATA_SOURCE = ROOT + "data/Dataset_labelled_by_ffd.csv"
+DATA_SOURCE = ROOT + "data/FinalDataset.csv"
 DATA_DEST = ROOT + "processed_data/"
 MODEL_DEST = ROOT + "trained_models/"
 IMAGE_DEST = ROOT + "model_outputs/figures/"
@@ -17,7 +17,7 @@ ARTIFACTS_PATH = ROOT + "model_outputs/artifacts/"
 
 INFO_DEST = ROOT+"model_outputs/info/"
 # MODEL_RUN_LOG_PATH = INFO_DEST + "model_run_log.py"
-PROCESSED_DATA_PATH = DATA_DEST + "labelled_final_data_shuffled.csv"
+PROCESSED_DATA_PATH = DATA_DEST + "processed_final_data.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
 LOAD_PROCESSED_DATA_FLAG = False
@@ -35,8 +35,8 @@ LABEL_PERIOD = 4    # months
 
 TRAINING_WINDOW = DONATION_PERIOD * 4
 
-MAX_TIME = "2016-04-01 00:00:00"
-MIN_TIME = "2013-05-01 00:00:00"
+MAX_TIME = "2017-04-01 00:00:00"
+MIN_TIME = "2014-05-01 00:00:00"
 
 TEST_SIZE = 30
 TRAIN_SIZE = TEST_SIZE*6
@@ -55,10 +55,8 @@ TRAINING_FEATURES = ["Project ID", "Project Posted Date", "Project Type", "Proje
                      "Project Subject Subcategory Tree", "Project Grade Level Category", "Project Resource Category",
                      "School Metro Type", "School Percentage Free Lunch", "School State", "School County",
                      "School Name", "School City", "School District",
-                     "Teacher Prefix", "Teacher Project Posted Sequence",
-                     "Resource Vendor Name"]
+                     "Teacher Prefix", "Teacher Project Posted Sequence"]
 
 VARIABLES_TO_SCALE = ["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost",
                       'Teacher Success Rate', 'School City Success Rate', 'School Success Rate',
                       'School County Success Rate', 'Project Count in State']
-# "Statement Error Ratio", "Title Essay Relativity", "Description Essay Relativity"]
