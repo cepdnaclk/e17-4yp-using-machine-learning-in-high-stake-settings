@@ -525,8 +525,11 @@ def split_data_folds(data: DataFrame) -> list:
 
 
 def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
-    x_train_ = x_train.drop(["Project ID"], axis=1)
-    x_test_ = x_test.drop(["Project ID"], axis=1)
+    x_train_ = x_train.drop(columns=["Project ID"])
+    x_test_ = x_test.drop(columns=["Project ID"])
+
+    print("x_train_ cols = ", x_train_.columns)
+    print("x_test_ cols = ", x_test_.columns)
 
     if model_type == "linear":
         # Scaling
