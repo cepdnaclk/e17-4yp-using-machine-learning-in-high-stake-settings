@@ -35,7 +35,7 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating directories if they do not exist.')
 
 log_intermediate_output_to_file(
-    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Loading data from csv.')
+    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'About to load data from csv.')
 
 if load_processed_data:
     log_intermediate_output_to_file(
@@ -90,6 +90,8 @@ else:
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding data.')
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
+log_intermediate_output_to_file(
+    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding complete.')
 print("encoded_data.shape = ", data_1.shape)
 
 dp.export_data_frame(data=data_1, path="./processed_data/encoded_data.csv")
