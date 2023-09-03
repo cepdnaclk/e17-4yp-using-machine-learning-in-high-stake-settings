@@ -20,7 +20,7 @@ INFO_DEST = ROOT+"model_outputs/info/"
 PROCESSED_DATA_PATH = DATA_DEST + "processed_final_data.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
-LOAD_PROCESSED_DATA_FLAG = False
+LOAD_PROCESSED_DATA_FLAG = True
 MAX_ROWS = 500000  # not in use now (18/08/2023)
 
 FIXED_KVAL = 1000
@@ -49,7 +49,7 @@ DATE_COLS = ["Project Posted Date"]
 CATEGORICAL_COLS = ["Project Type", "Project Subject Category Tree", "Project Subject Subcategory Tree",
                     "Project Grade Level Category", "Project Resource Category", "School Metro Type",
                     "School State", "School County", "Teacher Prefix", "School Name", "School City", "School District",
-                    "Resource Vendor Name"]
+                    ]
 
 TRAINING_FEATURES = ["Project ID", "Project Posted Date", "Project Type", "Project Subject Category Tree", "Project Cost",
                      "Project Subject Subcategory Tree", "Project Grade Level Category", "Project Resource Category",
