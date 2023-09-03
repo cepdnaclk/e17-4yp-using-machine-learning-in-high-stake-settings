@@ -94,10 +94,10 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding complete.')
 print("encoded_data.shape = ", data_1.shape)
 
-dp.export_data_frame(data=data_1, path="./processed_data/encoded_data.csv")
-print("_______saved encoded data________")
+# dp.export_data_frame(data=data_1, path="./processed_data/encoded_data.csv")
+print("_______did't save encoded data________")
 log_intermediate_output_to_file(
-    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Saved encoded data.')
+    config.INFO_DEST, config.PROGRAM_LOG_FILE, "Did't saved encoded data.")
 
 data_folds = fe.split_data_folds(data_1)
 
