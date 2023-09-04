@@ -500,24 +500,26 @@ def split_data_folds(data: DataFrame) -> list:
         dp.save_json(fold_info, config.INFO_DEST+file_name)
 
         # Combine x_train and y_train into a single DataFrame
-        train_df_tmp = pd.concat([x_train, y_train], axis=1)
-        train_df = pd.concat(
-            [data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
+        # train_df_tmp = pd.concat([x_train, y_train], axis=1)
+        # train_df = pd.concat(
+        #     [data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
 
-        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
-        test_df_tmp = pd.concat([x_test, y_test], axis=1)
-        test_df = pd.concat(
-            [data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
+        # # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        # test_df_tmp = pd.concat([x_test, y_test], axis=1)
+        # test_df = pd.concat(
+        #     [data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
 
-        art_path = config.ARTIFACTS_PATH
-        dp.export_data_frame(
-            train_df,
-            art_path+f'train_fold_{folds}_{str(start_date)[:10]}.csv'
-        )
-        dp.export_data_frame(
-            test_df,
-            art_path+f'test_fold_{folds}_{str(start_date)[:10]}.csv'
-        )
+        # art_path = config.ARTIFACTS_PATH
+        # dp.export_data_frame(
+        #     train_df,
+        #     art_path+f'train_fold_{folds}_{str(start_date)[:10]}.csv'
+        # )
+        # dp.export_data_frame(
+        #     test_df,
+        #     art_path+f'test_fold_{folds}_{str(start_date)[:10]}.csv'
+        # )
+        log_intermediate_output_to_file(
+            config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} is done.')
 
         t_current -= shift_period
         folds += 1
