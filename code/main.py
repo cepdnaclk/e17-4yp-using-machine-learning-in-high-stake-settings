@@ -18,7 +18,7 @@ load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
 # create classifiers including baseline models
 rand_for_params = create_random_forest_parameters(
-    max_depths=[3], n_estimators=[100, 250])
+    max_depths=[4], n_estimators=[200, 500])
 # log_reg_params = create_logistic_regression_parameters(
 #     max_iters=[100], penalties=["l1"])
 # xgb_classifier_params = create_xgb_classifier_parameters()
@@ -86,7 +86,7 @@ else:
     dp.export_data_frame(data=data, path=data_file_path)
     print(f"Saved data as csv at {data_file_path}")
 
-sample_rows = 250000
+sample_rows = 300000
 data = data.sample(n=sample_rows)
 print(f"data sampled with {sample_rows} rows")
 print("label distribution 1:0 = ",
