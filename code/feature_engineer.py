@@ -405,7 +405,7 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
     ''' A dict of evaluation metrics of each model should be passed.
         fixed_k_plot_data = {
             "fixed_k_value": fixed_k_value,
-            "fold_no": folds+1,
+            "fold_no": folds,
             "start_date": start_date,
             "k_fixed_precision": k_fixed_precision
         }
@@ -495,7 +495,7 @@ def split_data_folds(data: DataFrame) -> list:
                 'test_positive_ratio': test_pos_perc
             }
         }
-        file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
+        file_name = f"Fold {folds} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+file_name)
 
         # Combine x_train and y_train into a single DataFrame
@@ -511,11 +511,11 @@ def split_data_folds(data: DataFrame) -> list:
         art_path = config.ARTIFACTS_PATH
         dp.export_data_frame(
             train_df,
-            art_path+f'train_fold_{folds+1}_{str(start_date)[:10]}.csv'
+            art_path+f'train_fold_{folds}_{str(start_date)[:10]}.csv'
         )
         dp.export_data_frame(
             test_df,
-            art_path+f'test_fold_{folds+1}_{str(start_date)[:10]}.csv'
+            art_path+f'test_fold_{folds}_{str(start_date)[:10]}.csv'
         )
 
         t_current -= shift_period
