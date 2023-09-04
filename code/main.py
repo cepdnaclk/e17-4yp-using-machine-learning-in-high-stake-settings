@@ -86,7 +86,7 @@ else:
     dp.export_data_frame(data=data, path=data_file_path)
     print(f"Saved data as csv at {data_file_path}")
 
-sample_rows = 300000
+sample_rows = 500000
 data = data.sample(n=sample_rows)
 print(f"data sampled with {sample_rows} rows")
 print("label distribution 1:0 = ",
@@ -95,7 +95,8 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE,
     f"Data sampled with {sample_rows} rows\nlabel distribution 1:0 = {data['Label'].value_counts()[1] / data['Label'].value_counts()[0]}"
 )
-
+dp.export_data_frame(
+    data, config.ARTIFACTS_PATH + "sampled_data_project_ids.csv", columns=["Project ID", "Label"])
 
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding data.')
