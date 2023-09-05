@@ -174,14 +174,14 @@ def prk_curve_for_top_k_projects(
     plt.clf()
 
     # print("temp = ", list(temp))
-    print("best_k_for_min_dif = ", best_k_for_min_dif)
-    print("best_k_for_max_f1 = ", best_k_for_max_f1)
+    # print("best_k_for_min_dif = ", best_k_for_min_dif)
+    # print("best_k_for_max_f1 = ", best_k_for_max_f1)
     best_k_index = list(temp).index(best_k_for_min_dif)
     best_threshold_by_diff = probabilities[best_k_index]
     best_k_index = list(temp).index(best_k_for_max_f1)
     best_threshold_by_f1 = probabilities[best_k_index]
-    print("best_threshold_by_diff = ", best_threshold_by_diff)
-    print("best_threshold_by_f1 = ", best_threshold_by_f1)
+    # print("best_threshold_by_diff = ", best_threshold_by_diff)
+    # print("best_threshold_by_f1 = ", best_threshold_by_f1)
 
     prk_results = {
         'k_value': k_value,
@@ -387,7 +387,8 @@ def plot_precision_for_fixed_k(model_eval_metrics: dict, model_name: str):
 
     # Plot the model precision for all the folds for a fixed value of k
     plt.cla()
-    k_fixed_precisions = [x.get("k_fixed_precision", 0) for x in model_eval_metrics.get("fixed_k_plot_data", [])]
+    k_fixed_precisions = [x.get("k_fixed_precision", 0)
+                          for x in model_eval_metrics.get("fixed_k_plot_data", [])]
     plt.plot(x_labels, k_fixed_precisions)
 
     plt.xlabel('Fold')
@@ -405,7 +406,7 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
     ''' A dict of evaluation metrics of each model should be passed.
         fixed_k_plot_data = {
             "fixed_k_value": fixed_k_value,
-            "fold_no": folds+1,
+            "fold_no": folds,
             "start_date": start_date,
             "k_fixed_precision": k_fixed_precision
         }
@@ -495,28 +496,30 @@ def split_data_folds(data: DataFrame) -> list:
                 'test_positive_ratio': test_pos_perc
             }
         }
-        file_name = f"Fold {folds+1} - {str(start_date)[:10]}.json"
+        file_name = f"Fold {folds} - {str(start_date)[:10]}.json"
         dp.save_json(fold_info, config.INFO_DEST+file_name)
 
         # Combine x_train and y_train into a single DataFrame
-        train_df_tmp = pd.concat([x_train, y_train], axis=1)
-        train_df = pd.concat(
-            [data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
+        # train_df_tmp = pd.concat([x_train, y_train], axis=1)
+        # train_df = pd.concat(
+        #     [data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
 
-        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
-        test_df_tmp = pd.concat([x_test, y_test], axis=1)
-        test_df = pd.concat(
-            [data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
-        
-        art_path = config.ARTIFACTS_PATH
-        dp.export_data_frame(
-            train_df,
-            art_path+f'train_fold_{folds+1}_{str(start_date)[:10]}.csv'
-        )
-        dp.export_data_frame(
-            test_df,
-            art_path+f'test_fold_{folds+1}_{str(start_date)[:10]}.csv'
-        )
+        # # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        # test_df_tmp = pd.concat([x_test, y_test], axis=1)
+        # test_df = pd.concat(
+        #     [data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
+
+        # art_path = config.ARTIFACTS_PATH
+        # dp.export_data_frame(
+        #     train_df,
+        #     art_path+f'train_fold_{folds}_{str(start_date)[:10]}.csv'
+        # )
+        # dp.export_data_frame(
+        #     test_df,
+        #     art_path+f'test_fold_{folds}_{str(start_date)[:10]}.csv'
+        # )
+        log_intermediate_output_to_file(
+            config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} is done.')
 
         t_current -= shift_period
         folds += 1
@@ -527,9 +530,6 @@ def split_data_folds(data: DataFrame) -> list:
 def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
     x_train_ = x_train.drop(columns=["Project ID"])
     x_test_ = x_test.drop(columns=["Project ID"])
-
-    print("x_train_ cols = ", x_train_.columns)
-    print("x_test_ cols = ", x_test_.columns)
 
     if model_type == "linear":
         # Scaling
@@ -598,6 +598,8 @@ def cross_validate(folded_dataset, model_item):
                 fold=fold_data.get("fold_no"),
                 model_name=model_name
             )
+            file_name = f"prk_res fold {fold_data.get('fold_no')} - {str(fold_data.get('start_date'))[:10]}.json"
+            dp.save_json(prk_results, config.INFO_DEST+model_name+file_name)
         else:
             y_hat = None
             prk_results = None
@@ -635,7 +637,8 @@ def cross_validate(folded_dataset, model_item):
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
 
-            model_score = model.score(x_test.drop(["Project ID"], axis=1), y_test)
+            model_score = model.score(
+                x_test.drop(["Project ID"], axis=1), y_test)
             # accuracy = accuracy_score(y_test, y_hat)
             # f1 = f1_score(y_test, y_hat)
             # recall = recall_score(y_test, y_hat)
