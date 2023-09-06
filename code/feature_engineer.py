@@ -438,7 +438,7 @@ def plot_precision_for_fixed_k_for_multiple_models(model_names: list, model_eval
                 'k_fixed_precision_plot_for_all_models.png')
 
 
-def split_data_folds(data: DataFrame) -> list:
+def split_data_folds(data_pd: DataFrame) -> list:
     # Initiate timing variables
     max_t = pd.Timestamp(config.MAX_TIME)
     min_t = pd.Timestamp(config.MIN_TIME)
@@ -450,14 +450,19 @@ def split_data_folds(data: DataFrame) -> list:
 
     folded_dataset = []
     # print(data.columns)
+    
+    data = dd.from_pandas(data_pd,npartitions=2)
 
     while t_current > min_t + fold_period:
         start_date = t_current - fold_period
 
-        x_train, y_train, x_test, y_test = dp.split_temporal_train_test_data(
+        delayed_result = delayed(dp.split_temporal_train_test_data(
             data=data,
-            start_date=start_date
+            start_date=start_date)
         )
+        
+        x_train, y_train, x_test, y_test = delayed_result.compute()
+        
 
         # Count the positive labeled percentage in the training set and the test set
         train_pos_perc, test_pos_perc = get_positive_percentage(
@@ -488,8 +493,8 @@ def split_data_folds(data: DataFrame) -> list:
                 'test_end': str(test_end)[:10]
             },
             'shape': {
-                'training_shape': str(x_train.shape),
-                'test_shape': str(x_test.shape),
+                'training_shape': str(x_train.shape.compute()),
+                'test_shape': str(x_test.shape.compute()),
             },
             'data_distribution': {
                 'train_positive_ratio': train_pos_perc,
@@ -500,26 +505,24 @@ def split_data_folds(data: DataFrame) -> list:
         dp.save_json(fold_info, config.INFO_DEST+file_name)
 
         # Combine x_train and y_train into a single DataFrame
-        # train_df_tmp = pd.concat([x_train, y_train], axis=1)
-        # train_df = pd.concat(
-        #     [data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
+        train_df_tmp = dd.concat([x_train, y_train], axis=1)
+        train_df = dd.concat(
+         [data.loc[train_df_tmp.index]["Project ID"], train_df_tmp], axis=1)
 
-        # # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
-        # test_df_tmp = pd.concat([x_test, y_test], axis=1)
-        # test_df = pd.concat(
-        #     [data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
+        # Combine x_test, y_test, and predicted_probabilities into a single DataFrame
+        test_df_tmp = dd.concat([x_test, y_test], axis=1)
+        test_df = dd.concat(
+         [data.loc[test_df_tmp.index]["Project ID"], test_df_tmp], axis=1)
 
-        # art_path = config.ARTIFACTS_PATH
-        # dp.export_data_frame(
-        #     train_df,
-        #     art_path+f'train_fold_{folds}_{str(start_date)[:10]}.csv'
-        # )
-        # dp.export_data_frame(
-        #     test_df,
-        #     art_path+f'test_fold_{folds}_{str(start_date)[:10]}.csv'
-        # )
+        art_path = config.ARTIFACTS_PATH
+        train_df.to_csv(
+        art_path + f'train_fold_{folds}_{str(start_date)[:10]}.csv', single_file=True
+        )
+        test_df.to_csv(
+        art_path + f'test_fold_{folds}_{str(start_date)[:10]}.csv', single_file=True
+        )
         log_intermediate_output_to_file(
-            config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} is done.')
+        config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} is done.')
 
         t_current -= shift_period
         folds += 1

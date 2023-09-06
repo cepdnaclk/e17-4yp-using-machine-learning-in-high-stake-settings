@@ -7,7 +7,10 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from typing import Union
+import dask.dataframe as dd
+from dask import delayed
 
+from dask_ml.preprocessing import DummyEncoder
 
 def load_data_to_df(path: str, rows: int = None):
     if rows:
@@ -55,10 +58,11 @@ def impute_data(data: DataFrame):
 
     return data
 
-
+#! i am changing this encode with dask encoder
 def encode_data(data: DataFrame, categorical_cols: list):
     """One hot encodes data."""
-    return pd.get_dummies(data, columns=categorical_cols)
+    de = DummyEncoder(columns=categorical_cols)
+    return de.fit_transform(data)
 
 
 def split_time_series_train_test_data(data: DataFrame, filter_date: str):
@@ -78,11 +82,11 @@ def split_time_series_train_test_data(data: DataFrame, filter_date: str):
 
 
 def split_temporal_train_test_data(
-        data: DataFrame,
+        data: dd.DataFrame,
         start_date: str,
         train_months: int = 6,
         test_months: int = 1,
-        leak_offset: int = 4) -> DataFrame:
+        leak_offset: int = 4) ->  (dd.DataFrame, dd.DataFrame, dd.DataFrame, dd.DataFrame):
 
     # data split format = train - offset - validate - offset - test
     # validation period = test period
@@ -114,8 +118,8 @@ def split_temporal_train_test_data(
     x_test = test_set.loc[:, test_set.columns != "Label"]
     y_test = test_set.loc[:, ["Label"]]
 
-    print("Training set shape = ", x_train.shape)
-    print("Testing set shape = ", x_test.shape)
+    print("Training set shape = ", x_train.shape.compute())
+    print("Testing set shape = ", x_test.shape.compute())
     print("-----")
 
     return x_train, y_train, x_test, y_test
