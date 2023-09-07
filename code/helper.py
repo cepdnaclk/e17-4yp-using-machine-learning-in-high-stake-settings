@@ -161,20 +161,20 @@ def create_classification_models(
     #         })
     #         i += 1
 
-    # cost_sorted_k_baseline_model = {
-    #     'model_name': 'cost_sorted_k_baseline_model',
-    #     'model': None,
-    #     'type': 'baseline'
-    # }
-    # random_k_baseline_model = {
-    #     'model_name': 'random_k_baseline_model',
-    #     'model': None,
-    #     'type': 'baseline'
-    # }
+    cost_sorted_k_baseline_model = {
+        'model_name': 'cost_sorted_k_baseline_model',
+        'model': None,
+        'type': 'baseline'
+    }
+    random_k_baseline_model = {
+        'model_name': 'random_k_baseline_model',
+        'model': None,
+        'type': 'baseline'
+    }
 
-    # if baseline:
-    #     models_list.append(cost_sorted_k_baseline_model)
-    #     models_list.append(random_k_baseline_model)
+    if baseline:
+        models_list.append(cost_sorted_k_baseline_model)
+        models_list.append(random_k_baseline_model)
 
     return models_list
 
