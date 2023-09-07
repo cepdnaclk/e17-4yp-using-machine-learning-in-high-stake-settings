@@ -48,13 +48,13 @@ DATE_COLS = ["Project Posted Date"]
 
 CATEGORICAL_COLS = ["Project Type", "Project Subject Category Tree", "Project Subject Subcategory Tree",
                     "Project Grade Level Category", "Project Resource Category", "School Metro Type",
-                    "School State", "School County", "Teacher Prefix", "School Name", "School City", "School District",
+                    "School State", "School County", "Teacher Prefix", "School City", "School District",
                     ]
 
 TRAINING_FEATURES = ["Project ID", "Project Posted Date", "Project Type", "Project Subject Category Tree", "Project Cost",
                      "Project Subject Subcategory Tree", "Project Grade Level Category", "Project Resource Category",
                      "School Metro Type", "School Percentage Free Lunch", "School State", "School County",
-                     "School Name", "School City", "School District",
+                     "School City", "School District",
                      "Teacher Prefix", "Teacher Project Posted Sequence"]
 
 VARIABLES_TO_SCALE = ["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost",
