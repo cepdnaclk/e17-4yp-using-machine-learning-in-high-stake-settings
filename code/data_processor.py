@@ -38,7 +38,6 @@ def impute_data(data: DataFrame):
     data["School Percentage Free Lunch"] = data["School Percentage Free Lunch"]\
         .replace(np.NaN, data["School Percentage Free Lunch"].median())
     data["School County"] = data["School County"].fillna("Unknown")
-    data["School Name"] = data["School Name"].fillna("Unknown")
     data["School District"] = data["School District"].fillna("Unknown")
     data["School State"] = data["School State"].fillna("Unknown")
     data["School Metro Type"] = data["School Metro Type"].fillna("Unknown")
@@ -98,21 +97,31 @@ def split_temporal_train_test_data(
     train_set = data[
         (data["Project Posted Date"] > pd.to_datetime(train_start))
     ]
+    print(train_set.shape)
     train_set = train_set[
         (train_set["Project Posted Date"] < pd.to_datetime(train_end))
     ].drop(["Project Posted Date"], axis=1)
+    print(train_set.shape)
 
     x_train = train_set.loc[:, train_set.columns != "Label"]
+    print(x_train.shape)
     y_train = train_set.loc[:, ["Label"]]
+    print(y_train.shape)
 
     test_set = data[
         (data["Project Posted Date"] > pd.to_datetime(test_start))]
+    print(test_set.shape)
+    
     test_set = test_set[
         (test_set["Project Posted Date"] < pd.to_datetime(test_end))
     ].drop(["Project Posted Date"], axis=1)
+    print(test_set.shape)
 
     x_test = test_set.loc[:, test_set.columns != "Label"]
+    print(x_test.shape)
+
     y_test = test_set.loc[:, ["Label"]]
+    print(x_test.shape)
 
     print("Training set shape = ", x_train.shape)
     print("Testing set shape = ", x_test.shape)
