@@ -450,15 +450,21 @@ def split_data_folds(data: DataFrame) -> list:
 
     folded_dataset = []
     # print(data.columns)
+    log_intermediate_output_to_file(
+            config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Folding started.')
 
     while t_current > min_t + fold_period:
+        
+        log_intermediate_output_to_file(
+            config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} started.')
         start_date = t_current - fold_period
 
         x_train, y_train, x_test, y_test = dp.split_temporal_train_test_data(
             data=data,
             start_date=start_date
         )
-
+        log_intermediate_output_to_file(
+            config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} train test splitted.')
         # Count the positive labeled percentage in the training set and the test set
         train_pos_perc, test_pos_perc = get_positive_percentage(
             y_train, y_test)
