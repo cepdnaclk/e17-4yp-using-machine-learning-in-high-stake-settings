@@ -23,8 +23,8 @@ rand_for_params = create_random_forest_parameters(
 #     max_iters=[100], penalties=["l1"])
 # xgb_classifier_params = create_xgb_classifier_parameters()
 models = create_classification_models(
-    random_forest_parameters_list=rand_for_params)
-
+    random_forest_parameters_list=rand_for_params,
+    baseline=True)
 
 # create dirs that not exist
 model_names = [model.get("model_name") for model in models]
@@ -95,6 +95,7 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE,
     f"Data sampled with {sample_rows} rows\nlabel distribution 1:0 = {data['Label'].value_counts()[1] / data['Label'].value_counts()[0]}"
 )
+data = data.drop(columns=["School Name"])
 dp.export_data_frame(
     data, config.ARTIFACTS_PATH + "sampled_data_project_ids.csv", columns=["Project ID", "Label"])
 
@@ -102,7 +103,7 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding data.')
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 log_intermediate_output_to_file(
-    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding complete.')
+    config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Encoding complete. {data_1.shape}')
 print("encoded_data.shape = ", data_1.shape)
 
 data_folds = fe.split_data_folds(data_1)
