@@ -7,8 +7,8 @@
         "test_end": "2016-08-04"
     },
     "shape": {
-        "training_shape": "(55144, 19216)",
-        "test_shape": "(9789, 19216)"
+        "training_shape": "(55144, 19215)",
+        "test_shape": "(9789, 19215)"
     },
     "data_distribution": {
         "train_positive_ratio": 0.32260989409545915,
