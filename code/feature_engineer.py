@@ -453,6 +453,8 @@ def split_data_folds(data: DataFrame) -> list:
     log_intermediate_output_to_file(
             config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Folding started.')
 
+    data = data.drop(columns=["Unnamed: 0"])
+
     while t_current > min_t + fold_period:
         
         log_intermediate_output_to_file(
@@ -534,8 +536,9 @@ def split_data_folds(data: DataFrame) -> list:
 
 
 def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
-    x_train_ = x_train.drop(columns=["Project ID"])
-    x_test_ = x_test.drop(columns=["Project ID"])
+    cols_to_drop = ["Project ID"]
+    x_train_ = x_train.drop(columns=cols_to_drop)
+    x_test_ = x_test.drop(columns=cols_to_drop)
 
     if model_type == "linear":
         # Scaling
