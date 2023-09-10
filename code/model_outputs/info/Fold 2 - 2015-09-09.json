@@ -1,0 +1,17 @@
+{
+    "fold_number": 2,
+    "timeline": {
+        "train_start": "2015-09-09",
+        "train_end": "2016-03-07",
+        "test_start": "2016-07-05",
+        "test_end": "2016-08-04"
+    },
+    "shape": {
+        "training_shape": "(55144, 19215)",
+        "test_shape": "(9789, 19215)"
+    },
+    "data_distribution": {
+        "train_positive_ratio": 0.32260989409545915,
+        "test_positive_ratio": 0.33067729083665337
+    }
+}
