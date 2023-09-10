@@ -18,12 +18,13 @@ load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
 # create classifiers including baseline models
 rand_for_params = create_random_forest_parameters(
-    max_depths=[4], n_estimators=[200, 2000])
-# log_reg_params = create_logistic_regression_parameters(
-#     max_iters=[100], penalties=["l1"])
+    max_depths=[10], n_estimators=[5000])
+log_reg_params = create_logistic_regression_parameters(
+    max_iters=[200], penalties=["l1"])
 # xgb_classifier_params = create_xgb_classifier_parameters()
 models = create_classification_models(
     random_forest_parameters_list=rand_for_params,
+    logistic_regression_parameters_list=log_reg_params,
     baseline=True)
 
 # create dirs that not exist
@@ -86,14 +87,11 @@ else:
     dp.export_data_frame(data=data, path=data_file_path)
     print(f"Saved data as csv at {data_file_path}")
 
-sample_rows = 500000
-data = data.sample(n=sample_rows)
-print(f"data sampled with {sample_rows} rows")
 print("label distribution 1:0 = ",
       data["Label"].value_counts()[1] / data["Label"].value_counts()[0])
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE,
-    f"Data sampled with {sample_rows} rows\nlabel distribution 1:0 = {data['Label'].value_counts()[1] / data['Label'].value_counts()[0]}"
+    f"Data {data.shape[0]} rows\nlabel distribution 1:0 = {data['Label'].value_counts()[1] / data['Label'].value_counts()[0]}"
 )
 data = data.drop(columns=["School Name"])
 dp.export_data_frame(
