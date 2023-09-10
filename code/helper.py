@@ -135,18 +135,18 @@ def create_classification_models(
             })
             i += 1
 
-    # if logistic_regression_parameters_list != None:
-    #     i = 1
-    #     for parameters in logistic_regression_parameters_list:
-    #         new_model = LogisticRegression(**parameters)
-    #         models_list.append({
-    #             'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
-    #             'model': new_model,
-    #             'type': 'linear',
-    #             'parameters': parameters,
-    #             'library': 'sklearn'
-    #         })
-    #         i += 1
+    if logistic_regression_parameters_list != None:
+        i = 1
+        for parameters in logistic_regression_parameters_list:
+            new_model = LogisticRegression(**parameters)
+            models_list.append({
+                'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
+                'model': new_model,
+                'type': 'linear',
+                'parameters': parameters,
+                'library': 'sklearn'
+            })
+            i += 1
 
     # if xgb_classifier_parameters_list != None:
     #     i = 1
