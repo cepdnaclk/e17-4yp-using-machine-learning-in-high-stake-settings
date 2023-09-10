@@ -1,6 +1,7 @@
 /code/trained_models/*
 /code/processed_data/*
-# /code/model_outputs/figures/*
+/code/model_outputs/figures/*
+/code/model_outputs/artifacts
 /code/data/*
 /code/__pycache__
 *.csv
