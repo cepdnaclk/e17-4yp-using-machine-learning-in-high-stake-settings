@@ -2,29 +2,27 @@ import feature_engineer as fe
 import data_processor as dp
 import config
 from helper import (
-    save_model,
-    load_model,
     create_dirs,
     create_classification_models,
-    create_logistic_regression_parameters,
-    create_random_forest_parameters,
-    create_xgb_classifier_parameters,
     log_intermediate_output_to_file,
     filter_dataset_by_date)
 import temporal_features as tmpf
+
+from model_parameters.logistic_regression import lg_parameters
+from model_parameters.random_forest import rf_parameters
+from model_parameters.svm import svm_parameters
+from model_parameters.xgboost import xgb_parameters
 
 data_file_path = config.PROCESSED_DATA_PATH
 load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
 # create classifiers including baseline models
-rand_for_params = create_random_forest_parameters(
-    max_depths=[10], n_estimators=[5000])
-log_reg_params = create_logistic_regression_parameters(
-    max_iters=[200], penalties=["l1"])
-# xgb_classifier_params = create_xgb_classifier_parameters()
+
 models = create_classification_models(
-    random_forest_parameters_list=rand_for_params,
-    logistic_regression_parameters_list=log_reg_params,
+    random_forest_parameters_list=rf_parameters,
+    logistic_regression_parameters_list=lg_parameters,
+    svm_parameters_list=svm_parameters,
+    xgb_classifier_parameters_list=xgb_parameters,
     baseline=True)
 
 # create dirs that not exist
