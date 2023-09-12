@@ -599,9 +599,9 @@ def cross_validate(folded_dataset, model_item):
             # Observing the best threshold using different methods
             prk_results = prk_curve_for_top_k_projects(
                 proba_predictions=y_hat,
-                k_start=10,
+                k_start=config.K_START,
                 k_end=int(y_hat.shape[0]*0.8),
-                k_gap=50,
+                k_gap=config.K_STEP,
                 y_test=y_test,
                 t_current=fold_data.get("start_date"),
                 fold=fold_data.get("fold_no"),
