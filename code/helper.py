@@ -7,13 +7,14 @@ from datetime import datetime as dt
 import pandas as pd
 from datetime import timedelta
 
-# import xgboost
+import xgboost
+from sklearn import svm
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-# from xgboost import XGBClassifier
+from xgboost import XGBClassifier
 
 
 def save_model(path, file_name, model):
@@ -114,10 +115,28 @@ def create_xgb_classifier_parameters(
     return parameters_list
 
 
+def create_svm_parameters(
+        kernels=['poly'],
+        degrees=[3, 4]
+) -> list:
+    parameters_list = []
+    for kernel in kernels:
+        for degree in degrees:
+            parameters = {
+                'kernel': kernel,
+                'degree': degree,
+                'class_weight': 'balanced'
+            }
+            parameters_list.append(parameters)
+
+    return parameters_list
+
+
 def create_classification_models(
         random_forest_parameters_list: list = None,
         logistic_regression_parameters_list: list = None,
         xgb_classifier_parameters_list: list = None,
+        svm_parameters_list: list = None,
         baseline: bool = True
 ) -> list:
     models_list = []
@@ -148,18 +167,29 @@ def create_classification_models(
             })
             i += 1
 
-    # if xgb_classifier_parameters_list != None:
-    #     i = 1
-    #     for parameters in xgb_classifier_parameters_list:
-    #         new_model = XGBClassifier(**parameters)
-    #         models_list.append({
-    #             'model_name': f'xgb_classifier_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}_lr_{parameters["learning_rate"]}',
-    #             'model': new_model,
-    #             'type': 'non-linear',
-    #             'parameters': parameters,
-    #             'library': 'xgboost'
-    #         })
-    #         i += 1
+    if xgb_classifier_parameters_list != None:
+        i = 1
+        for parameters in xgb_classifier_parameters_list:
+            new_model = XGBClassifier(**parameters)
+            models_list.append({
+                'model_name': f'xgb_classifier_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}_lr_{parameters["learning_rate"]}',
+                'model': new_model,
+                'type': 'non-linear',
+                'parameters': parameters,
+                'library': 'xgboost'
+            })
+            i += 1
+
+    if svm_parameters_list != None:
+        for parameters in svm_parameters_list:
+            new_model = svm.SVC(**parameters)
+            models_list.append({
+                'model_name': f'svm_k_{parameters["kernel"]}_d_{parameters["degree"]}',
+                'model': new_model,
+                'type': 'linear',
+                'parameters': parameters,
+                'library': 'sklearn'
+            })
 
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
