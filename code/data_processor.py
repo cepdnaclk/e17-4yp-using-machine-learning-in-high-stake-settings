@@ -38,7 +38,6 @@ def impute_data(data: DataFrame):
     data["School Percentage Free Lunch"] = data["School Percentage Free Lunch"]\
         .replace(np.NaN, data["School Percentage Free Lunch"].median())
     data["School County"] = data["School County"].fillna("Unknown")
-    data["School District"] = data["School District"].fillna("Unknown")
     data["School State"] = data["School State"].fillna("Unknown")
     data["School Metro Type"] = data["School Metro Type"].fillna("Unknown")
 
