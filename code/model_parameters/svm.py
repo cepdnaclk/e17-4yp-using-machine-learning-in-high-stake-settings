@@ -6,6 +6,7 @@ svm_parameters = [
     },
     {
         'kernel': 'linear',
+        'degree': 1,
         'class_weight': 'balanced'
     }
 ]
