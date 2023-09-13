@@ -453,7 +453,7 @@ def split_data_folds(data: DataFrame) -> list:
     log_intermediate_output_to_file(
             config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Folding started.')
 
-    data = data.drop(columns=["Unnamed: 0"])
+    data = data.drop(columns=["Unnamed: 0"], errors='ignore')
 
     while t_current > min_t + fold_period:
         
@@ -537,8 +537,8 @@ def split_data_folds(data: DataFrame) -> list:
 
 def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
     cols_to_drop = ["Project ID"]
-    x_train_ = x_train.drop(columns=cols_to_drop)
-    x_test_ = x_test.drop(columns=cols_to_drop)
+    x_train_ = x_train.drop(columns=cols_to_drop, errors='ignore')
+    x_test_ = x_test.drop(columns=cols_to_drop, errors='ignore')
 
     if model_type == "linear":
         # Scaling
@@ -647,7 +647,7 @@ def cross_validate(folded_dataset, model_item):
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
 
             model_score = model.score(
-                x_test.drop(["Project ID"], axis=1), y_test)
+                x_test.drop(["Project ID"], axis=1, errors='ignore'), y_test)
             # accuracy = accuracy_score(y_test, y_hat)
             # f1 = f1_score(y_test, y_hat)
             # recall = recall_score(y_test, y_hat)
