@@ -20,9 +20,9 @@ load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
 models = create_classification_models(
     random_forest_parameters_list=rf_parameters,
-    # logistic_regression_parameters_list=lg_parameters,
-    # svm_parameters_list=svm_parameters,
-    # xgb_classifier_parameters_list=xgb_parameters,
+    logistic_regression_parameters_list=lg_parameters,
+    svm_parameters_list=svm_parameters,
+    xgb_classifier_parameters_list=xgb_parameters,
     baseline=True)
 
 # create dirs that not exist
