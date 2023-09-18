@@ -167,6 +167,17 @@ def create_classification_models(
             })
             i += 1
 
+    if svm_parameters_list != None:
+        for parameters in svm_parameters_list:
+            new_model = svm.SVC(**parameters)
+            models_list.append({
+                'model_name': f'svm_k_{parameters["kernel"]}_d_{parameters["degree"]}',
+                'model': new_model,
+                'type': 'linear',
+                'parameters': parameters,
+                'library': 'sklearn'
+            })
+
     if xgb_classifier_parameters_list != None:
         i = 1
         for parameters in xgb_classifier_parameters_list:
@@ -179,17 +190,6 @@ def create_classification_models(
                 'library': 'xgboost'
             })
             i += 1
-
-    if svm_parameters_list != None:
-        for parameters in svm_parameters_list:
-            new_model = svm.SVC(**parameters)
-            models_list.append({
-                'model_name': f'svm_k_{parameters["kernel"]}_d_{parameters["degree"]}',
-                'model': new_model,
-                'type': 'linear',
-                'parameters': parameters,
-                'library': 'sklearn'
-            })
 
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
@@ -208,12 +208,15 @@ def create_classification_models(
 
     return models_list
 
+
 def filter_dataset_by_date(data, start_date=config.MIN_TIME, end_date=config.MAX_TIME):
 
     data = data[
-        (data["Project Posted Date"] >= pd.to_datetime(pd.Timestamp(start_date) - timedelta(days=config.LEAK_OFFSET)))
+        (data["Project Posted Date"] >= pd.to_datetime(
+            pd.Timestamp(start_date) - timedelta(days=config.LEAK_OFFSET)))
     ]
     data = data[
-        (data["Project Posted Date"] <= pd.to_datetime(pd.Timestamp(end_date) - timedelta(days=100)))
+        (data["Project Posted Date"] <= pd.to_datetime(
+            pd.Timestamp(end_date) - timedelta(days=100)))
     ]
     return data
