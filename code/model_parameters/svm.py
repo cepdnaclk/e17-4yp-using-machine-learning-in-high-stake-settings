@@ -1,7 +1,7 @@
 svm_parameters = [
     {
         'kernel': 'poly',
-        'degree': 4,
+        'degree': 2,
         'class_weight': 'balanced'
     },
     {
