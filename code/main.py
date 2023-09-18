@@ -22,7 +22,7 @@ models = create_classification_models(
     random_forest_parameters_list=rf_parameters,
     logistic_regression_parameters_list=lg_parameters,
     svm_parameters_list=svm_parameters,
-    xgb_classifier_parameters_list=xgb_parameters,
+    # xgb_classifier_parameters_list=xgb_parameters,
     baseline=True)
 
 # create dirs that not exist
@@ -62,7 +62,8 @@ else:
     # filter training features
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Selecting only the required features from df.')
-    extra_features_required = ["Teacher ID", "School ID", "School City", "School County"]
+    extra_features_required = ["Teacher ID",
+                               "School ID", "School City", "School County"]
     data = data[config.TRAINING_FEATURES + ["Label"] + extra_features_required]
     print("Filtered training Features, shape = ", data.shape)
 
