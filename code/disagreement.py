@@ -245,6 +245,66 @@ class Disagreement:
         
 
         return summation/np.math.comb(len(features_F), 2)
+    
+    
+            
+if __name__ == "__main__":
+    
+    # Sample explanations (you can replace these with your actual explanations)
+    explanation1 = [['Feature1', 0.85], ['Feature2', 0.72], ['Feature3', 0.68], ['Feature4', 0.53], ['Feature5', 0.42]]
+    explanation2 = [['Feature1', 0.75], ['Feature2', -0.82], ['Feature3', 0.63], ['Feature4', 0.57], ['Feature5', 0.49]]
+
+    # Sample set of features
+    features_F = ['Feature1', 'Feature2', 'Feature3']
+
+    # Create an instance of the Disagreement class
+    disagreement_calculator = Disagreement(explanation1, explanation2)
+
+    # Test various methods
+    k = len(features_F)
+
+    # Test feature agreement
+    feature_agreement = disagreement_calculator.get_feature_agreement(k)
+    print(f"Feature Agreement: {feature_agreement}")
+
+    # Test rank agreement
+    rank_agreement = disagreement_calculator.get_rank_agreement(k)
+    print(f"Rank Agreement: {rank_agreement}")
+
+    # Test sign agreement
+    sign_agreement = disagreement_calculator.get_sign_agreement(k)
+    print(f"Sign Agreement: {sign_agreement}")
+
+    # Test signed rank agreement
+    signed_rank_agreement = disagreement_calculator.get_signed_rank_agreement(k)
+    print(f"Signed Rank Agreement: {signed_rank_agreement}")
+
+    # Test rank correlation
+    rank_correlation = disagreement_calculator.get_rank_correlation(features_F)
+    print(f"Rank Correlation: {rank_correlation}")
+
+    # Test pairwise ranking
+    pairwise_ranking = disagreement_calculator.get_pairwise_rankking(features_F)
+    print(f"Pairwise Ranking: {pairwise_ranking}")
+
+    
+    
+    
+    
+    
+    
+        
+    
+    
+    
+    
+
+
+
+
+
+    
+    
         
     
     
