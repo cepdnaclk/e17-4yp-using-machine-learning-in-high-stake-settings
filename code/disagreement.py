@@ -41,3 +41,29 @@ class Disagreement:
     """
     
     
+    def _intersection_count(self, k: int) -> int:
+        """
+        Caluclate the intercection count between the top  features of the two explanations
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int: intercection count
+        """
+        # assuming that there is no two same features        
+        set_exp1 = set(item[0] for item in self.sorted_explanation1[:k])
+        set_exp2 = set(item[0] for item in self.sorted_explanation2[:k])
+        
+        intersection_count = len(set_exp1.intersection(set_exp2))
+        
+        
+        return intersection_count
+    
+    
+    
+    
+    
+    
+    
+    
