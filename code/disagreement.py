@@ -61,6 +61,21 @@ class Disagreement:
         return intersection_count
     
     
+    def get_feature_agreement(self, k:int) -> int:
+        """
+        Calculate the feature agreement between the two explanations for the top k ranked features.
+
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int: feature agreement
+        """
+        
+        return abs(self._intersection_count(k))/k
+    
+    
     
     
     
