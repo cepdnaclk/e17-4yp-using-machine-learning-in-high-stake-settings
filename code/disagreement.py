@@ -177,6 +177,25 @@ class Disagreement:
     
     
     
+    def get_rank_correlation(self, features: list):
+        """
+        Calculate the Spearman rank correlation between the two explanations for a given set of features.
+
+        Args:
+            features_F (str): user defined features
+
+        Returns:
+            float : rank correlation between two explanations for a given set of features
+        """
+        
+        ranking_expanation1 = [self.feature_ranking_explanation1.get(feature) for feature in features_F]
+        ranking_expanation2 = [self.feature_ranking_explanation2.get(feature) for feature in features_F]
+        
+        corr, _ = spearmanr(ranking_expanation1, ranking_expanation2)
+        return corr
+    
+    
+    
     
     
     
