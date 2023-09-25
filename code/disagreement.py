@@ -217,6 +217,36 @@ class Disagreement:
             return -1
     
     
+    def get_pairwise_rankking(self, features_F):
+        """
+        Calculate the pairwise ranking agreement between the two explanations for a set of features.
+
+        Args:
+            features_F (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        
+        summation = 0
+        
+        for  i, fi in enumerate(features_F):
+            for  j, fj in enumerate(features_F):
+                if(i<j):
+                    rank1 = self._relative_ranking(self.feature_ranking_explanation1, fi, fj) 
+                    rank2 = self._relative_ranking(self.feature_ranking_explanation2, fi, fj) 
+                    # print(fi, fj, rank1, rank2)
+                    if (i<j and \
+                        rank1!=-1 and\
+                            rank2!=-1 and\
+                                rank1==rank2):
+                        summation += 1
+                    
+        
+
+        return summation/np.math.comb(len(features_F), 2)
+        
+    
     
     
     
