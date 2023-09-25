@@ -260,6 +260,33 @@ class Disagreement:
         
 
         return summation/np.math.comb(len(features_F), 2)
+
+    def print_disagreement(self, k, features_F):
+
+        # Test feature agreement
+        feature_agreement = self.get_feature_agreement(k)
+        print(f"Feature Agreement: {feature_agreement}")
+
+        # Test rank agreement
+        rank_agreement = self.get_rank_agreement(k)
+        print(f"Rank Agreement: {rank_agreement}")
+
+        # Test sign agreement
+        sign_agreement = self.get_sign_agreement(k)
+        print(f"Sign Agreement: {sign_agreement}")
+
+        # Test signed rank agreement
+        signed_rank_agreement = self.get_signed_rank_agreement(k)
+        print(f"Signed Rank Agreement: {signed_rank_agreement}")
+
+        # Test rank correlation
+        rank_correlation = self.get_rank_correlation(features_F)
+        print(f"Rank Correlation: {rank_correlation}")
+
+        # Test pairwise ranking
+        pairwise_ranking = self.get_pairwise_rankking(features_F)
+        print(f"Pairwise Ranking: {pairwise_ranking}")
+        
     
     
             
