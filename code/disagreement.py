@@ -41,6 +41,21 @@ class Disagreement:
     """
     
     
+    def __init__(self, explanation1, explanation2):
+        self.explanation1 = explanation1
+        self.explanation2 = explanation2
+        self.sorted_explanation1 = sorted(self.explanation1, key= lambda x: abs(x[1]), reverse=True)
+        self.sorted_explanation2 = sorted(self.explanation2, key= lambda x: abs(x[1]),reverse=True)
+        self.feature_ranking_explanation1 = {}
+        self.feature_ranking_explanation2 = {}
+        
+        for rank , (feature, _) in enumerate(self.sorted_explanation1):
+            self.feature_ranking_explanation1[feature] = rank
+            
+        for rank , (feature, _) in enumerate(self.sorted_explanation2):
+            self.feature_ranking_explanation2[feature] = rank
+    
+    
     def _intersection_count(self, k: int) -> int:
         """
         Caluclate the intercection count between the top  features of the two explanations
