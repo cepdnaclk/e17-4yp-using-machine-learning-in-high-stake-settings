@@ -195,6 +195,31 @@ class Disagreement:
         return corr
     
     
+    def _relative_ranking(self,exp, fi, fj):
+        """
+        Compare the relative rankings of two features within an explanation.
+
+        Args:
+            exp (dict): A dictionary representing the feature rankings within an explanation.
+            fi (str): The name of the first feature to compare.
+            fj (str): The name of the second feature to compare.
+            
+        Returns:
+            int: fi is important than fj or not
+        """
+        
+        try:
+            if (exp[fi] >= exp[fj]):
+                return 1
+            else:
+                return 0
+        except:
+            return -1
+    
+    
+    
+    
+    
     
     
     
