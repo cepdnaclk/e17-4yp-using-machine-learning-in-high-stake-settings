@@ -161,6 +161,21 @@ class Disagreement:
         return identical_count
     
     
+    def get_signed_rank_agreement(self, k):
+        """
+        Calculate the signed rank agreement between the two explanations for the top k ranked features.
+
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int:  Signed Rank Agreement
+        """
+        
+        return abs(self._identical_rank_sign_count(k))/k
+    
+    
     
     
     
