@@ -75,6 +75,61 @@ class Disagreement:
         
         return abs(self._intersection_count(k))/k
     
+    def _identical_rank_count(self, k):
+        """
+        Calculate how many features are in the same rank in the top k features
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int: identical count
+        """
+        identical_count = 0
+        
+        for item_1, item_2 in zip(self.sorted_explanation1[:k], self.sorted_explanation2[:k]):
+            if item_1[0] == item_2[0]:
+                identical_count += 1
+        
+        return identical_count
+    
+    def get_rank_agreement(self, k):
+        """
+        Calculate the rank agreement between the two explanations for the top k ranked features.
+
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int: feature rank agreement
+        """
+        
+        return abs(self._identical_rank_count(k))/k
+    
+    
+    def _identical_rank_sign_count(self, k):
+        """
+        Calculate how many features are in the same rank and same sign in the top k features
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int: identical count
+        """
+        identical_count = 0
+        
+        for item_1, item_2 in zip(self.sorted_explanation1[:k], self.sorted_explanation2[:k]):
+            if tuple((item_1[0], 1 if item_1[1]>=0 else -1))  == tuple((item_2[0], 1 if item_2[1]>=0 else -1)) :
+                identical_count += 1
+        
+        return identical_count
+    
+    
+    
+    
+    
     
     
     
