@@ -4,11 +4,17 @@ import os
 import json
 from typing import Union
 from datetime import datetime as dt
+import pandas as pd
+from datetime import timedelta
+
+import xgboost
+from sklearn import svm
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+from xgboost import XGBClassifier
 
 
 def save_model(path, file_name, model):
@@ -19,12 +25,14 @@ def save_model(path, file_name, model):
 def load_model(model_file_path):
     return pickle.load(open(model_file_path, 'rb'))
 
+
 def log_intermediate_output_to_file(path, file_name, log_info: Union[list, dict, str]):
     file_path = path + file_name
     json_data = json.dumps(log_info, indent=2)
     time = dt.now()
     with open(file_path, 'a') as file:
-        file.write(f"\nlog {str(time.strftime('%Y-%m-%d %H:%M:%S'))}\n{json_data}\n")
+        file.write(
+            f"\nlog {str(time.strftime('%Y-%m-%d %H:%M:%S'))}\n{json_data}\n")
 
 
 def create_dirs(models=None):
@@ -88,9 +96,47 @@ def create_logistic_regression_parameters(
     return parameters_list
 
 
+def create_xgb_classifier_parameters(
+        n_estimators=[100, 200],
+        max_depths=[3, 4],
+        learning_rates=[0.1, 0.2]
+) -> list:
+    parameters_list = []
+    for lr in learning_rates:
+        for max_depth in max_depths:
+            for n in n_estimators:
+                parameters = {
+                    'learning_rate': lr,
+                    'max_depth': max_depth,
+                    'n_estimators': n
+                }
+                parameters_list.append(parameters)
+
+    return parameters_list
+
+
+def create_svm_parameters(
+        kernels=['poly'],
+        degrees=[3, 4]
+) -> list:
+    parameters_list = []
+    for kernel in kernels:
+        for degree in degrees:
+            parameters = {
+                'kernel': kernel,
+                'degree': degree,
+                'class_weight': 'balanced'
+            }
+            parameters_list.append(parameters)
+
+    return parameters_list
+
+
 def create_classification_models(
         random_forest_parameters_list: list = None,
         logistic_regression_parameters_list: list = None,
+        xgb_classifier_parameters_list: list = None,
+        svm_parameters_list: list = None,
         baseline: bool = True
 ) -> list:
     models_list = []
@@ -103,7 +149,8 @@ def create_classification_models(
                 'model_name': f'random_forest_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}',
                 'model': new_model,
                 'type': 'non-linear',
-                'parameters': parameters
+                'parameters': parameters,
+                'library': 'sklearn'
             })
             i += 1
 
@@ -115,9 +162,35 @@ def create_classification_models(
                 'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
                 'model': new_model,
                 'type': 'linear',
-                'parameters': parameters
+                'parameters': parameters,
+                'library': 'sklearn'
             })
             i += 1
+
+    if xgb_classifier_parameters_list != None:
+        i = 1
+        for parameters in xgb_classifier_parameters_list:
+            new_model = XGBClassifier(**parameters)
+            models_list.append({
+                'model_name': f'xgb_classifier_t_{parameters["n_estimators"]}_md_{parameters["max_depth"]}_lr_{parameters["learning_rate"]}',
+                'model': new_model,
+                'type': 'non-linear',
+                'parameters': parameters,
+                'library': 'xgboost'
+            })
+            i += 1
+
+    if svm_parameters_list != None:
+        for parameters in svm_parameters_list:
+            new_model = svm.SVC(**parameters)
+            models_list.append({
+                'model_name': f'svm_k_{parameters["kernel"]}_d_{parameters["degree"]}',
+                'model': new_model,
+                'type': 'linear',
+                'parameters': parameters,
+                'library': 'sklearn'
+            })
+
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
         'model': None,
@@ -128,8 +201,19 @@ def create_classification_models(
         'model': None,
         'type': 'baseline'
     }
+
     if baseline:
         models_list.append(cost_sorted_k_baseline_model)
         models_list.append(random_k_baseline_model)
 
     return models_list
+
+def filter_dataset_by_date(data, start_date=config.MIN_TIME, end_date=config.MAX_TIME):
+
+    data = data[
+        (data["Project Posted Date"] >= pd.to_datetime(pd.Timestamp(start_date) - timedelta(days=config.LEAK_OFFSET)))
+    ]
+    data = data[
+        (data["Project Posted Date"] <= pd.to_datetime(pd.Timestamp(end_date) - timedelta(days=100)))
+    ]
+    return data
