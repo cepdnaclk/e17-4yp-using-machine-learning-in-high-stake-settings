@@ -127,6 +127,29 @@ class Disagreement:
         return identical_count
     
     
+    def _identical_sign_count(self, k):
+        
+        """
+        
+        Calculate how many interesection elements are with the same sign in the top k features of two explanations
+
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int: identical sign count
+        """
+        # assuming that there is no two same features
+        set_exp1 = set(tuple((item[0], 1 if item[1]>=0 else -1))  for item in self.sorted_explanation1[:k])
+        set_exp2 = set(tuple((item[0], 1 if item[1]>=0 else -1))  for item in self.sorted_explanation2[:k])
+        
+        intersection_count = len(set_exp1.intersection(set_exp2))
+        
+        return intersection_count
+    
+    
+    
     
     
     
