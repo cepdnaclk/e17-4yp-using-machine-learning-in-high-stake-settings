@@ -192,7 +192,7 @@ class Disagreement:
     
     
     
-    def get_rank_correlation(self, features: list):
+    def get_rank_correlation(self, features_F: list):
         """
         Calculate the Spearman rank correlation between the two explanations for a given set of features.
 
@@ -260,52 +260,55 @@ class Disagreement:
         
 
         return summation/np.math.comb(len(features_F), 2)
+    
     def get_disagreement(self, k:int, features_F:list)-> list:
 
-        # Test feature agreement
+        # feature agreement
         feature_agreement = self.get_feature_agreement(k)
 
-        # Test rank agreement
+        # rank agreement
         rank_agreement = self.get_rank_agreement(k)
 
         # Test sign agreement
         sign_agreement = self.get_sign_agreement(k)
 
-        # Test signed rank agreement
+        #  signed rank agreement
         signed_rank_agreement = self.get_signed_rank_agreement(k)
-        # Test rank correlation
-        rank_correlation = self.get_rank_correlation(features_F)
-
-        # Test pairwise ranking
-        pairwise_ranking = self.get_pairwise_rankking(features_F)
         
-        return [feature_agreement, rank_agreement, sign_agreement, signed_rank_agreement, rank_correlation,pairwise_ranking]
+        
+        if features_F != None:
+            #  rank correlation
+            rank_correlation = self.get_rank_correlation(features_F)
 
-    def print_disagreement(self, k, features_F):
+            #  pairwise ranking
+            pairwise_ranking = self.get_pairwise_rankking(features_F)
+            
+            return { "feature_agreement" : feature_agreement, "rank_agreement": rank_agreement, "sign_agreement" :sign_agreement, "signed_rank_agreement" : signed_rank_agreement, "rank_correlation" : rank_correlation,"pairwise_ranking" : pairwise_ranking}
+        
+        else:
+            return { "feature_agreement" : feature_agreement, "rank_agreement": rank_agreement, "sign_agreement" :sign_agreement, "signed_rank_agreement" : signed_rank_agreement}
 
-        # Test feature agreement
+    def print_disagreement(self, k:int, features_F:list) -> None:
+
         feature_agreement = self.get_feature_agreement(k)
         print(f"Feature Agreement: {feature_agreement}")
 
-        # Test rank agreement
         rank_agreement = self.get_rank_agreement(k)
         print(f"Rank Agreement: {rank_agreement}")
 
-        # Test sign agreement
         sign_agreement = self.get_sign_agreement(k)
         print(f"Sign Agreement: {sign_agreement}")
 
-        # Test signed rank agreement
         signed_rank_agreement = self.get_signed_rank_agreement(k)
         print(f"Signed Rank Agreement: {signed_rank_agreement}")
+        
+        if features_F != None:
 
-        # Test rank correlation
-        rank_correlation = self.get_rank_correlation(features_F)
-        print(f"Rank Correlation: {rank_correlation}")
+            rank_correlation = self.get_rank_correlation(features_F)
+            print(f"Rank Correlation: {rank_correlation}")
 
-        # Test pairwise ranking
-        pairwise_ranking = self.get_pairwise_rankking(features_F)
-        print(f"Pairwise Ranking: {pairwise_ranking}")
+            pairwise_ranking = self.get_pairwise_rankking(features_F)
+            print(f"Pairwise Ranking: {pairwise_ranking}")
         
     
     
