@@ -42,10 +42,13 @@ class Disagreement:
     
     
     def __init__(self, explanation1, explanation2):
+        #explanations
         self.explanation1 = explanation1
         self.explanation2 = explanation2
+        #explanations are sorted based on the absolute values
         self.sorted_explanation1 = sorted(self.explanation1, key= lambda x: abs(x[1]), reverse=True)
         self.sorted_explanation2 = sorted(self.explanation2, key= lambda x: abs(x[1]),reverse=True)
+        # ranks of each feature based on the absolute value
         self.feature_ranking_explanation1 = {}
         self.feature_ranking_explanation2 = {}
         
@@ -54,7 +57,27 @@ class Disagreement:
             
         for rank , (feature, _) in enumerate(self.sorted_explanation2):
             self.feature_ranking_explanation2[feature] = rank
-    
+            
+        feature_space_with_importance_explanation1 = self._feature_space_with_feature_importance(explanation1)
+        feature_space_with_importance_explanation2 = self._feature_space_with_feature_importance(explanation2)
+        
+
+
+        
+
+    def _feature_space_with_feature_importance(project_explanation:  dict) -> dict:
+        feature_space_with_importance = {}
+        for feature , important_score in  project_explanation:
+            if len(feature.split("_")) == 1:
+                feature_space_with_importance[feature.split("_")[0]] = important_score
+
+            elif feature.split("_")[0] in feature_space_with_importance.keys():
+                feature_space_with_importance[feature.split("_")[0]][feature]=  important_score
+            else:
+                feature_space_with_importance[feature.split("_")[0]]= {}
+                feature_space_with_importance[feature.split("_")[0]][feature]=  important_score
+        return feature_space_with_importance
+        
     
     def _intersection_count(self, k: int) -> int:
         """
