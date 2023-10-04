@@ -22,7 +22,7 @@ models = create_classification_models(
     random_forest_parameters_list=rf_parameters,
     logistic_regression_parameters_list=lg_parameters,
     svm_parameters_list=svm_parameters,
-    xgb_classifier_parameters_list=xgb_parameters,
+    # xgb_classifier_parameters_list=xgb_parameters,
     baseline=True)
 
 # create dirs that not exist
@@ -62,7 +62,8 @@ else:
     # filter training features
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Selecting only the required features from df.')
-    extra_features_required = ["Teacher ID", "School ID"]
+    extra_features_required = ["Teacher ID",
+                               "School ID", "School City", "School County"]
     data = data[config.TRAINING_FEATURES + ["Label"] + extra_features_required]
     print("Filtered training Features, shape = ", data.shape)
 
@@ -91,9 +92,6 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE,
     f"Data {data.shape[0]} rows\nlabel distribution 1:0 = {data['Label'].value_counts()[1] / data['Label'].value_counts()[0]}"
 )
-data = data.drop(columns=["School Name"])
-dp.export_data_frame(
-    data, config.ARTIFACTS_PATH + "sampled_data_project_ids.csv", columns=["Project ID", "Label"])
 
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding data.')
