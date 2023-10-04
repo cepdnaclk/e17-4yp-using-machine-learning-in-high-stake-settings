@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.stats import spearmanr
+from typing import Type
+from compactor.BaseCompactor import BaseCompactor
 
 class Disagreement:
     
@@ -155,7 +157,6 @@ class Disagreement:
             int: feature rank agreement
         """
         
-        return abs(self._identical_rank_count(k))/k
     
     def _identical_sign_count(self, k):
         
@@ -314,10 +315,12 @@ class Disagreement:
         for rank , (feature, _) in enumerate(self.sorted_explanation2):
             self.feature_ranking_explanation2[feature] = rank
     
-    def compact_features(self, compactor):
+    def compact_features(self, compactor: Type[BaseCompactor]):
+        #Compact the features
         explanation1  = compactor.compact(self.feature_space_with_importance_explanation1)
         explanation2  = compactor.compact(self.feature_space_with_importance_explanation2)
         
+        #Set the explanations again to do the calculation
         self.set_explanations(explanation1, explanation2)
         
     
