@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.stats import spearmanr
+from typing import Type
+from compactor.BaseCompactor import BaseCompactor
 
 class Disagreement:
     
@@ -42,10 +44,16 @@ class Disagreement:
     
     
     def __init__(self, explanation1, explanation2):
+
+        #explanations
         self.explanation1 = explanation1
         self.explanation2 = explanation2
-        self.sorted_explanation1 = sorted(self.explanation1, key= lambda x: abs(x[1]), reverse=True)
-        self.sorted_explanation2 = sorted(self.explanation2, key= lambda x: abs(x[1]),reverse=True)
+        
+        #explanations are sorted based on the absolute values
+        self.sorted_explanation1 = sorted(explanation1, key= lambda x: abs(x[1]), reverse=True)
+        self.sorted_explanation2 = sorted(explanation2, key= lambda x: abs(x[1]),reverse=True)
+        
+        # ranks of each feature based on the absolute value
         self.feature_ranking_explanation1 = {}
         self.feature_ranking_explanation2 = {}
         
@@ -54,7 +62,36 @@ class Disagreement:
             
         for rank , (feature, _) in enumerate(self.sorted_explanation2):
             self.feature_ranking_explanation2[feature] = rank
+            
+        # feature space with feature importance values
+        feature_space_with_importance_explanation1 = self._feature_space_with_feature_importance(explanation1)
+        feature_space_with_importance_explanation2 = self._feature_space_with_feature_importance(explanation2)
+        
+
     
+        
+    """
+    Map the explannations to feature space with feature importance values
+
+    Args:
+        project_explanation (dict): explanation from a xai model
+
+    Returns:
+        dict: feature space
+    """
+    def _feature_space_with_feature_importance(project_explanation:  dict) -> dict:
+        feature_space_with_importance = {}
+        for feature , important_score in  project_explanation:
+            if len(feature.split("_")) == 1:
+                feature_space_with_importance[feature.split("_")[0]] = important_score
+
+            elif feature.split("_")[0] in feature_space_with_importance.keys():
+                feature_space_with_importance[feature.split("_")[0]][feature]=  important_score
+            else:
+                feature_space_with_importance[feature.split("_")[0]]= {}
+                feature_space_with_importance[feature.split("_")[0]][feature]=  important_score
+        return feature_space_with_importance
+        
     
     def _intersection_count(self, k: int) -> int:
         """
@@ -120,7 +157,6 @@ class Disagreement:
             int: feature rank agreement
         """
         
-        return abs(self._identical_rank_count(k))/k
     
     def _identical_sign_count(self, k):
         
@@ -261,6 +297,33 @@ class Disagreement:
 
         return summation/np.math.comb(len(features_F), 2)
     
+    
+    def reset_explanations(self):
+        self.set_explanations(self.explanation1, self.explanation2)
+    
+    def set_explanations(explanation1, explanation2):
+        #explanations are sorted based on the absolute values
+        self.sorted_explanation1 = sorted(explanation1, key= lambda x: abs(x[1]), reverse=True)
+        self.sorted_explanation2 = sorted(explanation2, key= lambda x: abs(x[1]),reverse=True)
+        # ranks of each feature based on the absolute value
+        self.feature_ranking_explanation1 = {}
+        self.feature_ranking_explanation2 = {}
+        
+        for rank , (feature, _) in enumerate(self.sorted_explanation1):
+            self.feature_ranking_explanation1[feature] = rank
+            
+        for rank , (feature, _) in enumerate(self.sorted_explanation2):
+            self.feature_ranking_explanation2[feature] = rank
+    
+    def compact_features(self, compactor: Type[BaseCompactor]):
+        #Compact the features
+        explanation1  = compactor.compact(self.feature_space_with_importance_explanation1)
+        explanation2  = compactor.compact(self.feature_space_with_importance_explanation2)
+        
+        #Set the explanations again to do the calculation
+        self.set_explanations(explanation1, explanation2)
+        
+    
     def get_disagreement(self, k:int, features_F:list)-> list:
 
         # feature agreement
@@ -309,6 +372,8 @@ class Disagreement:
 
             pairwise_ranking = self.get_pairwise_rankking(features_F)
             print(f"Pairwise Ranking: {pairwise_ranking}")
+            
+    
         
     
     
