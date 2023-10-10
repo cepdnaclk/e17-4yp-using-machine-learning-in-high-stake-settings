@@ -7,11 +7,11 @@
         "test_end": "2015-12-08"
     },
     "shape": {
-        "training_shape": "(32090, 19215)",
-        "test_shape": "(9634, 19215)"
+        "training_shape": "(61637, 576)",
+        "test_shape": "(18400, 576)"
     },
     "data_distribution": {
-        "train_positive_ratio": 0.29875350576503584,
-        "test_positive_ratio": 0.29011833091135564
+        "train_positive_ratio": 0.29892759219300097,
+        "test_positive_ratio": 0.2867391304347826
     }
 }

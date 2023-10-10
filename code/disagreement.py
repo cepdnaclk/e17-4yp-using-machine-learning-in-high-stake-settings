@@ -64,8 +64,8 @@ class Disagreement:
             self.feature_ranking_explanation2[feature] = rank
             
         # feature space with feature importance values
-        feature_space_with_importance_explanation1 = self._feature_space_with_feature_importance(explanation1)
-        feature_space_with_importance_explanation2 = self._feature_space_with_feature_importance(explanation2)
+        self.feature_space_with_importance_explanation1 = self._feature_space_with_feature_importance(explanation1)
+        self.feature_space_with_importance_explanation2 = self._feature_space_with_feature_importance(explanation2)
         
 
     
@@ -79,7 +79,7 @@ class Disagreement:
     Returns:
         dict: feature space
     """
-    def _feature_space_with_feature_importance(project_explanation:  dict) -> dict:
+    def _feature_space_with_feature_importance(self, project_explanation:  dict) -> dict:
         feature_space_with_importance = {}
         for feature , important_score in  project_explanation:
             if len(feature.split("_")) == 1:
@@ -108,6 +108,25 @@ class Disagreement:
         set_exp2 = set(item[0] for item in self.sorted_explanation2[:k])
         
         intersection_count = len(set_exp1.intersection(set_exp2))
+        
+        
+        return intersection_count
+    
+    def _intersect_over_union(self, k: int, l:int) -> int:
+        """
+        Caluclate the intercection count between the top  features of the two explanations
+
+        Args:
+            k (int): top k ranked features
+
+        Returns:
+            int: intercection count
+        """
+        # assuming that there is no two same features        
+        set_exp1 = set(item[0] for item in self.sorted_explanation1[:k])
+        set_exp2 = set(item[0] for item in self.sorted_explanation2[:l])
+        
+        intersection_count = len(set_exp1.intersection(set_exp2))/len(set_exp1.union(set_exp2))
         
         
         return intersection_count
@@ -156,7 +175,8 @@ class Disagreement:
         Returns:
             int: feature rank agreement
         """
-        
+        return abs(self._identical_rank_count(k))/k
+
     
     def _identical_sign_count(self, k):
         
@@ -241,6 +261,10 @@ class Disagreement:
         
         ranking_expanation1 = [self.feature_ranking_explanation1.get(feature) for feature in features_F]
         ranking_expanation2 = [self.feature_ranking_explanation2.get(feature) for feature in features_F]
+        print(self.feature_ranking_explanation1)
+        print(self.feature_ranking_explanation2)
+        
+        print(ranking_expanation1, ranking_expanation2)
         
         corr, _ = spearmanr(ranking_expanation1, ranking_expanation2)
         return corr
@@ -301,7 +325,7 @@ class Disagreement:
     def reset_explanations(self):
         self.set_explanations(self.explanation1, self.explanation2)
     
-    def set_explanations(explanation1, explanation2):
+    def set_explanations(self, explanation1, explanation2):
         #explanations are sorted based on the absolute values
         self.sorted_explanation1 = sorted(explanation1, key= lambda x: abs(x[1]), reverse=True)
         self.sorted_explanation2 = sorted(explanation2, key= lambda x: abs(x[1]),reverse=True)
