@@ -6,7 +6,9 @@
 /code/__pycache__
 *.csv
 *.pyc
-
+xai_pipelines/dumbs/XAI_Pipeline_sep_23_latest_output.ipynb
+xai_pipelines/XAI_Pipeline.ipynb
+*.ipynb
 ### VisualStudioCode ###
 .vscode
 .vscode/*
