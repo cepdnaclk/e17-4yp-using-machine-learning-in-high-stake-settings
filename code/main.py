@@ -19,9 +19,9 @@ load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 # create classifiers including baseline models
 
 models = create_classification_models(
-    random_forest_parameters_list=rf_parameters,
+    # random_forest_parameters_list=rf_parameters,
     logistic_regression_parameters_list=lg_parameters,
-    svm_parameters_list=svm_parameters,
+    # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
     baseline=True)
 
@@ -40,7 +40,7 @@ if load_processed_data:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Loading preprocessed data.')
     print("Loading already processed data")
-    data = dp.load_data_to_df(path=data_file_path)
+    data = dp.load_data_to_df(path=data_file_path, rows=50000)
     data = dp.set_data_types_to_datetime(data, ["Project Posted Date"])
     data = filter_dataset_by_date(data)
 else:
