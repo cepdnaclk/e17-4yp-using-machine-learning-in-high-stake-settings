@@ -1,1 +1,1 @@
-Sitemap: /e17-4yp-using-machine-learning-in-high-stake-settings/sitemap.xml
+Sitemap: /sitemap.xml

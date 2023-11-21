@@ -3,10 +3,10 @@
   <channel>
     <title>TeaPot</title>
     <description>Investigate the barriers in Human - Machine Learning Interaction</description>
-    <link>e17-4yp-using-machine-learning-in-high-stake-settings//</link>
-    <atom:link href="e17-4yp-using-machine-learning-in-high-stake-settings//feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 21 Nov 2023 13:11:06 +0530</pubDate>
-    <lastBuildDate>Tue, 21 Nov 2023 13:11:06 +0530</lastBuildDate>
+    <link>//</link>
+    <atom:link href="//feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Tue, 21 Nov 2023 13:13:18 +0530</pubDate>
+    <lastBuildDate>Tue, 21 Nov 2023 13:13:18 +0530</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
     
       <item>
@@ -59,8 +59,8 @@
 &lt;p&gt;As we navigate the intricate landscape of XAI, the journey is marked by challenges, discoveries, and the collective effort of practitioners and researchers alike, seeking clarity in the face of disagreement. Regular education and awareness are crucial to equip data scientists with the latest approaches and foster a global community committed to advancing the field of explainable AI.&lt;/p&gt;
 </description>
         <pubDate>Thu, 12 Oct 2023 00:00:00 +0530</pubDate>
-        <link>e17-4yp-using-machine-learning-in-high-stake-settings//a-summary-of-quantifying-disagreement-problem/</link>
-        <guid isPermaLink="true">e17-4yp-using-machine-learning-in-high-stake-settings//a-summary-of-quantifying-disagreement-problem/</guid>
+        <link>//a-summary-of-quantifying-disagreement-problem/</link>
+        <guid isPermaLink="true">//a-summary-of-quantifying-disagreement-problem/</guid>
         
         
         <category>Disagreement</category>
@@ -96,8 +96,8 @@
 &lt;p&gt;As engineering undergraduates, your journey into AI involves not just creating powerful models but also ensuring they align with engineering principles. Inherently Interpretable Models and Post Hoc Explanations, facilitated by tools like Lime and Shap, empower you to navigate the complexities of AI, offering transparency and control in the development process. So, let’s equip ourselves with these analytical tools as we continue to engineer the future of AI.&lt;/p&gt;
 </description>
         <pubDate>Fri, 06 Oct 2023 00:00:00 +0530</pubDate>
-        <link>e17-4yp-using-machine-learning-in-high-stake-settings//a-deep-dive-into-xai/</link>
-        <guid isPermaLink="true">e17-4yp-using-machine-learning-in-high-stake-settings//a-deep-dive-into-xai/</guid>
+        <link>//a-deep-dive-into-xai/</link>
+        <guid isPermaLink="true">//a-deep-dive-into-xai/</guid>
         
         
         <category>XAI</category>
@@ -122,8 +122,8 @@
 
 </description>
         <pubDate>Wed, 20 Sep 2023 00:00:00 +0530</pubDate>
-        <link>e17-4yp-using-machine-learning-in-high-stake-settings//an-introduction-to-explainable-ai/</link>
-        <guid isPermaLink="true">e17-4yp-using-machine-learning-in-high-stake-settings//an-introduction-to-explainable-ai/</guid>
+        <link>//an-introduction-to-explainable-ai/</link>
+        <guid isPermaLink="true">//an-introduction-to-explainable-ai/</guid>
         
         
         <category>XAI</category>
