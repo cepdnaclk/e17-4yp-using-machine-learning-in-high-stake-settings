@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>TeaPot</title>
+    <description>Investigate the barriers in Human - Machine Learning Interaction</description>
+    <link>/</link>
+    <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Tue, 21 Nov 2023 12:38:32 +0530</pubDate>
+    <lastBuildDate>Tue, 21 Nov 2023 12:38:32 +0530</lastBuildDate>
+    <generator>Jekyll v4.3.2</generator>
+    
+      <item>
+        <title>Unveiling the Challenge of Disagreements: A summary</title>
+        <description>&lt;p&gt;In the expansive landscape of artificial intelligence, the quest for transparency and interpretability has given rise to a myriad of tools collectively known as explainable machine learning (XAI). In this context, a critical issue has emerged—disagreements among these explanations. This blog delves into the intricacies of the disagreement problem, exploring the difficulties faced by practitioners and suggesting potential paths for resolution summarized from the research held by Satyapriya Krishna, Tessa Han, Alex Gu, Javin Pombra, Shahin Jabbari, Zhiwei Steven Wu, and Himabindu Lakkaraju. This research is a collaborative work of the world’s renowned institutes Harvard University, Massachusetts Institute of Technology, Drexel University, and Carnegie Mellon University&lt;/p&gt;
+
+&lt;h3 id=&quot;the-disagreement-problem&quot;&gt;The Disagreement Problem&lt;/h3&gt;
+
+&lt;p&gt;Disagreements among various XAI tools have become a common hurdle in real-world applications, posing a threat to the accuracy and reliability of ML models. This issue becomes particularly acute in critical domains where ML models are deployed. Unfortunately, the absence of a standardized methodology for resolving these disagreements compounds the complexity, making it challenging for practitioners to confidently rely on the decisions made by ML models.&lt;/p&gt;
+
+&lt;h3 id=&quot;background-understanding-the-xai-toolbox&quot;&gt;Background: Understanding the XAI Toolbox&lt;/h3&gt;
+
+&lt;p&gt;To comprehend the disagreement problem, we must first navigate through the two main categories of XAI methods: inherently interpretable models and post hoc explanations. Inherently interpretable models, like Generalized Additive Models (GAMs) and decision trees, offer simplicity but come with a trade-off in model complexity. This trade-off has led to the prevalence of post hoc explanation methods, including popular techniques such as LIME, SHAP, and various gradient-based approaches.&lt;/p&gt;
+
+&lt;p&gt;Previous studies have attempted to evaluate the fidelity and stability of these explanations, introducing metrics such as fidelity, stability, consistency, and sparsity. However, as research progressed, the discovery of inconsistencies and vulnerabilities within existing explanation methods, including susceptibility to adversarial attacks, raised concerns about their reliability.&lt;/p&gt;
+
+&lt;h3 id=&quot;methodology-unraveling-disagreements&quot;&gt;Methodology: Unraveling Disagreements&lt;/h3&gt;
+
+&lt;p&gt;This study, conducted by Krishna S. and researchers, addressed the disagreement problem through a multifaceted approach:&lt;/p&gt;
+
+&lt;h5 id=&quot;semi-structured-interviews&quot;&gt;Semi-Structured Interviews:&lt;/h5&gt;
+&lt;p&gt;Interviews with 25 data scientists revealed that 88% of practitioners utilize multiple explanation methods, with 84% encountering frequent instances of disagreement. Factors contributing to disagreement include different top features, ranking among top features, signs in feature contribution, and relative ordering among features.&lt;/p&gt;
+
+&lt;h5 id=&quot;framework-for-quantifying-disagreement&quot;&gt;Framework for Quantifying Disagreement:&lt;/h5&gt;
+&lt;p&gt;The researchers designed a novel framework to quantitatively measure disagreement using six metrics: feature agreement, rank agreement, sign agreement, signed rank agreement, rank correlation, and pairwise rank agreement. These metrics provide a comprehensive evaluation of disagreement levels.&lt;/p&gt;
+
+&lt;h5 id=&quot;empirical-analysis&quot;&gt;Empirical Analysis:&lt;/h5&gt;
+&lt;p&gt;Employing four datasets, six popular explanation methods, and various ML models, the researchers conducted an empirical analysis that uncovered trends in disagreement based on model complexity and granularity of data representation (tabular, text, and image). Notably, disagreement tends to increase with model complexity.&lt;/p&gt;
+
+&lt;h5 id=&quot;qualitative-study&quot;&gt;Qualitative Study:&lt;/h5&gt;
+&lt;p&gt;A qualitative study explored decisions made by data scientists when facing explanation disagreements. Findings revealed a lack of formal agreement on decision-making, with participants relying on personal heuristics and preferences for certain methods.&lt;/p&gt;
+
+&lt;h3 id=&quot;results-illuminating-the-path-forward&quot;&gt;Results: Illuminating the Path Forward&lt;/h3&gt;
+
+&lt;p&gt;The results of this comprehensive study offer valuable insights:&lt;/p&gt;
+
+&lt;h5 id=&quot;frequency-of-disagreement&quot;&gt;Frequency of Disagreement:&lt;/h5&gt;
+&lt;p&gt;The researchers observed a high occurrence of disagreement among explanation methods, prompting the need for a systematic approach to navigate these disparities.&lt;/p&gt;
+
+&lt;h5 id=&quot;heuristics-and-preferences&quot;&gt;Heuristics and Preferences:&lt;/h5&gt;
+&lt;p&gt;ML practitioners often rely on personal heuristics and preferences when selecting explanation methods, highlighting the subjective nature of decision-making in the face of disagreement.&lt;/p&gt;
+
+&lt;h5 id=&quot;metrics-for-quantifying-disagreement&quot;&gt;Metrics for Quantifying Disagreement:&lt;/h5&gt;
+&lt;p&gt;The introduced framework with six quantitative metrics provides a robust means of assessing and comparing disagreement levels, enhancing our understanding of the complexities involved.&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion-and-future-directions&quot;&gt;Conclusion and Future Directions&lt;/h3&gt;
+
+&lt;p&gt;In conclusion, the disagreement problem in XAI demands attention and strategic solutions. The study, conducted by Krishna S. and researchers, not only uncovers the prevalence of disagreement but also introduces a framework for its quantitative measurement. Future research should delve into the root causes of disagreement, propose innovative resolution methods, and establish reliable evaluation metrics.&lt;/p&gt;
+
+&lt;p&gt;As we navigate the intricate landscape of XAI, the journey is marked by challenges, discoveries, and the collective effort of practitioners and researchers alike, seeking clarity in the face of disagreement. Regular education and awareness are crucial to equip data scientists with the latest approaches and foster a global community committed to advancing the field of explainable AI.&lt;/p&gt;
+</description>
+        <pubDate>Thu, 12 Oct 2023 00:00:00 +0530</pubDate>
+        <link>/a-summary-of-quantifying-disagreement-problem/</link>
+        <guid isPermaLink="true">/a-summary-of-quantifying-disagreement-problem/</guid>
+        
+        
+        <category>Disagreement</category>
+        
+        <category>XAI</category>
+        
+      </item>
+    
+      <item>
+        <title>Navigating the Complexity: A Deep Dive into Explainable AI</title>
+        <description>&lt;p&gt;Welcome back to the intriguing world of Artificial Intelligence, where today, we’re set to explore the nuances of Explainable AI (XAI) specifically tailored for engineering undergrads. Let’s unravel the intricacies of Inherently Interpretable Models, delve into the realm of Post Hoc Explanations, and meet the tools – Lime and Shap – that illuminate the path to understanding AI decision-making.&lt;/p&gt;
+
+&lt;h3 id=&quot;inherently-interpretable-models&quot;&gt;Inherently Interpretable Models:&lt;/h3&gt;
+&lt;p&gt;In the realm of AI, Inherently Interpretable Models are akin to the sought-after Rosetta Stone, translating complex machine learning algorithms into understandable language. These models are designed to provide transparency from the get-go, ensuring that the inner workings of the decision-making processes are comprehensible.&lt;/p&gt;
+
+&lt;p&gt;For engineering minds, think of it as having access to the source code of an algorithm, allowing you to trace each decision back to its roots. This transparency is crucial for understanding and fine-tuning models, making Inherently Interpretable Models a valuable asset for engineers delving into the intricate world of AI.&lt;/p&gt;
+
+&lt;h3 id=&quot;post-hoc-explanations&quot;&gt;Post Hoc Explanations:&lt;/h3&gt;
+&lt;p&gt;Moving on to Post Hoc Explanations, consider this as a debug mode for AI decisions. It’s like having a detailed log file that explains every step the model took to arrive at a particular decision. For engineering undergrads, this is akin to post-mortem analysis – a critical tool for understanding and improving system performance.&lt;/p&gt;
+
+&lt;p&gt;Post Hoc Explanations provide a detailed breakdown of decisions after they’ve been made. Imagine having a log of the execution path of your code, but for AI decision pathways. It’s not just about the result; it’s about gaining insights into the decision-making process itself.&lt;/p&gt;
+
+&lt;h3 id=&quot;lime--shap&quot;&gt;Lime &amp;amp; Shap:&lt;/h3&gt;
+&lt;p&gt;Now, let’s meet Lime and Shap – the analytical tools engineered to bring clarity to AI decision landscapes. Lime specializes in providing localized explanations, much like debugging a specific section of code. It zooms in on precise decisions, making it invaluable for engineers keen on pinpointing and optimizing specific aspects of an AI model.&lt;/p&gt;
+
+&lt;p&gt;Shap takes a holistic approach, offering a comprehensive view of how each variable contributes to the final decision. It’s like having a system profiler for your AI model, revealing the significance of each input feature. Shap transforms the abstract into the concrete, enabling engineers to make informed decisions about model behavior.&lt;/p&gt;
+
+&lt;h3 id=&quot;real-world-application&quot;&gt;Real-world Application:&lt;/h3&gt;
+&lt;p&gt;Now, let’s ground these concepts in real-world applications. Imagine optimizing an AI system for a critical engineering task. Inherently Interpretable Models provide the foundational understanding needed for efficient model development. Post Hoc Explanations become your diagnostic tools, ensuring that every decision aligns with engineering principles.&lt;/p&gt;
+
+&lt;p&gt;In a practical scenario, Lime and Shap act as your debugging and profiling tools, allowing you to analyze and optimize the AI model’s performance. This level of transparency is indispensable for engineering undergrads aiming to design AI systems with precision and reliability.&lt;/p&gt;
+
+&lt;p&gt;As engineering undergraduates, your journey into AI involves not just creating powerful models but also ensuring they align with engineering principles. Inherently Interpretable Models and Post Hoc Explanations, facilitated by tools like Lime and Shap, empower you to navigate the complexities of AI, offering transparency and control in the development process. So, let’s equip ourselves with these analytical tools as we continue to engineer the future of AI.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 06 Oct 2023 00:00:00 +0530</pubDate>
+        <link>/a-deep-dive-into-xai/</link>
+        <guid isPermaLink="true">/a-deep-dive-into-xai/</guid>
+        
+        
+        <category>XAI</category>
+        
+        <category>Introduction</category>
+        
+      </item>
+    
+      <item>
+        <title>An Introduction to Explainable AI</title>
+        <description>&lt;p&gt;Have you ever wondered how your smartphone magically understands your voice commands or how a computer predicts what movies you might like? Enter the world of Artificial Intelligence (AI) – the brains behind the digital magic! But, just like a wizard revealing the secrets of a spell, let’s uncover the mystery behind a special kind of AI called “Explainable AI.”&lt;/p&gt;
+
+&lt;p&gt;Imagine you have a super-smart robot friend named Robo-Buddy. Robo-Buddy can do amazing things, like predicting the weather or suggesting which ice cream flavor you’ll love. But here’s the catch: Robo-Buddy doesn’t just work its magic in secret; it explains how it does it!&lt;/p&gt;
+
+&lt;p&gt;Now, let’s dive into the basics. Explainable AI, or XAI for short, is like having a conversation with Robo-Buddy. It’s not enough for it to say, “Wear a jacket today.” Instead, it tells you, “Wear a jacket because it’s going to rain, and I noticed you don’t like getting wet.” See? No magic words – just clear explanations.&lt;/p&gt;
+
+&lt;p&gt;In the AI world, models usually make decisions based on complex patterns they find in data. Imagine Robo-Buddy looking at your ice cream choices. Instead of saying, “I think you’ll like chocolate,” it might say, “I noticed you always smile when you have chocolate, so I’m suggesting it!” That’s the magic of Explainable AI – it shows its work.&lt;/p&gt;
+
+&lt;p&gt;Now, why does this matter? Imagine you’re denied a loan by a computer. With Explainable AI, it won’t just say “no.” It’ll say, “Your loan request was denied because your income is below the required amount.” It’s like having a friendly chat with the decision-maker, not a mysterious figure.&lt;/p&gt;
+
+&lt;p&gt;So, in this world of AI wonders, let’s celebrate the power of understanding. With Explainable AI, the magic isn’t hidden – it’s a conversation that makes technology feel like a helpful friend, always ready to explain its tricks!&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 20 Sep 2023 00:00:00 +0530</pubDate>
+        <link>/an-introduction-to-explainable-ai/</link>
+        <guid isPermaLink="true">/an-introduction-to-explainable-ai/</guid>
+        
+        
+        <category>XAI</category>
+        
+        <category>Introduction</category>
+        
+      </item>
+    
+  </channel>
+</rss>

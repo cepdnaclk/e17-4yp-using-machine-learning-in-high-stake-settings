@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>/an-introduction-to-explainable-ai/</loc>
+<lastmod>2023-09-20T00:00:00+05:30</lastmod>
+</url>
+<url>
+<loc>/a-deep-dive-into-xai/</loc>
+<lastmod>2023-10-06T00:00:00+05:30</lastmod>
+</url>
+<url>
+<loc>/a-summary-of-quantifying-disagreement-problem/</loc>
+<lastmod>2023-10-12T00:00:00+05:30</lastmod>
+</url>
+<url>
+<loc>/about</loc>
+</url>
+<url>
+<loc>/categories</loc>
+</url>
+<url>
+<loc>/</loc>
+</url>
+<url>
+<loc>/tags</loc>
+</url>
+<url>
+<loc>/category/xai/</loc>
+</url>
+<url>
+<loc>/category/introduction/</loc>
+</url>
+<url>
+<loc>/category/disagreement/</loc>
+</url>
+</urlset>

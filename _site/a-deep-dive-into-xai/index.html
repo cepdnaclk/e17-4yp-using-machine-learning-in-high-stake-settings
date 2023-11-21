@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<link rel="icon" href="/assets/images/logo.png">
+
+<title>Navigating the Complexity: A Deep Dive into Explainable AI | TeaPot</title>
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Navigating the Complexity: A Deep Dive into Explainable AI | TeaPot</title>
+<meta name="generator" content="Jekyll v4.3.2" />
+<meta property="og:title" content="Navigating the Complexity: A Deep Dive into Explainable AI" />
+<meta name="author" content="sal" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Welcome back to the intriguing world of Artificial Intelligence, where today, we’re set to explore the nuances of Explainable AI (XAI) specifically tailored for engineering undergrads. Let’s unravel the intricacies of Inherently Interpretable Models, delve into the realm of Post Hoc Explanations, and meet the tools – Lime and Shap – that illuminate the path to understanding AI decision-making." />
+<meta property="og:description" content="Welcome back to the intriguing world of Artificial Intelligence, where today, we’re set to explore the nuances of Explainable AI (XAI) specifically tailored for engineering undergrads. Let’s unravel the intricacies of Inherently Interpretable Models, delve into the realm of Post Hoc Explanations, and meet the tools – Lime and Shap – that illuminate the path to understanding AI decision-making." />
+<meta property="og:site_name" content="TeaPot" />
+<meta property="og:image" content="/assets/images/xai2.jpg" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-10-06T00:00:00+05:30" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="/assets/images/xai2.jpg" />
+<meta property="twitter:title" content="Navigating the Complexity: A Deep Dive into Explainable AI" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"sal"},"dateModified":"2023-10-06T00:00:00+05:30","datePublished":"2023-10-06T00:00:00+05:30","description":"Welcome back to the intriguing world of Artificial Intelligence, where today, we’re set to explore the nuances of Explainable AI (XAI) specifically tailored for engineering undergrads. Let’s unravel the intricacies of Inherently Interpretable Models, delve into the realm of Post Hoc Explanations, and meet the tools – Lime and Shap – that illuminate the path to understanding AI decision-making.","headline":"Navigating the Complexity: A Deep Dive into Explainable AI","image":"/assets/images/xai2.jpg","mainEntityOfPage":{"@type":"WebPage","@id":"/a-deep-dive-into-xai/"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"/assets/images/logo.png"},"name":"sal"},"url":"/a-deep-dive-into-xai/"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    
+<link href="/assets/css/screen.css" rel="stylesheet">
+
+<link href="/assets/css/main.css" rel="stylesheet">
+
+<script src="/assets/js/jquery.min.js"></script>
+
+</head>
+
+
+
+
+<body class="layout-post">
+	<!-- defer loading of font and font awesome -->
+	<noscript id="deferred-styles">
+		<link href="https://fonts.googleapis.com/css?family=Righteous%7CMerriweather:300,300i,400,400i,700,700i" rel="stylesheet">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+	</noscript>
+
+
+<!-- Begin Menu Navigation
+================================================== -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top mediumnavigation nav-down">
+
+    <div class="container pr-0">
+
+    <!-- Begin Logo -->
+    <a class="navbar-brand" href="/">
+    <img src="/assets/images/logo.png" alt="TeaPot">
+    </a>
+    <!-- End Logo -->
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMediumish" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarMediumish">
+
+        <!-- Begin Menu -->
+
+            <ul class="navbar-nav ml-auto">
+
+                
+                <li class="nav-item">
+                
+                <a class="nav-link" href="/index.html">Blog</a>
+                </li>
+
+                <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
+                </li>
+                <script src="/assets/js/lunr.js"></script>
+
+
+<style>
+    .lunrsearchresult .title {color: #d9230f;}
+    .lunrsearchresult .url {color: silver;}
+    .lunrsearchresult a {display: block; color: #777;}
+    .lunrsearchresult a:hover, .lunrsearchresult a:focus {text-decoration: none;}
+    .lunrsearchresult a:hover .title {text-decoration: underline;}
+</style>
+
+
+<form class="bd-search" onSubmit="return lunr_search(document.getElementById('lunrsearch').value);">
+    <input type="text" class="form-control text-small launch-modal-search" id="lunrsearch" name="q" maxlength="255" value="" placeholder="Type and enter..."/>
+</form>
+
+<div id="lunrsearchresults">
+    <ul></ul>
+</div>
+
+<script src="/assets/js/lunrsearchengine.js"></script>
+
+            </ul>
+
+        <!-- End Menu -->
+
+    </div>
+
+    </div>
+</nav>
+<!-- End Navigation
+================================================== -->
+
+<div class="site-content">
+
+<div class="container">
+
+<!-- Site Title
+================================================== -->
+<div class="mainheading">
+    <h1 class="sitetitle">TeaPot</h1>
+    <p class="lead">
+        Investigate the barriers in Human - Machine Learning Interaction
+    </p>
+    
+    <p class="lead">
+        <a href="/about">learn more...</a>
+    </p>
+    
+</div>
+
+<!-- Content
+================================================== -->
+<div class="main-content">
+    <!-- Begin Article
+================================================== -->
+<div class="container">
+    <div class="row">
+
+        <!-- Post Share -->
+        <div class="col-md-2 pl-0">
+            <div class="share sticky-top sticky-top-offset">
+    <p>
+        Share
+    </p>
+    <ul>
+        <li class="ml-1 mr-1">
+            <a target="_blank" href="https://twitter.com/intent/tweet?text=Navigating the Complexity: A Deep Dive into Explainable AI&url=/a-deep-dive-into-xai/" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </li>
+
+        <li class="ml-1 mr-1">
+            <a target="_blank" href="https://facebook.com/sharer.php?u=/a-deep-dive-into-xai/" onclick="window.open(this.href, 'facebook-share', 'width=550,height=435');return false;">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+        </li>
+
+        <li class="ml-1 mr-1">
+            <a target="_blank" href="https://www.linkedin.com/shareArticle?mini=true&url=/a-deep-dive-into-xai/" onclick="window.open(this.href, 'width=550,height=435');return false;">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </li>
+
+    </ul>
+    
+    <div class="sep">
+    </div>
+    <ul>
+        <li>
+        <a class="small smoothscroll" href="#disqus_thread"></a>
+        </li>
+    </ul>
+    
+</div>
+
+        </div>
+
+        <!-- Post -->
+        
+
+        <div class="col-md-9 flex-first flex-md-unordered">
+            <div class="mainheading">
+
+                <!-- Author Box -->
+                
+                <div class="row post-top-meta">
+                    <div class="col-xs-12 col-md-3 col-lg-2 text-center text-md-left mb-4 mb-md-0">
+                        
+                        <img class="author-thumb" src="/assets/images/avatar.png" alt="Madhushan">
+                        
+                    </div>
+                    <div class="col-xs-12 col-md-9 col-lg-10 text-center text-md-left">
+                        <a target="_blank" class="link-dark" href="https://drmadhushan.github.io">Madhushan</a><a target="_blank" href="https://twitter.com/drmadhushan" class="btn follow">Follow</a>
+                        <span class="author-description">A student member of team TeaPot.</span>
+                    </div>
+                </div>
+                
+
+                <!-- Post Title -->
+                <h1 class="posttitle">Navigating the Complexity: A Deep Dive into Explainable AI</h1>
+
+            </div>
+
+            <!-- Adsense if enabled from _config.yml (change your pub id and slot) -->
+            
+            <!-- End Adsense -->
+
+            <!-- Post Featured Image -->
+            
+
+            
+            <img class="featured-image img-fluid" src="/assets/images/xai2.jpg" alt="Navigating the Complexity: A Deep Dive into Explainable AI">
+            
+
+            
+            <!-- End Featured Image -->
+
+            <!-- Post Content -->
+            <div class="article-post">
+                <!-- Toc if any -->
+                
+                <!-- End Toc -->
+                <p>Welcome back to the intriguing world of Artificial Intelligence, where today, we’re set to explore the nuances of Explainable AI (XAI) specifically tailored for engineering undergrads. Let’s unravel the intricacies of Inherently Interpretable Models, delve into the realm of Post Hoc Explanations, and meet the tools – Lime and Shap – that illuminate the path to understanding AI decision-making.</p>
+
+<h3 id="inherently-interpretable-models">Inherently Interpretable Models:</h3>
+<p>In the realm of AI, Inherently Interpretable Models are akin to the sought-after Rosetta Stone, translating complex machine learning algorithms into understandable language. These models are designed to provide transparency from the get-go, ensuring that the inner workings of the decision-making processes are comprehensible.</p>
+
+<p>For engineering minds, think of it as having access to the source code of an algorithm, allowing you to trace each decision back to its roots. This transparency is crucial for understanding and fine-tuning models, making Inherently Interpretable Models a valuable asset for engineers delving into the intricate world of AI.</p>
+
+<h3 id="post-hoc-explanations">Post Hoc Explanations:</h3>
+<p>Moving on to Post Hoc Explanations, consider this as a debug mode for AI decisions. It’s like having a detailed log file that explains every step the model took to arrive at a particular decision. For engineering undergrads, this is akin to post-mortem analysis – a critical tool for understanding and improving system performance.</p>
+
+<p>Post Hoc Explanations provide a detailed breakdown of decisions after they’ve been made. Imagine having a log of the execution path of your code, but for AI decision pathways. It’s not just about the result; it’s about gaining insights into the decision-making process itself.</p>
+
+<h3 id="lime--shap">Lime &amp; Shap:</h3>
+<p>Now, let’s meet Lime and Shap – the analytical tools engineered to bring clarity to AI decision landscapes. Lime specializes in providing localized explanations, much like debugging a specific section of code. It zooms in on precise decisions, making it invaluable for engineers keen on pinpointing and optimizing specific aspects of an AI model.</p>
+
+<p>Shap takes a holistic approach, offering a comprehensive view of how each variable contributes to the final decision. It’s like having a system profiler for your AI model, revealing the significance of each input feature. Shap transforms the abstract into the concrete, enabling engineers to make informed decisions about model behavior.</p>
+
+<h3 id="real-world-application">Real-world Application:</h3>
+<p>Now, let’s ground these concepts in real-world applications. Imagine optimizing an AI system for a critical engineering task. Inherently Interpretable Models provide the foundational understanding needed for efficient model development. Post Hoc Explanations become your diagnostic tools, ensuring that every decision aligns with engineering principles.</p>
+
+<p>In a practical scenario, Lime and Shap act as your debugging and profiling tools, allowing you to analyze and optimize the AI model’s performance. This level of transparency is indispensable for engineering undergrads aiming to design AI systems with precision and reliability.</p>
+
+<p>As engineering undergraduates, your journey into AI involves not just creating powerful models but also ensuring they align with engineering principles. Inherently Interpretable Models and Post Hoc Explanations, facilitated by tools like Lime and Shap, empower you to navigate the complexities of AI, offering transparency and control in the development process. So, let’s equip ourselves with these analytical tools as we continue to engineer the future of AI.</p>
+
+            </div>
+
+            <!-- Rating -->
+            
+
+            <!-- Post Date -->
+            <p>
+            <small>
+                <span class="post-date"><time class="post-date" datetime="2023-10-06">06 Oct 2023</time></span>           
+                
+                </small>
+            </p>
+
+            <!-- Post Categories -->
+            <div class="after-post-cats">
+                <ul class="tags mb-4">
+                    
+                    
+                    <li>
+                        <a class="smoothscroll" href="/categories#Introduction">Introduction</a>
+                    </li>
+                    
+                    <li>
+                        <a class="smoothscroll" href="/categories#XAI">XAI</a>
+                    </li>
+                    
+                </ul>
+            </div>
+            <!-- End Categories -->
+
+            <!-- Post Tags -->
+            <div class="after-post-tags">
+                <ul class="tags">
+                    
+                    
+                </ul>
+            </div>
+            <!-- End Tags -->
+
+            <!-- Prev/Next -->
+            <div class="row PageNavigation d-flex justify-content-between font-weight-bold">
+            
+            <a class="prev d-block col-md-6" href="//an-introduction-to-explainable-ai/"> &laquo; An Introduction to Explainable AI</a>
+            
+            
+            <a class="next d-block col-md-6 text-lg-right" href="//a-summary-of-quantifying-disagreement-problem/">Unveiling the Challenge of Disagreements: A summary &raquo; </a>
+            
+            <div class="clearfix"></div>
+            </div>
+            <!-- End Categories -->
+
+        </div>
+        <!-- End Post -->
+
+    </div>
+</div>
+<!-- End Article
+================================================== -->
+
+<!-- Begin Comments
+================================================== -->
+
+    <!-- <div class="container">
+        <div id="comments" class="row justify-content-center mb-5">
+            <div class="col-md-8">
+                <section class="disqus">
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = ''; 
+        var disqus_developer = 0;
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = window.location.protocol + '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</section>
+
+            </div>
+        </div>
+    </div> -->
+
+<!--End Comments
+================================================== -->
+
+<!-- Review with LD-JSON, adapt it for your needs if you like, but make sure you test the generated HTML source code first: 
+https://search.google.com/structured-data/testing-tool/u/0/
+================================================== -->
+
+</div>
+
+
+    
+</div>
+
+<!-- Categories Jumbotron
+================================================== -->
+<div class="jumbotron fortags">
+	<div class="d-md-flex h-100">
+		<div class="col-md-4 transpdark align-self-center text-center h-100">
+            <div class="d-md-flex align-items-center justify-content-center h-100">
+                <h2 class="d-md-block align-self-center py-1 font-weight-light">Explore <span class="d-none d-md-inline">→</span></h2>
+            </div>
+		</div>
+		<div class="col-md-8 p-5 align-self-center text-center">
+            
+            
+                
+                    <a class="mt-1 mb-1" href="/categories#XAI">XAI (3)</a>
+                
+                    <a class="mt-1 mb-1" href="/categories#Introduction">Introduction (2)</a>
+                
+                    <a class="mt-1 mb-1" href="/categories#Disagreement">Disagreement (1)</a>
+                
+            
+            
+		</div>
+	</div>
+</div>
+
+<!-- Begin Footer
+================================================== -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-sm-6 text-center text-lg-left">
+                Copyright © 2023 TeaPot 
+            </div>
+            <div class="col-md-6 col-sm-6 text-center text-lg-right">    
+                <a target="_blank" href="https://www.wowthemes.net/mediumish-free-jekyll-template/">Mediumish Jekyll Theme</a> by WowThemes.net
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- End Footer
+================================================== -->
+
+</div> <!-- /.site-content -->
+
+<!-- Scripts
+================================================== -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+<script src="/assets/js/mediumish.js"></script>
+
+
+
+<script src="/assets/js/ie10-viewport-bug-workaround.js"></script> 
+
+
+<!-- <script id="dsq-count-scr" src="//.disqus.com/count.js"></script> -->
+
+
+</body>
+</html>
