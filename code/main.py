@@ -63,7 +63,9 @@ else:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Selecting only the required features from df.')
     extra_features_required = ["Teacher ID",
-                               "School ID", "School City", "School County"]
+                               "School ID", "School City", "School County", 
+                               "Project Title", "Project Essay", "Project Need Statement", 
+                               "Project Short Description"]
     data = data[config.TRAINING_FEATURES + ["Label"] + extra_features_required]
     print("Filtered training Features, shape = ", data.shape)
 
