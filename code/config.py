@@ -3,7 +3,7 @@
 ROOT = "./"
 # DATA_SOURCE = ROOT + "data/DsDnsPrScTch.csv"
 # DATA_SOURCE = ROOT + "data/Dataset.csv"
-DATA_SOURCE = ROOT + "data/FinalDatasetLowFeatures.csv"
+DATA_SOURCE = ROOT + "2024/data/FinalDatasetLowFeatures.csv"
 DATA_DEST = ROOT + "processed_data/"
 MODEL_DEST = ROOT + "trained_models/"
 IMAGE_DEST = ROOT + "model_outputs/figures/"
@@ -48,13 +48,14 @@ DATE_COLS = ["Project Posted Date"]
 
 CATEGORICAL_COLS = ["Project Type", "Project Subject Category Tree", "Project Subject Subcategory Tree",
                     "Project Grade Level Category", "Project Resource Category", "School Metro Type",
-                    "School State", "Teacher Prefix",
+                    "School State", "Teacher Prefix", "Resource Vendor Name"
                     ]
 
 TRAINING_FEATURES = ["Project ID", "Project Posted Date", "Project Type", "Project Posted Month", "Project Subject Category Tree", "Project Cost",
                      "Project Subject Subcategory Tree", "Project Grade Level Category", "Project Resource Category",
                      "School Metro Type", "School Percentage Free Lunch", "School State",
-                     "Teacher Prefix", "Teacher Project Posted Sequence"]
+                     "Teacher Prefix", "Teacher Project Posted Sequence", "Resource Cost", "Resource Cost Percentage", 
+                     "Resource Vendor Name"]
 
 VARIABLES_TO_SCALE = ["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost",  "Project Posted Month",
                       'Teacher Success Rate', 'School City Success Rate', 'School Success Rate',

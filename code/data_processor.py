@@ -34,22 +34,31 @@ def set_data_types_to_datetime(data_frame: DataFrame, date_type_cols: list):
 
 
 def impute_data(data: DataFrame):
+
+    # Categorical columns
     data["School City"] = data["School City"].fillna("Unknown")
-    data["School Percentage Free Lunch"] = data["School Percentage Free Lunch"]\
-        .replace(np.NaN, data["School Percentage Free Lunch"].median())
+    # data["School Percentage Free Lunch"] = data["School Percentage Free Lunch"]\
+    #     .replace(np.NaN, data["School Percentage Free Lunch"].median())
     data["School County"] = data["School County"].fillna("Unknown")
     data["School State"] = data["School State"].fillna("Unknown")
     data["School Metro Type"] = data["School Metro Type"].fillna("Unknown")
-
-    data["Teacher Prefix"] = data["Teacher Prefix"] \
-        .fillna(data["Teacher Prefix"].mode()[0])
-
+    # data["Teacher Prefix"] = data["Teacher Prefix"] \
+    #     .fillna(data["Teacher Prefix"].mode()[0])
+    data["Teacher Prefix"] = data["Teacher Prefix"].fillna("Unknown")
     data["Project Subject Category Tree"] = data["Project Subject Category Tree"].fillna(
         "Unknown")
     data["Project Subject Subcategory Tree"] = data["Project Subject Subcategory Tree"].fillna(
         "Unknown")
     data["Project Resource Category"] = data["Project Resource Category"].fillna(
         "Unknown")
+    data["Resource Vendor Name"] = data["Resource Vendor Name"].fillna("Unknown")
+    
+    # Numerical columns
+    data["School Percentage Free Lunch Imputed"] = np.where(data['School Percentage Free Lunch'].isnull(), 1, 0)
+    data["School Percentage Free Lunch"] = data["School Percentage Free Lunch"].replace(np.NaN, 0)
+    data["Resource Cost Imputed"] = np.where(data["Resource Cost"].isnull(), 1, 0)
+    data["Resource Cost"] = data["Resource Cost"].replace(np.NaN, 0)
+    data["Resource Cost Percentage"] = data["Resource Cost Percentage"].replace(np.NaN, 0)
 
     return data
 
