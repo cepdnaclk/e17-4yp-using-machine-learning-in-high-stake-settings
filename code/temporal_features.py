@@ -1,5 +1,6 @@
 # Inmporting libraries
 import pandas as pd
+import numpy as np
 from pandas.tseries.offsets import DateOffset
 from helper import (log_intermediate_output_to_file)
 import config
@@ -252,6 +253,87 @@ def create_projects_in_a_state_feature(df, x):
 
     return df
 
+# for the number of projects in a certain city
+def calculate_project_count_city(row_number, df, x):
+
+    row = df.iloc[row_number, :]
+    posted_date_minus_one = row["Project Posted Date"] - \
+        DateOffset(months=config.LABEL_PERIOD)
+    school_city = row["School City"]
+    posted_date_minus_x = row["Project Posted Date"] - \
+        DateOffset(months=x+config.LABEL_PERIOD)
+    # print(posted_date, posted_date_minus_x)
+
+    # Filter the df
+    df_filtered = df[(df["School City"] == school_city) &
+                     (df["Project Posted Date"] < posted_date_minus_one) &
+                     (df["Project Posted Date"] >= posted_date_minus_x)]
+
+    # Find the number of projects from that city
+    df_filtered_row_count = df_filtered.shape[0]
+
+    return df_filtered_row_count
+
+def create_projects_in_a_city_feature(df, x):
+
+    # Get length of dataframe
+    df_len = df.shape[0]
+    number_of_projects_values = []
+    for row in range(df_len):
+        # print(f'Row number = {row} --------------------------------------------------------')
+        project_count = calculate_project_count_city(row, df, x)
+        # print(f'Project count = {project_count}')
+        number_of_projects_values.append(project_count)
+
+    df["Project Count in City"] = number_of_projects_values
+
+    return df
+
+# for the number of projects in a certain county
+def calculate_project_count_county(row_number, df, x):
+
+    row = df.iloc[row_number, :]
+    posted_date_minus_one = row["Project Posted Date"] - \
+        DateOffset(months=config.LABEL_PERIOD)
+    school_county = row["School County"]
+    posted_date_minus_x = row["Project Posted Date"] - \
+        DateOffset(months=x+config.LABEL_PERIOD)
+    # print(posted_date, posted_date_minus_x)
+
+    # Filter the df
+    df_filtered = df[(df["School County"] == school_county) &
+                     (df["Project Posted Date"] < posted_date_minus_one) &
+                     (df["Project Posted Date"] >= posted_date_minus_x)]
+
+    # Find the number of projects from that county
+    df_filtered_row_count = df_filtered.shape[0]
+
+    return df_filtered_row_count
+
+def create_projects_in_a_county_feature(df, x):
+
+    # Get length of dataframe
+    df_len = df.shape[0]
+    number_of_projects_values = []
+    for row in range(df_len):
+        # print(f'Row number = {row} --------------------------------------------------------')
+        project_count = calculate_project_count_county(row, df, x)
+        # print(f'Project count = {project_count}')
+        number_of_projects_values.append(project_count)
+
+    df["Project Count in County"] = number_of_projects_values
+
+    return df
+
+
+# To add the length features
+def add_length_features(df):
+    df["Project Essay Length"] = np.where(df["Project Essay"].isnull(), 0, df["Project Essay"].str.split().str.len())
+    df["Project Need Statement Length"] = np.where(df["Project Need Statement"].isnull(), 0, df["Project Need Statement"].str.split().str.len())
+    df["Project Short Description Length"] = np.where(df["Project Short Description"].isnull(), 0, df["Project Short Description"].str.split().str.len())
+
+    return df
+
 
 # Function to add new features that are not static
 def add_new_features(df):
@@ -284,10 +366,27 @@ def add_new_features(df):
     modified_df_project_count = create_projects_in_a_state_feature(
         modified_df_sctr, 4)
     print("done modified_df_project_count")
+    # Add the number of projects in a city for a selected period of time
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE,
+                                    'Adding number of projects in a city for a selected period of time.')
+    modified_df_project_count_city = create_projects_in_a_city_feature(
+        modified_df_project_count, 4)
+    print("done modified_df_project_count_city")
+    # Add the number of projects in a county for a selected period of time
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE,
+                                    'Adding number of projects in a county for a selected period of time.')
+    modified_df_project_count_county = create_projects_in_a_county_feature(
+        modified_df_project_count_city, 4)
+    print("done modified_df_project_count_county")
+
+    # Add the essay, need statement, description length columns
+    log_intermediate_output_to_file(config.INFO_DEST, config.PROGRAM_LOG_FILE, 
+                                    'Adding the Project Essay, Need Statement, Description length')
+    modified_df_length_features = add_length_features(modified_df_project_count_county)
     
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Done adding new features.')
 
-    return modified_df_project_count
+    return modified_df_length_features
 
