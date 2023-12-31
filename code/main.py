@@ -19,8 +19,8 @@ load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 # create classifiers including baseline models
 
 models = create_classification_models(
-    # random_forest_parameters_list=rf_parameters,
-    logistic_regression_parameters_list=lg_parameters,
+    random_forest_parameters_list=rf_parameters,
+    # logistic_regression_parameters_list=lg_parameters,
     # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
     baseline=True)
@@ -40,22 +40,25 @@ if load_processed_data:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Loading preprocessed data.')
     print("Loading already processed data")
-    data = dp.load_data_to_df(path=data_file_path, rows=50000)
+    data = dp.load_data_to_df(path=data_file_path)
     data = dp.set_data_types_to_datetime(data, ["Project Posted Date"])
     data = filter_dataset_by_date(data)
 else:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Laoding data and preprocessing.')
     print("Start data pre processing")
+
     data = dp.load_data_to_df(config.DATA_SOURCE)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Casting datetime datatype.')
+    
     data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
     data = filter_dataset_by_date(data)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Imputing data.')
+    
     data = dp.impute_data(data)
     print("Complete imputing = ", data.shape)
 
@@ -90,6 +93,7 @@ else:
 
 print("label distribution 1:0 = ",
       data["Label"].value_counts()[1] / data["Label"].value_counts()[0])
+
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE,
     f"Data {data.shape[0]} rows\nlabel distribution 1:0 = {data['Label'].value_counts()[1] / data['Label'].value_counts()[0]}"
@@ -97,7 +101,9 @@ log_intermediate_output_to_file(
 
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding data.')
+
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
+
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Encoding complete. {data_1.shape}')
 print("encoded_data.shape = ", data_1.shape)
