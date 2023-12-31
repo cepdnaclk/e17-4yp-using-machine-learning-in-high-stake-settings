@@ -1,10 +1,14 @@
 
 # ROOT = "/storage/scratch/e17-4yp-xai/Documents/e17-4yp-using-machine-learning-in-high-stake-settings/code/"
-ROOT = "./"
+ROOT = "/storage/scratch/e17-fyp-xai/projects/e17-4yp-using-machine-learning-in-high-stake-settings/code/"
+# ROOT = "./"
 # DATA_SOURCE = ROOT + "data/DsDnsPrScTch.csv"
 # DATA_SOURCE = ROOT + "data/Dataset.csv"
+PATCH = "new/"
 DATA_SOURCE = ROOT + "2024/data/FinalDatasetLowFeatures.csv"
 DATA_DEST = ROOT + "2024/processed_data/"
+
+ROOT += PATCH
 MODEL_DEST = ROOT + "trained_models/"
 IMAGE_DEST = ROOT + "model_outputs/figures/"
 LIME_DEST = ROOT + "model_outputs/lime/"
