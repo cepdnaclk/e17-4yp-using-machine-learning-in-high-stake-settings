@@ -275,7 +275,7 @@ def create_proba_sorted_k_labels(k, proba_predictions):
     ranks[temp] = np.arange(len(probabilities))
 
     # Create new labels based on the k value
-    k_labels = (ranks <= k).astype(int)
+    k_labels = (ranks < k).astype(int)
 
     return k_labels
 
@@ -288,7 +288,7 @@ def create_cost_sorted_k_labels(k, x_test):
     ranks[temp] = np.arange(len(cost_test))
 
     # Create new labels based on the k value
-    k_labels = (ranks <= k).astype(int)
+    k_labels = (ranks < k).astype(int)
 
     return k_labels
 
@@ -540,11 +540,6 @@ def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
     x_train_ = x_train.drop(columns=cols_to_drop, errors='ignore')
     x_test_ = x_test.drop(columns=cols_to_drop, errors='ignore')
 
-    if model_type == "linear":
-        # Scaling
-        x_train_, x_test_ = standardize_data(
-            x_train_, x_test_, config.VARIABLES_TO_SCALE)
-
     # Model Training
     model = model.fit(x_train_, y_train.values.ravel())
 
@@ -570,10 +565,10 @@ def cross_validate(folded_dataset, model_item):
 
     # cross validate on each fold
     for fold_data in folded_dataset:
-        x_train = fold_data.get("x_train")
-        y_train = fold_data.get("y_train")
-        x_test = fold_data.get("x_test")
-        y_test = fold_data.get("y_test")
+        x_train = fold_data.get("x_train").copy(deep=True)
+        y_train = fold_data.get("y_train").copy(deep=True)
+        x_test = fold_data.get("x_test").copy(deep=True)
+        y_test = fold_data.get("y_test").copy(deep=True)
 
         # handle empty dataset situation
         if x_train.shape[0] == 0 or x_test.shape[0] == 0 or y_train.shape[0] == 0 or y_test.shape[0] == 0:
