@@ -12,26 +12,11 @@ from model_parameters.logistic_regression import lg_parameters
 from model_parameters.random_forest import rf_parameters
 from model_parameters.svm import svm_parameters
 from model_parameters.xgboost import xgb_parameters
+from model_parameters.neural_network import nn_parameters
 
 data_file_path = config.PROCESSED_DATA_PATH
 load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
-# create classifiers including baseline models
-
-models = create_classification_models(
-    random_forest_parameters_list=rf_parameters,
-    # logistic_regression_parameters_list=lg_parameters,
-    # svm_parameters_list=svm_parameters,
-    # xgb_classifier_parameters_list=xgb_parameters,
-    baseline=True)
-
-# create dirs that not exist
-model_names = [model.get("model_name") for model in models]
-print(model_names)
-create_dirs(models=model_names)  # can pass a list of specific model names
-
-log_intermediate_output_to_file(
-    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating directories if they do not exist.')
 
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'About to load data from csv.')
@@ -108,7 +93,26 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Encoding complete. {data_1.shape}')
 print("encoded_data.shape = ", data_1.shape)
 
-data_folds = fe.split_data_folds(data_1)
+data_folds, training_features_count = fe.split_data_folds(data_1)
+
+# create classifiers including baseline models
+
+models = create_classification_models(
+    training_features_count,
+    random_forest_parameters_list=rf_parameters,
+    # logistic_regression_parameters_list=lg_parameters,
+    # svm_parameters_list=svm_parameters,
+    # xgb_classifier_parameters_list=xgb_parameters,
+    nn_parameters_list=nn_parameters,
+    baseline=True)
+
+# create dirs that not exist
+model_names = [model.get("model_name") for model in models]
+print(model_names)
+create_dirs(models=model_names)  # can pass a list of specific model names
+
+log_intermediate_output_to_file(
+    config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating directories if they do not exist.')
 
 model_eval_metrics = {}
 hyper_parameter_performance_table = []
@@ -124,7 +128,7 @@ for model_item in models:
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Start pipeline for model.')
 
     trained_model, eval_metrics = fe.run_pipeline(
-        data=data_folds, model=model_item
+        data=data_folds, model=model_item, training_features_count=training_features_count
     )
 
     log_intermediate_output_to_file(

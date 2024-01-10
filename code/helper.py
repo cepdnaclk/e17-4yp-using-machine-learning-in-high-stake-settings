@@ -15,11 +15,20 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
+import keras
+from keras import metrics
+from keras.models import Sequential
+from keras.layers import Dense, Flatten, Dropout, Input
 
 
-def save_model(path, file_name, model):
+def save_model(path, file_name, model, model_type):
+    # Create path + file name
     file_path = path + file_name
-    pickle.dump(model, file=open(file_path, "wb"))
+    # Save
+    if model_type == "nn":
+        model.save(file_path)
+    else:
+        pickle.dump(model, file=open(file_path, "wb"))
 
 
 def load_model(model_file_path):
@@ -133,10 +142,12 @@ def create_svm_parameters(
 
 
 def create_classification_models(
+        training_features_count: int,
         random_forest_parameters_list: list = None,
         logistic_regression_parameters_list: list = None,
         xgb_classifier_parameters_list: list = None,
         svm_parameters_list: list = None,
+        nn_parameters_list: list = None,
         baseline: bool = True
 ) -> list:
     models_list = []
@@ -190,6 +201,43 @@ def create_classification_models(
                 'library': 'xgboost'
             })
             i += 1
+
+    if nn_parameters_list != None:
+        i = 1
+        for parameters in nn_parameters_list:
+            out_units_layer_1 = parameters['out_units_layer_1']
+            out_units_layer_2 = parameters['out_units_layer_2']
+            learning_rate = parameters['learning_rate']
+            activation_fn = parameters['activation_fn']
+            loss_fn = parameters['loss_fn']
+            epochs = parameters['epochs']
+
+            # Build NN
+            new_model = Sequential()
+            new_model.add(Input(shape=(training_features_count,)))
+            new_model.add(Dense(out_units_layer_1, activation=activation_fn))
+            new_model.add(Dense(out_units_layer_2, activation=activation_fn))
+            new_model.add(Dense(1, activation='sigmoid'))
+
+            # Compile model
+            new_model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), 
+              loss=loss_fn, 
+              metrics=metrics.Precision()
+              )
+            
+            models_list.append({
+                'model_name': f'nn_lr_{learning_rate}_loss_{loss_fn}_activation_{activation_fn}_epochs_{epochs}',
+                'model': new_model,
+                'type': 'nn',
+                'parameters': parameters,
+                'library': 'keras'
+            })
+
+            i = i+1
+            
+            
+
+
 
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
