@@ -266,9 +266,15 @@ def plot_precision_vs_recall_curve(proba_predictions, y_test, t_current):
     return best_threshold
 
 
-def create_proba_sorted_k_labels(k, proba_predictions):
-    # Select the probabilities for label 1
-    probabilities = proba_predictions[:, 1]
+def create_proba_sorted_k_labels(k, proba_predictions, model_type):
+    # Obtain the probability list based on the model type
+    if model_type == "nn":
+        # Select the probabilities for label 1
+        probabilities = proba_predictions[:, 0]
+    else:
+        # Select the probabilities for label 1
+        probabilities = proba_predictions[:, 1]
+    
     # Rank the probabilities in descending order
     temp = (-1 * probabilities).argsort()
     ranks = np.empty_like(temp)
@@ -312,7 +318,7 @@ def get_k_labels(model_name, model_type, x_test, y_test, y_hat, k=config.FIXED_K
         log_intermediate_output_to_file(
             config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Creating labels for trained model output.')
         k_labels = create_proba_sorted_k_labels(
-            k=k, proba_predictions=y_hat)
+            k=k, proba_predictions=y_hat, model_type=model_type)
     else:
         if model_name[:-1] == "random_k_baseline_model":
             print("base_line_rand_k--------------")
@@ -486,6 +492,7 @@ def split_data_folds(data: DataFrame) -> list:
         train_end = start_date + timedelta(config.TRAIN_SIZE)
         test_start = train_end + timedelta(config.LEAK_OFFSET)
         test_end = test_start + timedelta(config.TEST_SIZE)
+        
 
         fold_info = {
             'fold_number': folds,
@@ -532,7 +539,10 @@ def split_data_folds(data: DataFrame) -> list:
         t_current -= shift_period
         folds += 1
 
-    return folded_dataset
+    # Get the number of training features (without Project ID)
+    training_features_count = folded_dataset[0]['x_train'].shape[1] - 1
+
+    return folded_dataset, training_features_count
 
 
 def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
@@ -549,11 +559,42 @@ def train_eval_classifier(model, model_type, x_train, y_train, x_test, y_test):
     return model, y_hat
 
 
-def cross_validate(folded_dataset, model_item):
+def train_nn(model, parameters, x_train, y_train, x_test, y_test, training_features_count):
+    # Drop unnecessary columns
+    cols_to_drop = ["Project ID"]
+    x_train_ = x_train.drop(columns=cols_to_drop, errors='ignore')
+    x_test_ = x_test.drop(columns=cols_to_drop, errors='ignore')
+
+    # Change data type
+    x_train_ = x_train_.astype('float32')
+    x_test_ = x_test_.astype('float32')
+    y_train = y_train.astype('float32')
+    y_test = y_test.astype('float32')
+
+    # Reshape the input data
+    x_train_ = np.array(x_train_).reshape(-1, training_features_count, 1)
+    x_test_ = np.array(x_test_).reshape(-1, training_features_count, 1)
+
+    # Model training
+    model = model.fit(x_train_, y_train,
+                      epochs=parameters['epochs'],
+                      batch_size=50,
+                      validation_split=0.1,
+                      verbose=1
+                      )
+    
+    # Predict
+    y_hat = model.predict(x_test_)
+
+    return model, y_hat
+
+
+def cross_validate(folded_dataset, model_item, training_features_count):
     model = model_item.get("model")
     model_name = model_item.get("model_name")+"/"
     model_type = model_item.get("type")
     model_library = model_item.get("library")
+    parameters = model_item.get("parameters")
 
     model_eval_metrics = {
         "accuracy": [],
@@ -569,18 +610,22 @@ def cross_validate(folded_dataset, model_item):
         y_train = fold_data.get("y_train").copy(deep=True)
         x_test = fold_data.get("x_test").copy(deep=True)
         y_test = fold_data.get("y_test").copy(deep=True)
+        y_hat = None
+        model_score = None
 
         # handle empty dataset situation
         if x_train.shape[0] == 0 or x_test.shape[0] == 0 or y_train.shape[0] == 0 or y_test.shape[0] == 0:
             continue
-
-        if model_type == "linear":
+        
+        # Standardize data if required
+        if model_type == "linear" or model_type == "nn":
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
             x_train, x_test = standardize_data(
                 x_train, x_test, config.VARIABLES_TO_SCALE)
 
-        if model_type != "baseline":
+        # Train model
+        if model_type != "baseline" and model_type != "nn":
             # train the model
             model, y_hat = train_eval_classifier(
                 model=model,
@@ -604,6 +649,20 @@ def cross_validate(folded_dataset, model_item):
             )
             file_name = f"prk_res fold {fold_data.get('fold_no')} - {str(fold_data.get('start_date'))[:10]}.json"
             dp.save_json(prk_results, config.INFO_DEST+model_name+file_name)
+
+        elif model_type == "nn":
+            # Testing set for the nn
+            x_test_nn = x_test.copy(deep=True)
+            # Train the NN
+            model, y_hat = train_nn(model=model, 
+                                    parameters=parameters, 
+                                    x_train=x_train, 
+                                    y_train=y_train, 
+                                    x_test=x_test_nn,
+                                    y_test=y_test, 
+                                    training_features_count=training_features_count
+                                    )
+            prk_results = None
         else:
             y_hat = None
             prk_results = None
@@ -641,8 +700,12 @@ def cross_validate(folded_dataset, model_item):
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Get model score for trained model.')
 
-            model_score = model.score(
-                x_test.drop(["Project ID"], axis=1, errors='ignore'), y_test)
+            if model_type == "nn":
+                model_score = None
+            else:
+                model_score = model.score(
+                    x_test.drop(["Project ID"], axis=1, errors='ignore'), y_test)
+                
             # accuracy = accuracy_score(y_test, y_hat)
             # f1 = f1_score(y_test, y_hat)
             # recall = recall_score(y_test, y_hat)
@@ -657,18 +720,40 @@ def cross_validate(folded_dataset, model_item):
             if not os.path.exists(art_path):
                 os.makedirs(art_path)
 
-            save_model(
-                art_path,
-                file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.pkl',
-                model=model
-            )
+            # Save model: pkl files and keras files
+            if model_type == "nn":
+                save_model(
+                    art_path,
+                    file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.keras',
+                    model=model,
+                    model_type=model_type
+                )
+            else:
+                save_model(
+                    art_path,
+                    file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.pkl',
+                    model=model,
+                    model_type=model_type
+                )
 
-            predicted_probabilities_df = pd.DataFrame(
-                y_hat, columns=model.classes_, index=y_test.index)
+            # Appending predicted probabilities to the test set
+            predicted_probabilities_df = None
+            test_prediction = None
 
-            test_prediction = pd.concat(
-                [x_test.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
-            test_prediction["Start Date"] = fold_data.get("start_date")
+            if model_type == "nn":
+                predicted_probabilities_df = pd.DataFrame(y_hat, columns=['1'], index=y_test.index)
+
+                test_prediction = pd.concat( 
+                    [x_test.loc[y_test.index]["Project ID"], predicted_probabilities_df['1']], axis=1
+                    )
+                test_prediction["Start Date"] = fold_data.get("start_date")
+            else:
+                predicted_probabilities_df = pd.DataFrame(
+                    y_hat, columns=model.classes_, index=y_test.index)
+
+                test_prediction = pd.concat(
+                    [x_test.loc[y_test.index]["Project ID"], predicted_probabilities_df[1]], axis=1)
+                test_prediction["Start Date"] = fold_data.get("start_date")
 
             dp.export_data_frame(
                 test_prediction,
@@ -897,7 +982,7 @@ def cross_validate_old(data, model_item):
     return model_eval_metrics
 
 
-def run_pipeline(data, model):
-    model_eval_metrics = cross_validate(data, model)
+def run_pipeline(data, model, training_features_count):
+    model_eval_metrics = cross_validate(data, model, training_features_count)
 
     return model, model_eval_metrics
