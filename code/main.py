@@ -99,7 +99,7 @@ data_folds, training_features_count = fe.split_data_folds(data_1)
 
 models = create_classification_models(
     training_features_count,
-    random_forest_parameters_list=rf_parameters,
+    # random_forest_parameters_list=rf_parameters,
     # logistic_regression_parameters_list=lg_parameters,
     # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
