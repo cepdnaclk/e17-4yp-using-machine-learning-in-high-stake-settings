@@ -6,7 +6,7 @@ ROOT = "/storage/scratch/e17-fyp-xai/projects/e17-4yp-using-machine-learning-in-
 # DATA_SOURCE = ROOT + "data/Dataset.csv"
 PATCH = "new/"
 DATA_SOURCE = ROOT + "2024/data/FinalDatasetLowFeatures.csv"
-DATA_DEST = ROOT + "2024/processed_data/"
+DATA_DEST = ROOT + "processed_data/"
 
 ROOT += PATCH
 MODEL_DEST = ROOT + "trained_models/"
