@@ -25,7 +25,7 @@ if load_processed_data:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Loading preprocessed data.')
     print("Loading already processed data")
-    data = dp.load_data_to_df(path=data_file_path)
+    data = dp.load_data_to_df(path=data_file_path, rows=20000)
     data = dp.set_data_types_to_datetime(data, ["Project Posted Date"])
     data = filter_dataset_by_date(data)
 else:
