@@ -234,9 +234,6 @@ def create_classification_models(
             })
 
             i = i+1
-            
-            
-
 
 
     cost_sorted_k_baseline_model = {
