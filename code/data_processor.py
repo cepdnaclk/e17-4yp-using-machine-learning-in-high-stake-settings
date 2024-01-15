@@ -99,6 +99,7 @@ def split_temporal_train_test_data(
     test_end = test_start + timedelta(days=test_months*30)
 
     print("-----")
+    print("Label exist? ", data["Label"][0])
     print(f"train    {str(train_start)[:10]} - {str(train_end)[:10]}")
     print(f"test     {str(test_start)[:10]} - {str(test_end)[:10]}")
 
