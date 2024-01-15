@@ -3,6 +3,7 @@ import data_processor as dp
 import config
 from helper import (
     create_dirs,
+    create_info_dir,
     create_classification_models,
     log_intermediate_output_to_file,
     filter_dataset_by_date)
@@ -17,6 +18,8 @@ from model_parameters.neural_network import nn_parameters
 data_file_path = config.PROCESSED_DATA_PATH
 load_processed_data = config.LOAD_PROCESSED_DATA_FLAG
 
+# create info directory for logging
+create_info_dir()
 
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'About to load data from csv.')

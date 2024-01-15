@@ -65,6 +65,10 @@ def create_dirs(models=None):
     print(f"{len(paths)} directories created...")
     print('Created all directories!')
 
+def create_info_dir():
+    if not os.path.exists(config.INFO_DEST):
+        os.makedirs(config.INFO_DEST)
+
 
 def create_random_forest_parameters(
     max_depths=[2, 3],
