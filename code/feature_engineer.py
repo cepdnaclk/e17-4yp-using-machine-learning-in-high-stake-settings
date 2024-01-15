@@ -343,6 +343,8 @@ def get_precision_for_fixed_k(k_labels, y_test):
 def get_positive_percentage(y_train: DataFrame, y_test: DataFrame):
     print("y_train.columns = ", y_train.columns)
     print("y_test.columns = ", y_test.columns)
+    print(y_train["Label"].value_counts()[1])
+    print(len(y_train["Label"]))
     train_pos = y_train["Label"].value_counts()[1] / len(y_train["Label"])
     test_pos = y_test["Label"].value_counts()[1] / len(y_test["Label"])
 
