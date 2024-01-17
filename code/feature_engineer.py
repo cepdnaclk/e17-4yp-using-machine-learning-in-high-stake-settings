@@ -17,11 +17,12 @@ from pandas.core.frame import DataFrame
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import matplotlib
 import matplotlib.pyplot as plt
 import os
 from helper import (log_intermediate_output_to_file)
+import temporal_features as tmpf
 
 # Set the backend to a non-GUI backend (e.g., 'Agg' for PNG files)
 matplotlib.use('Agg')
@@ -36,6 +37,26 @@ def standardize_data(x_train, x_test, cols_list):
 
     # Fit scaler only for training data
     scaler = ss.fit(features_train)
+
+    # Transform training data
+    features_t = scaler.transform(features_train)
+    x_train[cols_list] = features_t
+
+    # Transforming test data
+    for_test = scaler.transform(features_test)
+    x_test[cols_list] = for_test
+
+    return x_train, x_test
+
+
+def minmax_scale_data(x_train, x_test, cols_list):
+    # Create scalar
+    mm = MinMaxScaler()
+    features_train = x_train[cols_list]
+    features_test = x_test[cols_list]
+
+    # Fit scaler only for training data
+    scaler = mm.fit(features_train)
 
     # Transform training data
     features_t = scaler.transform(features_train)
@@ -477,6 +498,18 @@ def split_data_folds(data: DataFrame) -> list:
         )
         log_intermediate_output_to_file(
             config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} train test splitted.')
+
+        # Add more NLP features after splitting the dataset
+        # Use TFIDF Vectorizer and then drop unnecessary columns
+        x_train, x_test = tmpf.perform_tfidf(x_train, x_test)
+
+        cols_to_drop_after_nlp = ["Project Title", 
+                                  "Project Essay", 
+                                  "Project Need Statement", 
+                                  "Project Short Description"]
+        x_train = x_train.drop(columns=cols_to_drop_after_nlp, errors='ignore')
+        x_test = x_test.drop(columns=cols_to_drop_after_nlp, errors='ignore')
+
         # Count the positive labeled percentage in the training set and the test set
         train_pos_perc, test_pos_perc = get_positive_percentage(
             y_train, y_test)
@@ -545,6 +578,7 @@ def split_data_folds(data: DataFrame) -> list:
 
     # Get the number of training features (without Project ID)
     training_features_count = folded_dataset[0]['x_train'].shape[1] - 1
+    print("Training features count for NN: ", training_features_count)
 
     return folded_dataset, training_features_count
 
@@ -599,6 +633,7 @@ def cross_validate(folded_dataset, model_item, training_features_count):
     model_type = model_item.get("type")
     model_library = model_item.get("library")
     parameters = model_item.get("parameters")
+    scaling_method = model_item.get("scaling")
 
     model_eval_metrics = {
         "accuracy": [],
@@ -621,12 +656,19 @@ def cross_validate(folded_dataset, model_item, training_features_count):
         if x_train.shape[0] == 0 or x_test.shape[0] == 0 or y_train.shape[0] == 0 or y_test.shape[0] == 0:
             continue
         
-        # Standardize data if required
-        if model_type == "linear" or model_type == "nn":
+        # Standardize data if required (use either standardscaler or minmaxscaler)
+        if scaling_method == "standard":
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
             x_train, x_test = standardize_data(
                 x_train, x_test, config.VARIABLES_TO_SCALE)
+            
+        if scaling_method == "minmax":
+            log_intermediate_output_to_file(
+                config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
+            x_train, x_test = minmax_scale_data(
+                x_train, x_test, config.VARIABLES_TO_SCALE)
+             
 
         # Train model
         if model_type != "baseline" and model_type != "nn":
@@ -724,18 +766,18 @@ def cross_validate(folded_dataset, model_item, training_features_count):
             if not os.path.exists(art_path):
                 os.makedirs(art_path)
 
-            # Save model: pkl files and keras files
+            # Save model: sav files and h5 files
             if model_type == "nn":
                 save_model(
                     art_path,
-                    file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.keras',
+                    file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.h5',
                     model=model,
                     model_type=model_type
                 )
             else:
                 save_model(
                     art_path,
-                    file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.pkl',
+                    file_name=f'{model_name[:-1]}_fold_{fold_data.get("fold_no")}_{str(fold_data.get("start_date"))[:10]}.sav',
                     model=model,
                     model_type=model_type
                 )

@@ -4,6 +4,7 @@ import numpy as np
 from pandas.tseries.offsets import DateOffset
 from helper import (log_intermediate_output_to_file)
 import config
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 # Function to calculate the teacher success rate
@@ -333,6 +334,15 @@ def add_length_features(df):
     df["Project Short Description Length"] = np.where(df["Project Short Description"].isnull(), 0, df["Project Short Description"].str.split().str.len())
 
     return df
+
+
+# To perform TFIDF
+def perform_tfidf(x_train, x_test):
+    # Create corpus
+    
+    vectorizer = TfidfVectorizer()
+
+    return x_train, x_test
 
 
 # Function to add new features that are not static

@@ -8,6 +8,8 @@ import pandas as pd
 from datetime import timedelta
 
 import xgboost
+import lightgbm as lgb
+import joblib
 from sklearn import svm
 
 from sklearn.ensemble import RandomForestClassifier
@@ -28,11 +30,13 @@ def save_model(path, file_name, model, model_type):
     if model_type == "nn":
         model.save(file_path)
     else:
-        pickle.dump(model, file=open(file_path, "wb"))
+        #pickle.dump(model, file=open(file_path, "wb"))
+        joblib.dump(model, file_path)
 
 
 def load_model(model_file_path):
-    return pickle.load(open(model_file_path, 'rb'))
+    #return pickle.load(open(model_file_path, 'rb'))
+    return joblib.load(model_file_path)
 
 
 def log_intermediate_output_to_file(path, file_name, log_info: Union[list, dict, str]):
@@ -152,6 +156,7 @@ def create_classification_models(
         xgb_classifier_parameters_list: list = None,
         svm_parameters_list: list = None,
         nn_parameters_list: list = None,
+        lightgbm_parameters_list: list = None,
         baseline: bool = True
 ) -> list:
     models_list = []
@@ -165,22 +170,38 @@ def create_classification_models(
                 'model': new_model,
                 'type': 'non-linear',
                 'parameters': parameters,
-                'library': 'sklearn'
+                'library': 'sklearn',
+                'scaling': 'none'
             })
             i += 1
 
     if logistic_regression_parameters_list != None:
+        # Create two models for each scaler: standard and minmax
         i = 1
         for parameters in logistic_regression_parameters_list:
-            new_model = LogisticRegression(**parameters)
+            new_model_std = LogisticRegression(**parameters)
             models_list.append({
-                'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}',
-                'model': new_model,
+                'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}_standard',
+                'model': new_model_std,
                 'type': 'linear',
                 'parameters': parameters,
-                'library': 'sklearn'
+                'library': 'sklearn',
+                'scaling': 'standard'
             })
             i += 1
+
+        j = 1
+        for parameters in logistic_regression_parameters_list:
+            new_model_mm = LogisticRegression(**parameters)
+            models_list.append({
+                'model_name': f'logistic_regression_mi_{parameters["max_iter"]}_p_{parameters["penalty"]}_minmax',
+                'model': new_model_mm,
+                'type': 'linear',
+                'parameters': parameters,
+                'library': 'sklearn',
+                'scaling': 'minmax'
+            })
+            j += 1
 
     if svm_parameters_list != None:
         for parameters in svm_parameters_list:
@@ -190,7 +211,8 @@ def create_classification_models(
                 'model': new_model,
                 'type': 'linear',
                 'parameters': parameters,
-                'library': 'sklearn'
+                'library': 'sklearn',
+                'scaling': 'standard'
             })
 
     if xgb_classifier_parameters_list != None:
@@ -202,7 +224,23 @@ def create_classification_models(
                 'model': new_model,
                 'type': 'non-linear',
                 'parameters': parameters,
-                'library': 'xgboost'
+                'library': 'xgboost',
+                'scaling': 'none'
+            })
+            i += 1
+
+
+    if lightgbm_parameters_list != None:
+        i = 1
+        for parameters in lightgbm_parameters_list:
+            new_model = lgb.LGBMClassifier(**parameters)
+            models_list.append({
+                'model_name': f'lgbm_classifier_numl_{parameters["num_leaves"]}_md_{parameters["max_depth"]}_lr_{parameters["learning_rate"]}',
+                'model': new_model,
+                'type': 'non-linear',
+                'parameters': parameters,
+                'library': 'lightgbm',
+                'scaling': 'none'
             })
             i += 1
 
@@ -234,7 +272,8 @@ def create_classification_models(
                 'model': new_model,
                 'type': 'nn',
                 'parameters': parameters,
-                'library': 'keras'
+                'library': 'keras',
+                'scaling': 'standard'
             })
 
             i = i+1
@@ -243,12 +282,14 @@ def create_classification_models(
     cost_sorted_k_baseline_model = {
         'model_name': 'cost_sorted_k_baseline_model',
         'model': None,
-        'type': 'baseline'
+        'type': 'baseline',
+        'scaling': 'none'
     }
     random_k_baseline_model = {
         'model_name': 'random_k_baseline_model',
         'model': None,
-        'type': 'baseline'
+        'type': 'baseline',
+        'scaling': 'none'
     }
 
     if baseline:
