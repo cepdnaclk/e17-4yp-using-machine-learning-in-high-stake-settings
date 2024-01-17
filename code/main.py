@@ -13,6 +13,7 @@ from model_parameters.logistic_regression import lg_parameters
 from model_parameters.random_forest import rf_parameters
 from model_parameters.svm import svm_parameters
 from model_parameters.xgboost import xgb_parameters
+from model_parameters.light_gbm import lgbm_parameters
 from model_parameters.neural_network import nn_parameters
 
 data_file_path = config.PROCESSED_DATA_PATH
@@ -65,7 +66,9 @@ else:
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Adding new features.')
     data = tmpf.add_new_features(data)
     print(data.columns)
-    data = data.drop(extra_features_required, axis=1)
+    extra_features_required_without_nlp_features = ["Teacher ID",
+                               "School ID", "School City", "School County"]
+    data = data.drop(extra_features_required_without_nlp_features, axis=1)
     print("After adding new Features, shape = ", data.shape)
     print(data.columns)
 
@@ -107,6 +110,7 @@ models = create_classification_models(
     # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
     nn_parameters_list=nn_parameters,
+    lightgbm_parameters_list=lgbm_parameters,
     baseline=True)
 
 # create dirs that not exist
