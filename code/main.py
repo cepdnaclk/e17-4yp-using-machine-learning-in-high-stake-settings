@@ -41,13 +41,13 @@ else:
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Casting datetime datatype.')
-    
+
     data = dp.set_data_types_to_datetime(data, config.DATE_COLS)
     data = filter_dataset_by_date(data)
 
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Imputing data.')
-    
+
     data = dp.impute_data(data)
     print("Complete imputing = ", data.shape)
 
@@ -55,8 +55,8 @@ else:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Selecting only the required features from df.')
     extra_features_required = ["Teacher ID",
-                               "School ID", "School City", "School County", 
-                               "Project Title", "Project Essay", "Project Need Statement", 
+                               "School ID", "School City", "School County",
+                               "Project Title", "Project Essay", "Project Need Statement",
                                "Project Short Description"]
     data = data[config.TRAINING_FEATURES + ["Label"] + extra_features_required]
     print("Filtered training Features, shape = ", data.shape)
@@ -67,7 +67,7 @@ else:
     data = tmpf.add_new_features(data)
     print(data.columns)
     extra_features_required_without_nlp_features = ["Teacher ID",
-                               "School ID", "School City", "School County"]
+                                                    "School ID", "School City", "School County"]
     data = data.drop(extra_features_required_without_nlp_features, axis=1)
     print("After adding new Features, shape = ", data.shape)
     print(data.columns)
@@ -92,6 +92,10 @@ log_intermediate_output_to_file(
 
 log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding data.')
+
+# pop unwanted columns
+data = data.drop(['School City', 'Project Need Statement', 'School County', 'Project Title',
+                  'Project Essay', 'Project Short Description', ])
 
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 
