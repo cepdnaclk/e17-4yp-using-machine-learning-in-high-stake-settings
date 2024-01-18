@@ -29,7 +29,7 @@ if load_processed_data:
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Loading preprocessed data.')
     print("Loading already processed data")
-    data = dp.load_data_to_df(path=data_file_path, rows=20000)
+    data = dp.load_data_to_df(path=data_file_path)
     data = dp.set_data_types_to_datetime(data, ["Project Posted Date"])
     data = filter_dataset_by_date(data)
 else:
@@ -115,8 +115,8 @@ models = create_classification_models(
     # logistic_regression_parameters_list=lg_parameters,
     # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
-    # nn_parameters_list=nn_parameters,
-    lightgbm_parameters_list=lgbm_parameters,
+    nn_parameters_list=nn_parameters,
+    # lightgbm_parameters_list=lgbm_parameters,
     baseline=True)
 
 # create dirs that not exist
