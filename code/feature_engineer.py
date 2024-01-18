@@ -295,7 +295,7 @@ def create_proba_sorted_k_labels(k, proba_predictions, model_type):
     else:
         # Select the probabilities for label 1
         probabilities = proba_predictions[:, 1]
-    
+
     # Rank the probabilities in descending order
     temp = (-1 * probabilities).argsort()
     ranks = np.empty_like(temp)
@@ -482,12 +482,12 @@ def split_data_folds(data: DataFrame) -> list:
     folded_dataset = []
     # print(data.columns)
     log_intermediate_output_to_file(
-            config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Folding started.')
+        config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Folding started.')
 
     data = data.drop(columns=["Unnamed: 0"], errors='ignore')
 
     while t_current > min_t + fold_period:
-        
+
         log_intermediate_output_to_file(
             config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Fold {folds} started.')
         start_date = t_current - fold_period
@@ -503,9 +503,9 @@ def split_data_folds(data: DataFrame) -> list:
         # Use TFIDF Vectorizer and then drop unnecessary columns
         x_train, x_test = tmpf.perform_tfidf(x_train, x_test)
 
-        cols_to_drop_after_nlp = ["Project Title", 
-                                  "Project Essay", 
-                                  "Project Need Statement", 
+        cols_to_drop_after_nlp = ["Project Title",
+                                  "Project Essay",
+                                  "Project Need Statement",
                                   "Project Short Description"]
         x_train = x_train.drop(columns=cols_to_drop_after_nlp, errors='ignore')
         x_test = x_test.drop(columns=cols_to_drop_after_nlp, errors='ignore')
@@ -529,7 +529,6 @@ def split_data_folds(data: DataFrame) -> list:
         train_end = start_date + timedelta(config.TRAIN_SIZE)
         test_start = train_end + timedelta(config.LEAK_OFFSET)
         test_end = test_start + timedelta(config.TEST_SIZE)
-        
 
         fold_info = {
             'fold_number': folds,
@@ -614,13 +613,13 @@ def train_nn(model, parameters, x_train, y_train, x_test, y_test, training_featu
     x_test_ = np.array(x_test_).reshape(-1, training_features_count, 1)
 
     # Model training
-    model = model.fit(x_train_, y_train,
-                      epochs=parameters['epochs'],
-                      batch_size=50,
-                      validation_split=0.1,
-                      verbose=1
-                      )
-    
+    history = model.fit(x_train_, y_train,
+                        epochs=parameters['epochs'],
+                        batch_size=50,
+                        validation_split=0.1,
+                        verbose=1
+                        )
+
     # Predict
     y_hat = model.predict(x_test_)
 
@@ -655,20 +654,19 @@ def cross_validate(folded_dataset, model_item, training_features_count):
         # handle empty dataset situation
         if x_train.shape[0] == 0 or x_test.shape[0] == 0 or y_train.shape[0] == 0 or y_test.shape[0] == 0:
             continue
-        
+
         # Standardize data if required (use either standardscaler or minmaxscaler)
         if scaling_method == "standard":
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
             x_train, x_test = standardize_data(
                 x_train, x_test, config.VARIABLES_TO_SCALE)
-            
+
         if scaling_method == "minmax":
             log_intermediate_output_to_file(
                 config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Standardizing data.')
             x_train, x_test = minmax_scale_data(
                 x_train, x_test, config.VARIABLES_TO_SCALE)
-             
 
         # Train model
         if model_type != "baseline" and model_type != "nn":
@@ -700,12 +698,12 @@ def cross_validate(folded_dataset, model_item, training_features_count):
             # Testing set for the nn
             x_test_nn = x_test.copy(deep=True)
             # Train the NN
-            model, y_hat = train_nn(model=model, 
-                                    parameters=parameters, 
-                                    x_train=x_train, 
-                                    y_train=y_train, 
+            model, y_hat = train_nn(model=model,
+                                    parameters=parameters,
+                                    x_train=x_train,
+                                    y_train=y_train,
                                     x_test=x_test_nn,
-                                    y_test=y_test, 
+                                    y_test=y_test,
                                     training_features_count=training_features_count
                                     )
             prk_results = None
@@ -751,7 +749,7 @@ def cross_validate(folded_dataset, model_item, training_features_count):
             else:
                 model_score = model.score(
                     x_test.drop(["Project ID"], axis=1, errors='ignore'), y_test)
-                
+
             # accuracy = accuracy_score(y_test, y_hat)
             # f1 = f1_score(y_test, y_hat)
             # recall = recall_score(y_test, y_hat)
@@ -787,11 +785,13 @@ def cross_validate(folded_dataset, model_item, training_features_count):
             test_prediction = None
 
             if model_type == "nn":
-                predicted_probabilities_df = pd.DataFrame(y_hat, columns=['1'], index=y_test.index)
+                predicted_probabilities_df = pd.DataFrame(
+                    y_hat, columns=['1'], index=y_test.index)
 
-                test_prediction = pd.concat( 
-                    [x_test.loc[y_test.index]["Project ID"], predicted_probabilities_df['1']], axis=1
-                    )
+                test_prediction = pd.concat(
+                    [x_test.loc[y_test.index]["Project ID"],
+                        predicted_probabilities_df['1']], axis=1
+                )
                 test_prediction["Start Date"] = fold_data.get("start_date")
             else:
                 predicted_probabilities_df = pd.DataFrame(
