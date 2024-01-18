@@ -94,8 +94,10 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, 'Encoding data.')
 
 # pop unwanted columns
+print("# of columns = ", len(list(data.columns)))
+print(sorted(list(data.columns)))
 data = data.drop(['School City', 'Project Need Statement', 'School County', 'Project Title',
-                  'Project Essay', 'Project Short Description', ])
+                  'Project Essay', 'Project Short Description'], axis=1, errors='ignore')
 
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 
