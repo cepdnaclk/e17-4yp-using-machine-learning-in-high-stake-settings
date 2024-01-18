@@ -115,8 +115,8 @@ models = create_classification_models(
     # logistic_regression_parameters_list=lg_parameters,
     # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
-    nn_parameters_list=nn_parameters,
-    # lightgbm_parameters_list=lgbm_parameters,
+    # nn_parameters_list=nn_parameters,
+    lightgbm_parameters_list=lgbm_parameters,
     baseline=True)
 
 # create dirs that not exist
