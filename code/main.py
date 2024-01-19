@@ -97,7 +97,7 @@ log_intermediate_output_to_file(
 print("# of columns = ", len(list(data.columns)))
 print(sorted(list(data.columns)))
 data = data.drop(['School City', 'Project Need Statement', 'School County', 'Project Title',
-                  'Project Essay', 'Project Short Description'], axis=1, errors='ignore')
+                  'Project Essay', 'Project Short Description', 'Unnamed: 0'], axis=1, errors='ignore')
 
 data_1 = dp.encode_data(data, config.CATEGORICAL_COLS)
 
@@ -111,7 +111,7 @@ data_folds, training_features_count = fe.split_data_folds(data_1)
 
 models = create_classification_models(
     training_features_count,
-    # random_forest_parameters_list=rf_parameters,
+    random_forest_parameters_list=rf_parameters,
     # logistic_regression_parameters_list=lg_parameters,
     # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
