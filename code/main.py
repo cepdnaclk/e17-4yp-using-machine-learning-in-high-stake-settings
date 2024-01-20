@@ -1,3 +1,4 @@
+import re
 import feature_engineer as fe
 import data_processor as dp
 import config
@@ -105,18 +106,22 @@ log_intermediate_output_to_file(
     config.INFO_DEST, config.PROGRAM_LOG_FILE, f'Encoding complete. {data_1.shape}')
 print("encoded_data.shape = ", data_1.shape)
 
+# Rename Columns without special characters
+if config.REMOVE_SP_CH_FROM_FEATURE_NAMES:
+    data_1 = data_1.rename(columns = lambda x:re.sub('[^A-Za-z0-9_]+', '', x))
+
 data_folds, training_features_count = fe.split_data_folds(data_1)
 
 # create classifiers including baseline models
 
 models = create_classification_models(
     training_features_count,
-    random_forest_parameters_list=rf_parameters,
+    # random_forest_parameters_list=rf_parameters,
     # logistic_regression_parameters_list=lg_parameters,
     # svm_parameters_list=svm_parameters,
     # xgb_classifier_parameters_list=xgb_parameters,
-    nn_parameters_list=nn_parameters,
-    # lightgbm_parameters_list=lgbm_parameters,
+    # nn_parameters_list=nn_parameters,
+    lightgbm_parameters_list=lgbm_parameters,
     baseline=True)
 
 # create dirs that not exist
@@ -135,6 +140,7 @@ log_intermediate_output_to_file(
 for model_item in models:
 
     print(f"Classifier -> {model_item.get('model_name')}")
+
     log_intermediate_output_to_file(
         config.INFO_DEST, config.PROGRAM_LOG_FILE, f"Classifier -> {model_item.get('model_name')}")
     log_intermediate_output_to_file(
