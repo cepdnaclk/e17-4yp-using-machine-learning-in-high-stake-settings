@@ -25,6 +25,7 @@ PROCESSED_DATA_PATH = DATA_DEST + "processed_final_data_latest.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
 LOAD_PROCESSED_DATA_FLAG = True
+REMOVE_SP_CH_FROM_FEATURE_NAMES = True
 MAX_ROWS = 500000  # not in use now (18/08/2023)
 
 FIXED_KVAL = 1000
@@ -58,19 +59,19 @@ CATEGORICAL_COLS = ["Project Type", "Project Subject Category Tree", "Project Su
 TRAINING_FEATURES = ["Project ID", "Project Posted Date", "Project Type", "Project Posted Month", "Project Subject Category Tree", "Project Cost",
                      "Project Subject Subcategory Tree", "Project Grade Level Category", "Project Resource Category",
                      "School Metro Type", "School Percentage Free Lunch", "School State",
-                     "Teacher Prefix", "Teacher Project Posted Sequence", "Resource Cost", "Resource Cost Percentage", 
+                     "Teacher Prefix", "Teacher Project Posted Sequence", "Resource Cost", "Resource Cost Percentage",
                      "Resource Vendor Name"]
 
 VARIABLES_TO_SCALE = ["School Percentage Free Lunch", "Teacher Project Posted Sequence", "Project Cost",  "Project Posted Month",
                       'Teacher Success Rate', 'School City Success Rate', 'School Success Rate',
                       'School County Success Rate', 'Project Count in State',
-                      "Resource Cost", "Resource Cost Percentage", "Project Essay Length", 'Project Need Statement Length', 
+                      "Resource Cost", "Resource Cost Percentage", "Project Essay Length", 'Project Need Statement Length',
                       'Project Short Description Length']
 
-FINAL_TRAINING_FEATURES = ['Project Cost', 'Project Count in State', 'Project Essay Length', 'Project Grade Level Category', 
-                           'Project Need Statement Length', 'Project Posted Month', 'Project Resource Category', 
-                           'Project Short Description Length', 'Project Subject Category Tree', 'Project Subject Subcategory Tree', 
-                           'Project Type', 'Resource Cost', 'Resource Cost Percentage', 'Resource Vendor Name', 
-                           'School City Success Rate', 'School County Success Rate', 'School Metro Type', 
-                           'School Percentage Free Lunch', 'School State', 'School Success Rate', 'Teacher Prefix', 
+FINAL_TRAINING_FEATURES = ['Project Cost', 'Project Count in State', 'Project Essay Length', 'Project Grade Level Category',
+                           'Project Need Statement Length', 'Project Posted Month', 'Project Resource Category',
+                           'Project Short Description Length', 'Project Subject Category Tree', 'Project Subject Subcategory Tree',
+                           'Project Type', 'Resource Cost', 'Resource Cost Percentage', 'Resource Vendor Name',
+                           'School City Success Rate', 'School County Success Rate', 'School Metro Type',
+                           'School Percentage Free Lunch', 'School State', 'School Success Rate', 'Teacher Prefix',
                            'Teacher Project Posted Sequence', 'Teacher Success Rate']
