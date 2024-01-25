@@ -249,6 +249,8 @@ def create_classification_models(
         for parameters in nn_parameters_list:
             out_units_layer_1 = parameters['out_units_layer_1']
             out_units_layer_2 = parameters['out_units_layer_2']
+            out_units_layer_3 = parameters['out_units_layer_3']
+            out_units_layer_4 = parameters['out_units_layer_4']
             learning_rate = parameters['learning_rate']
             activation_fn = parameters['activation_fn']
             loss_fn = parameters['loss_fn']
@@ -259,6 +261,8 @@ def create_classification_models(
             new_model.add(Input(shape=(training_features_count,)))
             new_model.add(Dense(out_units_layer_1, activation=activation_fn))
             new_model.add(Dense(out_units_layer_2, activation=activation_fn))
+            new_model.add(Dense(out_units_layer_3, activation=activation_fn))
+            new_model.add(Dense(out_units_layer_4, activation=activation_fn))
             new_model.add(Dense(1, activation='sigmoid'))
 
             # Compile model
