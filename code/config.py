@@ -25,7 +25,7 @@ PROCESSED_DATA_PATH = DATA_DEST + "processed_final_data_latest.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
 LOAD_PROCESSED_DATA_FLAG = True
-REMOVE_SP_CH_FROM_FEATURE_NAMES = True
+REMOVE_SP_CH_FROM_FEATURE_NAMES = False
 MAX_ROWS = 500000  # not in use now (18/08/2023)
 
 FIXED_KVAL = 1000
