@@ -168,7 +168,8 @@ for model_item in models:
     perf_row = {
         "model": model_item.get("model_name"),
         "hyper_paramaters": model_item.get("parameters"),
-        "avg_precision": sum(k_fixed_precisions) / len(k_fixed_precisions)
+        "avg_precision": sum(k_fixed_precisions) / len(k_fixed_precisions),
+        "precisions_for_each_fold": k_fixed_precisions
     }
     log_intermediate_output_to_file(
         path=config.INFO_DEST,
