@@ -653,7 +653,7 @@ def cross_validate(folded_dataset, model_item, training_features_count):
         y_hat = None
         model_score = None
 
-        if model_library == 'lightgbm':
+        if model_library == 'lightgbm' or model_library == 'xgboost':
             x_train = remove_spec_chars_features(x_train)
             y_train = remove_spec_chars_features(y_train)
             x_test = remove_spec_chars_features(x_test)
