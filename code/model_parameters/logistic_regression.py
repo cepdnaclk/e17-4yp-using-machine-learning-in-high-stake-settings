@@ -2,11 +2,11 @@ lg_parameters = [
     {
         'penalty': 'l1',
         'solver': 'saga',
-        'max_iter': 100
+        'max_iter': 50
     },
     {
         'penalty': 'l2',
         'solver': 'saga',
-        'max_iter': 150
+        'max_iter': 250
     }
 ]

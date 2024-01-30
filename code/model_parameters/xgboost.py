@@ -12,6 +12,6 @@ xgb_parameters = [
     {
         'learning_rate': 0.1,
         'max_depth': 10,
-        'n_estimators': 500
+        'n_estimators': 1000
     }
 ]
