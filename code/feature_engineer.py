@@ -699,7 +699,9 @@ def cross_validate(folded_dataset, model_item, training_features_count):
                 fold=fold_data.get("fold_no"),
                 model_name=model_name
             )
+            print("PRK = ", prk_results)
             file_name = f"prk_res fold {fold_data.get('fold_no')} - {str(fold_data.get('start_date'))[:10]}.json"
+            print("File Name = ", file_name)
             dp.save_json(prk_results, config.INFO_DEST+model_name+file_name)
 
         elif model_type == "nn":
