@@ -21,7 +21,9 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import matplotlib
 import matplotlib.pyplot as plt
 import os
-from helper import (log_intermediate_output_to_file)
+from helper import (
+    log_intermediate_output_to_file, 
+    remove_spec_chars_features)
 import temporal_features as tmpf
 
 # Set the backend to a non-GUI backend (e.g., 'Agg' for PNG files)
@@ -650,6 +652,12 @@ def cross_validate(folded_dataset, model_item, training_features_count):
         y_test = fold_data.get("y_test").copy(deep=True)
         y_hat = None
         model_score = None
+
+        if model_library == 'lightgbm':
+            x_train = remove_spec_chars_features(x_train)
+            y_train = remove_spec_chars_features(y_train)
+            x_test = remove_spec_chars_features(x_test)
+            y_test = remove_spec_chars_features(y_test)
 
         # handle empty dataset situation
         if x_train.shape[0] == 0 or x_test.shape[0] == 0 or y_train.shape[0] == 0 or y_test.shape[0] == 0:
