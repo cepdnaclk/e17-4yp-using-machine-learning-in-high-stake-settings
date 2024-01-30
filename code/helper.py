@@ -319,5 +319,6 @@ def filter_dataset_by_date(data, start_date=config.MIN_TIME, end_date=config.MAX
 def remove_spec_chars_features(data):
     # Rename Columns without special characters
     if config.REMOVE_SP_CH_FROM_FEATURE_NAMES:
-        data = data.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+        # data = data.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+        data = data.rename(columns=lambda x: re.sub(r'[&!@,\)\(]', '', x))
     return data
