@@ -4,7 +4,7 @@ ROOT = "/storage/scratch/e17-fyp-xai/projects/e17-4yp-using-machine-learning-in-
 # ROOT = "./"
 # DATA_SOURCE = ROOT + "data/DsDnsPrScTch.csv"
 # DATA_SOURCE = ROOT + "data/Dataset.csv"
-PATCH = "new2/"
+PATCH = "new3/"
 DATA_SOURCE = ROOT + "2024/data/FinalDatasetLowFeatures.csv"
 DATA_DEST = ROOT + "processed_data/"
 
@@ -21,7 +21,7 @@ ARTIFACTS_PATH = ROOT + "model_outputs/artifacts/"
 
 INFO_DEST = ROOT+"model_outputs/info/"
 # MODEL_RUN_LOG_PATH = INFO_DEST + "model_run_log.py"
-PROCESSED_DATA_PATH = DATA_DEST + "processed_final_data_ffd_latest.csv"
+PROCESSED_DATA_PATH = DATA_DEST + "processed_final_data_pcs_latest.csv"
 PROGRAM_LOG_FILE = "program_log.log"
 
 LOAD_PROCESSED_DATA_FLAG = True
